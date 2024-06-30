@@ -1,0 +1,3 @@
+* handle microsoft specific headers (retry-after, request-id, Location)
+* use pageIterator instead of manual nextLink navigation (https://learn.microsoft.com/en-us/graph/sdks/paging?tabs=go). !!! take care of headers passing !!!
+* Add mocking for delete/create tests...
