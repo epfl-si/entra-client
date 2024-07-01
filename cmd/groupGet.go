@@ -1,6 +1,4 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
+// Package cmd provides the command line application for the application
 package cmd
 
 import (
@@ -15,7 +13,7 @@ var groupGetCmd = &cobra.Command{
 	Short: "Get a group by ID",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("groupGet called")
-		group, err := Client.GetGroup(OptId, clientOptions)
+		group, err := Client.GetGroup(OptID, clientOptions)
 		if err != nil {
 			panic(err)
 		}

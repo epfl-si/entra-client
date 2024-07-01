@@ -1,4 +1,4 @@
-package http_client
+package httpengine
 
 import (
 	"epfl-entra/internal/models"

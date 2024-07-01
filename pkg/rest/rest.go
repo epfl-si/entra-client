@@ -1,3 +1,4 @@
+// Package rest provides a REST client that can make requests to a REST API
 package rest
 
 import (
@@ -84,7 +85,7 @@ func (c *Client) Put(path string, body []byte, headers Headers) (*http.Response,
 	return resp, nil
 }
 
-// TokenHeaders returns a Headerstring ct with the Authorization header set to the given token
+// TokenBearerString returns a Headerstring ct with the Authorization header set to the given token
 func TokenBearerString(token string) string {
 	return "Bearer " + token
 }

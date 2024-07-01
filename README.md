@@ -13,13 +13,13 @@ Le but de ce client entra (ecli) est multiple :
 
 Le client s'appuie sur cobra (github.com/spf13/cobra) et donc main.go ne fait qu'appeler les commandes définies dans /cmd
 
-Les commandes utilisent elles les packages http_client et sdk_client qui sont des implémentations de client.Service.
-Ces 2 packages http_client et sdk_client sont les deux "moteurs" (--engine) que l'application peut utiliser pour accéder aux API Entra.
-* http_client est un moteur bas niveau qui s'appuie sur net/http pour faire des requêtes REST.
-* sdk_client s'appuie sur le sdk microsoft qui est de plus haut niveau
+Les commandes utilisent elles les packages httpClient et sdkClient qui sont des implémentations de client.Service.
+Ces 2 packages httpClient et sdkClient sont les deux "moteurs" (--engine) que l'application peut utiliser pour accéder aux API Entra.
+* httpClient est un moteur bas niveau qui s'appuie sur net/http pour faire des requêtes REST.
+* sdkClient s'appuie sur le sdk microsoft qui est de plus haut niveau
 
 Ces deux moteurs utilisent les models qui sont dans internal/models
-Et http_client utilise une fine surcouche de net/http qui est définie dans pkg/rest
+Et httpClient utilise une fine surcouche de net/http qui est définie dans pkg/rest
 
 
 ## Build

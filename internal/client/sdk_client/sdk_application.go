@@ -1,4 +1,4 @@
-package sdk_client
+package sdkengine
 
 import (
 	"context"
@@ -17,7 +17,7 @@ func appToRequestBody(app *models.Application, requestBody *mm.Application) {
 
 // DeleteApplication deletes an application and returns an error
 func (c *SDKClient) DeleteApplication(id string, opts models.ClientOptions) error {
-	return errors.New("Not implemented")
+	return errors.New("not implemented")
 }
 
 // CreateApplication creates an application and returns an error
@@ -28,8 +28,7 @@ func (c *SDKClient) CreateApplication(app *models.Application, opts models.Clien
 	appToRequestBody(app, requestBody)
 
 	// In case of success applications is nil (!?!)
-	applications, err := c.APIClient.Applications().Post(context.Background(), requestBody, nil)
-	applications = applications // Avoiding warning
+	_, err := c.APIClient.Applications().Post(context.Background(), requestBody, nil)
 	if err != nil {
 		c.Log.Sugar().Debugf("CreateApplication() - 0 - Error: %s", err.Error())
 		return err
@@ -38,7 +37,7 @@ func (c *SDKClient) CreateApplication(app *models.Application, opts models.Clien
 }
 
 func (c *SDKClient) GetApplication(id string, opts models.ClientOptions) (*models.Application, error) {
-	return nil, errors.New("Not implemented")
+	return nil, errors.New("not implemented")
 }
 func (c *SDKClient) GetApplications(opts models.ClientOptions) ([]*models.Application, string, error) {
 	fmt.Printf("GetApplications() - 0 - Token: %s\n", c.AccessToken)

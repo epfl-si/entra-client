@@ -1,4 +1,4 @@
-package http_client
+package httpengine
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 )
 
 func (c *HTTPClient) CreateApplication(app *models.Application, options models.ClientOptions) (err error) {
-	return errors.New("Not implemented")
+	return errors.New("not implemented")
 }
 
 // DeleteApplication deletes an application and returns an error
@@ -51,6 +51,7 @@ func (c *HTTPClient) GetApplication(id string, opts models.ClientOptions) (*mode
 func (c *HTTPClient) GetApplications(opts models.ClientOptions) ([]*models.Application, string, error) {
 	results := make([]*models.Application, 0)
 	var applicationResponse models.ApplicationResponse
+	var err error
 
 	h := c.buildHeaders(opts)
 
@@ -102,5 +103,5 @@ func (c *HTTPClient) GetApplications(opts models.ClientOptions) ([]*models.Appli
 }
 
 func (c *HTTPClient) UpdateApplication(app *models.Application, options models.ClientOptions) (err error) {
-	return errors.New("Not implemented")
+	return errors.New("not implemented")
 }

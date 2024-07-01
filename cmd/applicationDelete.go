@@ -1,6 +1,4 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
+// Package cmd provides the command line application for the application
 package cmd
 
 import (
@@ -15,7 +13,7 @@ var applicationDeleteCmd = &cobra.Command{
 	Short: "Delete an application",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("applicationDelete called")
-		err := Client.DeleteApplication(OptId, clientOptions)
+		err := Client.DeleteApplication(OptID, clientOptions)
 		if err != nil {
 			panic(err)
 		}

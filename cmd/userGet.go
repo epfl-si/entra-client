@@ -1,6 +1,3 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -15,7 +12,7 @@ var userGetCmd = &cobra.Command{
 	Short: "Get a user by ID",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("userGet called")
-		user, err := Client.GetUser(OptId, clientOptions)
+		user, err := Client.GetUser(OptID, clientOptions)
 		if err != nil {
 			panic(err)
 		}

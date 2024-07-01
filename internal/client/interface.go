@@ -1,3 +1,4 @@
+// Package client provides the client interface for the application
 package client
 
 import "epfl-entra/internal/models"

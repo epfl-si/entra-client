@@ -1,4 +1,5 @@
-package http_client
+// Package httpengine provides engine using http client to interact with Microsoft Graph API
+package httpengine
 
 import (
 	"epfl-entra/internal/client"

@@ -1,6 +1,4 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
+// Package cmd provides the command line interface for the application
 package cmd
 
 import (
@@ -9,21 +7,21 @@ import (
 	"os"
 
 	"epfl-entra/internal/client"
-	"epfl-entra/internal/client/http_client"
-	"epfl-entra/internal/client/sdk_client"
+	httpengine "epfl-entra/internal/client/http_client"
+	sdkengine "epfl-entra/internal/client/sdk_client"
 	"epfl-entra/internal/models"
 
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
 
-var EntraClient *http_client.HTTPClient
+var EntraClient *httpengine.HTTPClient
 
 var Client client.Service
 var OptBatch string
 var OptDebug bool
 var OptEngine string
-var OptId string
+var OptID string
 var OptPaging bool
 var OptPostData string
 var OptSearch string
@@ -45,14 +43,14 @@ var rootCmd = &cobra.Command{
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		var err error
 		if OptEngine == "sdk" {
-			Client, err = sdk_client.New()
+			Client, err = sdkengine.New()
 			if err != nil {
 				panic(err)
 			}
 		} else {
 			fmt.Printf("ENGINE: %s\n", OptEngine)
 
-			Client, err = http_client.New()
+			Client, err = httpengine.New()
 			if err != nil {
 				panic(err)
 			}
@@ -96,9 +94,7 @@ var rootCmd = &cobra.Command{
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	var err error
-
-	err = rootCmd.Execute()
+	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
 	}
@@ -113,7 +109,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&OptDebug, "debug", false, "Debug mode")
 	rootCmd.PersistentFlags().StringVar(&OptBatch, "batch", "900", "Default batch size for client side paging")
 	rootCmd.PersistentFlags().StringVar(&OptEngine, "engine", "rest", "Engine to use ('sdk' or 'rest')")
-	rootCmd.PersistentFlags().StringVar(&OptId, "id", "", "Id to use")
+	rootCmd.PersistentFlags().StringVar(&OptID, "id", "", "Id to use")
 	rootCmd.PersistentFlags().StringVar(&OptPostData, "post", "", "Post body data")
 	rootCmd.PersistentFlags().StringVar(&OptSearch, "search", "", "Search filter in the form of 'propery:value'")
 	rootCmd.PersistentFlags().StringVar(&OptSelect, "select", "", "Comma separated list of properties to be returnded for each object")
@@ -143,18 +139,6 @@ func init() {
 	}
 
 	// Accept empty token (will be retrived by credentials)
-}
-
-func debug(msg string) {
-	if OptDebug {
-		fmt.Println(msg)
-	}
-}
-
-func debugf(format string, args ...interface{}) {
-	if OptDebug {
-		fmt.Printf(format, args...)
-	}
 }
 
 func OutputJSON(data interface{}) string {

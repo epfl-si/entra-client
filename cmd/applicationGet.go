@@ -1,6 +1,4 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
+// Package cmd provides the command line application for the application
 package cmd
 
 import (
@@ -15,7 +13,7 @@ var applicationGetCmd = &cobra.Command{
 	Short: "Get an application by ID",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("applicationGet called")
-		application, err := Client.GetApplication(OptId, clientOptions)
+		application, err := Client.GetApplication(OptID, clientOptions)
 		if err != nil {
 			panic(err)
 		}

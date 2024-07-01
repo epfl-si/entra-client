@@ -1,10 +1,10 @@
-package sdk_client
+// Package sdkengine provides an engine using SDK client to interact with Microsoft Graph API
+package sdkengine
 
 import (
 	"context"
 
 	"errors"
-	"fmt"
 	"os"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
@@ -68,26 +68,6 @@ func New() (*SDKClient, error) {
 	return &c, nil
 }
 
-func getClient(clientID, clientSecret, tenantID string) (*msgraph.GraphServiceClient, error) {
-
-	cred, _ := azidentity.NewClientSecretCredential(
-		tenantID,
-		clientID,
-		clientSecret,
-		nil,
-	)
-	fmt.Println("got cred")
-
-	client, err := msgraph.NewGraphServiceClientWithCredentials(cred, []string{"https://graph.microsoft.com/.default"})
-	if err != nil {
-		fmt.Printf("getClient Error: %s\n", err.Error())
-		return nil, err
-	}
-	fmt.Println("got client")
-
-	return client, nil
-}
-
 func GetClient(clientID, clientSecret, tenantID string) (*msgraph.GraphServiceClient, error) {
 
 	cred, _ := azidentity.NewClientSecretCredential(
@@ -127,7 +107,6 @@ func GetToken(clientID, clientSecret, tenantID string) (string, error) {
 }
 
 func safeString(s *string) string {
-	fmt.Printf("safeString() - 0 - s: %s\n", *s)
 	if s == nil {
 		return ""
 	}

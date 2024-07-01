@@ -1,4 +1,4 @@
-package sdk_client
+package sdkengine
 
 import (
 	"context"
@@ -17,17 +17,17 @@ func toGroups(groups []mm.Groupable) []*models.Group {
 
 // CreateGroup creates a group and returns an error
 func (c *SDKClient) CreateGroup(group *models.Group, opts models.ClientOptions) error {
-	return errors.New("Not implemented")
+	return errors.New("not implemented")
 }
 
 // DeleteGroup deletes a group and returns an error
 func (c *SDKClient) DeleteGroup(id string, opts models.ClientOptions) error {
-	return errors.New("Not implemented")
+	return errors.New("not implemented")
 }
 
 // GetGroup returns a group and an error
 func (c *SDKClient) GetGroup(id string, opts models.ClientOptions) (*models.Group, error) {
-	return nil, errors.New("Not implemented")
+	return nil, errors.New("not implemented")
 }
 
 func (c *SDKClient) GetGroups(opts models.ClientOptions) ([]*models.Group, string, error) {
@@ -46,8 +46,8 @@ func (c *SDKClient) GetGroups(opts models.ClientOptions) ([]*models.Group, strin
 		finalResults = append(finalResults, addedGroups...)
 
 		nextPageURL := results.GetOdataNextLink()
-		c.Log.Sugar().Debugf("GetGroups() - 4 - Calling Next: %s\n", *nextPageURL)
 		if nextPageURL != nil {
+			c.Log.Sugar().Debugf("GetGroups() - 4 - Calling Next: %s\n", *nextPageURL)
 			results, err = c.APIClient.Groups().WithUrl(*nextPageURL).Get(context.Background(), nil)
 			if err != nil {
 				log.Fatalf("Error getting messages: %v\n", err)

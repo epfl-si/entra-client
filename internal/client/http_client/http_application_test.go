@@ -1,7 +1,6 @@
-package http_client_test
+package httpengine
 
 import (
-	"epfl-entra/internal/client/http_client"
 	"epfl-entra/internal/models"
 	"epfl-entra/pkg/rest"
 	"testing"
@@ -37,7 +36,7 @@ func TestHTTPClient_GetApplication(t *testing.T) {
 	}
 
 	godotenv.Load("../../../.env")
-	Client, err := http_client.New()
+	Client, err := New()
 	if err != nil {
 		t.Log("Testing require working environment variables")
 		t.Fatal(err)
@@ -78,7 +77,7 @@ func TestHTTPClient_GetApplications(t *testing.T) {
 	}
 
 	godotenv.Load("../../../.env")
-	Client, err := http_client.New()
+	Client, err := New()
 	if err != nil {
 		t.Log("Testing require working environment variables")
 		t.Fatal(err)

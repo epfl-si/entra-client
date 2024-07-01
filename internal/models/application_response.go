@@ -1,3 +1,4 @@
+// Package models provides the models for the application
 package models
 
 type ApplicationResponse struct {
