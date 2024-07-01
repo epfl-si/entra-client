@@ -22,16 +22,26 @@ Ces deux moteurs utilisent les models qui sont dans internal/models
 Et http_client utilise une fine surcouche de net/http qui est définie dans pkg/rest
 
 
-## Build (passer au Makefile)
+## Build
 
+```
+make build
+```
+
+Si les make tools ne sont pas installés:
 ```
 go build -o ecli
 ```
 
-## Tests (passer au Makefile)
+## Tests
 
 ```
-go test ./...
+make test
+```
+
+Si les make tools ne sont pas installés:
+```
+go test  ./...
 ```
 
 ## Utilisation
