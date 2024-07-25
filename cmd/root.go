@@ -1,4 +1,4 @@
-// Package cmd provides the command line interface for the application
+// Package cmd provides the commands for the command line application
 package cmd
 
 import (
@@ -15,21 +15,46 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var EntraClient *httpengine.HTTPClient
-
+// Client is the client to the Entra API
 var Client client.Service
+
+// OptBatch is associated with the --batch flag
 var OptBatch string
+
+// OptDebug is associated with the --debug flag
 var OptDebug bool
+
+// OptDisplayName is associated with the --displayname flag
+var OptDisplayName string
+
+// OptEngine is associated with the --engine flag
 var OptEngine string
+
+// OptID is associated with the --id flag
 var OptID string
+
+// OptPaging is associated with the --paging flag
 var OptPaging bool
+
+// OptPostData is associated with the --post flag
 var OptPostData string
+
+// OptSearch is associated with the --search flag
 var OptSearch string
+
+// OptSelect is associated with the --select flag
 var OptSelect string
+
+// OptSkip is associated with the --skip flag
 var OptSkip string
+
+// OptSkipToken is associated with the --skiptoken flag
 var OptSkipToken string
+
+// OptTop is associated with the --top flag
 var OptTop string
 
+// clientOptions is the options (from command line) passed to the client
 var clientOptions models.ClientOptions
 
 // rootCmd represents the base command when called without any subcommands
@@ -108,6 +133,7 @@ func init() {
 	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.epfl-entra.yaml)")
 	rootCmd.PersistentFlags().BoolVar(&OptDebug, "debug", false, "Debug mode")
 	rootCmd.PersistentFlags().StringVar(&OptBatch, "batch", "900", "Default batch size for client side paging")
+	rootCmd.PersistentFlags().StringVar(&OptDisplayName, "displayname", "", "Display name")
 	rootCmd.PersistentFlags().StringVar(&OptEngine, "engine", "rest", "Engine to use ('sdk' or 'rest')")
 	rootCmd.PersistentFlags().StringVar(&OptID, "id", "", "Id to use")
 	rootCmd.PersistentFlags().StringVar(&OptPostData, "post", "", "Post body data")
@@ -141,6 +167,7 @@ func init() {
 	// Accept empty token (will be retrived by credentials)
 }
 
+// OutputJSON returns a JSON representation of the data
 func OutputJSON(data interface{}) string {
 	jdata, err := json.Marshal(data)
 	if err != nil {

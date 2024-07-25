@@ -99,6 +99,7 @@ Supprimer une application par son id
 * [Tutoriel Go d'appel de l'API Graph](https://github.com/microsoftgraph/msgraph-training-go)
 * [http-client tutorial](https://www.sohamkamani.com/golang/http-client/)
 * [Graph API explorer](https://developer.microsoft.com/en-us/graph/graph-explorer)
+* [Configuring SAML application through API](https://learn.microsoft.com/en-us/graph/application-saml-sso-configure-api?tabs=http%2Cpowershell-script)
 
 Golang Modules
 

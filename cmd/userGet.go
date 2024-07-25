@@ -1,3 +1,4 @@
+// Package cmd provides the commands for the command line application
 package cmd
 
 import (
@@ -17,7 +18,7 @@ var userGetCmd = &cobra.Command{
 			panic(err)
 		}
 
-		fmt.Printf("User: %+v\n", user)
+		fmt.Printf("User: %s\n", OutputJSON(user))
 	},
 }
 

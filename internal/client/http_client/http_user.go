@@ -10,47 +10,100 @@ import (
 )
 
 // CreateUser creates a user and returns an error
+//
+// Required permissions: DeviceManagementApps.ReadWrite.All
+// Required permissions: DeviceManagementConfiguration.ReadWrite.All
+// Required permissions: DeviceManagementManagedDevices.ReadWrite.All
+// Required permissions: DeviceManagementServiceConfig.ReadWrite.All
+// Required permissions: Directory.ReadWrite.All
+// Required permissions: User.ReadWrite.All
+//
+// Parameters:
+//
+//	user: The user to create
+//	options: The client options
 func (c *HTTPClient) CreateUser(user *models.User, opts models.ClientOptions) error {
 	u, err := json.Marshal(user)
 	if err != nil {
 		return err
 	}
 
-	resp, err := c.RestClient.Post("/users/"+buildQueryString(opts), u, rest.Headers{"Authorization": rest.TokenBearerString(c.AccessToken)})
+	h := c.buildHeaders(opts)
+
+	response, err := c.RestClient.Post("/users/"+buildQueryString(opts), u, h)
+
 	if err != nil {
 		return err
 	}
-
-	if resp.StatusCode != http.StatusCreated {
-		return errors.New(resp.Status)
+	if response.StatusCode != 201 {
+		return errors.New(response.Status)
 	}
 
 	return nil
 }
 
-// DeleteUser deletes a user and returns an error
+// DeleteUser deletes a user by its id and returns an error
+//
+// Required permissions: DeviceManagementApps.ReadWrite.All
+// Required permissions: DeviceManagementConfiguration.ReadWrite.All
+// Required permissions: DeviceManagementManagedDevices.ReadWrite.All
+// Required permissions: DeviceManagementServiceConfig.Read.All
+// Required permissions: User.ReadWrite.All
+//
+// Parameters:
+//
+//	id: The ID of the user to delete
+//	options: The client options
 func (c *HTTPClient) DeleteUser(id string, opts models.ClientOptions) error {
-	_, err := c.RestClient.Delete("/users/"+id+buildQueryString(opts), rest.Headers{"Authorization": rest.TokenBearerString(c.AccessToken)})
+	h := c.buildHeaders(opts)
+
+	response, err := c.RestClient.Delete("/users/"+id, h)
 	if err != nil {
 		return err
+	}
+	if response.StatusCode != 204 {
+		return errors.New(response.Status)
 	}
 
 	return nil
 }
 
 // GetUser returns a user and an error
+//
+// Required permissions: User.ReadBasic.All
+// Required permissions: DeviceManagementApps.Read.All
+// Required permissions: DeviceManagementApps.ReadWrite.All
+// Required permissions: DeviceManagementConfiguration.Read.All
+// Required permissions: DeviceManagementConfiguration.ReadWrite.All
+// Required permissions: DeviceManagementManagedDevices.Read.All
+// Required permissions: DeviceManagementManagedDevices.ReadWrite.All
+// Required permissions: DeviceManagementServiceConfig.Read.All
+// Required permissions: DeviceManagementServiceConfig.ReadWrite.All
+// Required permissions: Directory.Read.All
+// Required permissions: Directory.ReadWrite.All
+// Required permissions: User.Read
+// Required permissions: User.Read.All
+//
+// Parameters:
+//
+//	user: The user to create
+//	options: The client options
 func (c *HTTPClient) GetUser(id string, opts models.ClientOptions) (*models.User, error) {
-	response, err := c.RestClient.Get("/users/"+id+buildQueryString(opts), rest.Headers{"Authorization": rest.TokenBearerString(c.AccessToken)})
+	h := c.buildHeaders(opts)
+
+	response, err := c.RestClient.Get("/users/"+id+buildQueryString(opts), h)
 	if err != nil {
 		return nil, err
 	}
 
 	body, err := io.ReadAll(io.Reader(response.Body))
+	response.Body.Close()
 	if err != nil {
 		return nil, err
 	}
-
-	response.Body.Close()
+	if response.StatusCode != 200 {
+		return nil, errors.New(response.Status)
+	}
 
 	var user models.User
 	err = json.Unmarshal(body, &user)
@@ -62,6 +115,24 @@ func (c *HTTPClient) GetUser(id string, opts models.ClientOptions) (*models.User
 }
 
 // GetUsers returns a list of users, a pagination link and an error
+//
+// Required permissions: User.ReadBasic.All
+// Required permissions: DeviceManagementApps.Read.All
+// Required permissions: DeviceManagementApps.ReadWrite.All
+// Required permissions: DeviceManagementConfiguration.Read.All
+// Required permissions: DeviceManagementConfiguration.ReadWrite.All
+// Required permissions: DeviceManagementManagedDevices.Read.All
+// Required permissions: DeviceManagementManagedDevices.ReadWrite.All
+// Required permissions: DeviceManagementServiceConfig.Read.All
+// Required permissions: DeviceManagementServiceConfig.ReadWrite.All
+// Required permissions: Directory.Read.All
+// Required permissions: Directory.ReadWrite.All
+// Required permissions: User.Read.All
+// Required permissions: User.ReadWrite.All
+//
+// Parameters:
+//
+//	options: The client options
 func (c *HTTPClient) GetUsers(opts models.ClientOptions) ([]*models.User, string, error) {
 	results := make([]*models.User, 0)
 
@@ -106,6 +177,9 @@ func (c *HTTPClient) GetUsers(opts models.ClientOptions) ([]*models.User, string
 		response, err = c.RestClient.Get(groupResponse.NextLink, rest.Headers{"Authorization": rest.TokenBearerString(c.AccessToken)})
 		c.Log.Sugar().Debugf("GetUsers() - 5 - Next Response: %+v\n", response)
 		c.Log.Sugar().Debugf("GetUsers() - 6 - Paging: %#v\n", opts.Paging)
+		if response.StatusCode != 200 {
+			return nil, "", errors.New(response.Status)
+		}
 
 		if opts.Paging {
 			break
@@ -116,15 +190,27 @@ func (c *HTTPClient) GetUsers(opts models.ClientOptions) ([]*models.User, string
 }
 
 // UpdateUser updates a user and returns an error
+//
+// Required permissions: ?????
+//
+// Parameters:
+//
+//	user: The modified user
+//	options: The client options
 func (c *HTTPClient) UpdateUser(user *models.User, opts models.ClientOptions) error {
 	u, err := json.Marshal(user)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.RestClient.Put("/users/"+user.ID, u, rest.Headers{"Authorization": rest.TokenBearerString(c.AccessToken)})
+	h := c.buildHeaders(opts)
+
+	response, err := c.RestClient.Put("/users/"+user.ID, u, h)
 	if err != nil {
 		return err
+	}
+	if response.StatusCode != 204 {
+		return errors.New(response.Status)
 	}
 
 	return nil

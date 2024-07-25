@@ -9,12 +9,6 @@ import (
 	mm "github.com/microsoftgraph/msgraph-sdk-go/models"
 )
 
-func appToRequestBody(app *models.Application, requestBody *mm.Application) {
-	if app.DisplayName != "" {
-		requestBody.SetDisplayName(&app.DisplayName)
-	}
-}
-
 // DeleteApplication deletes an application and returns an error
 func (c *SDKClient) DeleteApplication(id string, opts models.ClientOptions) error {
 	return errors.New("not implemented")
@@ -36,9 +30,12 @@ func (c *SDKClient) CreateApplication(app *models.Application, opts models.Clien
 	return nil
 }
 
+// GetApplication returns an application by ID
 func (c *SDKClient) GetApplication(id string, opts models.ClientOptions) (*models.Application, error) {
 	return nil, errors.New("not implemented")
 }
+
+// GetApplications returns a list of applications
 func (c *SDKClient) GetApplications(opts models.ClientOptions) ([]*models.Application, string, error) {
 	fmt.Printf("GetApplications() - 0 - Token: %s\n", c.AccessToken)
 	results, err := c.APIClient.Applications().Get(context.Background(), nil)
@@ -48,6 +45,17 @@ func (c *SDKClient) GetApplications(opts models.ClientOptions) ([]*models.Applic
 	}
 
 	return toApplications(results.GetValue()), safeString(results.GetOdataNextLink()), nil
+}
+
+// PatchApplication patches an application
+func (c *SDKClient) PatchApplication(id string, app *models.Application, opts models.ClientOptions) error {
+	return errors.New("not implemented")
+}
+
+func appToRequestBody(app *models.Application, requestBody *mm.Application) {
+	if app.DisplayName != "" {
+		requestBody.SetDisplayName(&app.DisplayName)
+	}
 }
 
 func toApplications(apps []mm.Applicationable) []*models.Application {

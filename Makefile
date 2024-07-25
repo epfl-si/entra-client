@@ -1,4 +1,32 @@
 BINARY_NAME=ecli
+WINDOWS=$(BINARY_NAME).exe
+LINUX=$(BINARAY_NAME)
+DARWIN=$(BINARY_NAME) 
+VERSION=$(shell git describe --tags --always --long --dirty)
+
+# ==================================================================================== #
+# QUALITY CONTROL
+# ==================================================================================== #
+
+windows: $(WINDOWS) ## Build for Windows
+
+linux: $(LINUX) ## Build for Linux
+
+darwin: $(DARWIN) ## Build for Darwin (macOS)
+
+build: windows linux  # darwin has to be called explicitly
+
+$(WINDOWS):
+	# env GOOS=windows GOARCH=amd64 go build -i -v -o $(WINDOWS) -ldflags="-s -w -X main.version=$(VERSION)"  ./cmd/service/main.go
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 GOFLAGS="-ldflags=-s -ldflags=-w" go build -o ${WINDOWS}
+
+$(LINUX):
+	# env GOOS=linux GOARCH=amd64 go build -i -v -o $(LINUX) -ldflags="-s -w -X main.version=$(VERSION)"  ./cmd/service/main.go
+	CGO_ENABLED=0 GOOS=linux GOFLAGS="-ldflags=-s -ldflags=-w" go build -o ${LINUX}
+
+$(DARWIN):
+	# env GOOS=darwin GOARCH=amd64 go build -i -v -o $(DARWIN) -ldflags="-s -w -X main.version=$(VERSION)"  ./cmd/service/main.go
+	CGO_ENABLED=0 GOOS=darwin GOARCH=arm64 GOFLAGS="-ldflags=-s -ldflags=-w" go build -o ${DARWIN}
 
 # ==================================================================================== #
 # QUALITY CONTROL
@@ -9,27 +37,25 @@ BINARY_NAME=ecli
 audit:
 	go mod verify
 	go vet ./...
-	# go run honnef.co/go/tools/cmd/staticcheck@latest -checks=all,-SA4006,-ST1000,-U1000 ./...
 	go run honnef.co/go/tools/cmd/staticcheck@latest -checks=all,-SA4006 ./...
-	go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 	go test -race -buildvcs -vet=off ./...
-
-## build: build the binary (${BINARY_NAME})
-build:
-	CGO_ENABLED=0 GOOS=linux GOFLAGS="-ldflags=-s -ldflags=-w" go build -o ${BINARY_NAME}
 
 ## clean: clean go artefacts (binary included)
 clean:
 	go clean
-	rm ${BINARY_NAME}
+	rm ${WINDOWS} ${LINUX} ${DARWIN}	
 
-## doc: makes documentation
+## doc: make documentation
 .PHONY: doc
 doc:
 	swag init -g cmd/api/main.go
 
 ## release: test build and audit current code
-release: test build audit
+release: test build audit security
+
+## security: perform security check
+securilty:
+	go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 
 ## test: launch quick tests
 test: 

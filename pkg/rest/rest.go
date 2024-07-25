@@ -3,6 +3,7 @@ package rest
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 )
 
@@ -44,7 +45,23 @@ func (c *Client) Get(path string, headers Headers) (*http.Response, error) {
 // Post makes a POST request to the REST API
 func (c *Client) Post(path string, body []byte, headers Headers) (*http.Response, error) {
 	url := c.BaseURL + path
-	return http.Post(url, "application/json", bytes.NewReader(body))
+
+	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+
+	for key, value := range headers {
+		req.Header.Add(key, value)
+	}
+
+	// send the request
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 // Delete makes a DELETE request to the REST API
@@ -56,12 +73,41 @@ func (c *Client) Delete(path string, headers Headers) (*http.Response, error) {
 		return nil, err
 	}
 
+	for key, value := range headers {
+		req.Header.Add(key, value)
+	}
+
 	// send the request
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+
+	return resp, nil
+}
+
+// Patch makes a PATCH request to the REST API
+func (c *Client) Patch(path string, body []byte, headers Headers) (*http.Response, error) {
+	url := c.getNormalizedpath(path)
+	// create a new PATCH request
+	fmt.Print("****** PATCH ********\n")
+	fmt.Printf("****** URL: %s ********\n", url)
+	fmt.Printf("****** BODY: %s ********\n", string(body))
+	fmt.Printf("****** headers: %+v ********\n", headers)
+	req, err := http.NewRequest("PATCH", url, bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+
+	for key, value := range headers {
+		req.Header.Add(key, value)
+	}
+
+	// send the request
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
 
 	return resp, nil
 }
@@ -75,12 +121,15 @@ func (c *Client) Put(path string, body []byte, headers Headers) (*http.Response,
 		return nil, err
 	}
 
+	for key, value := range headers {
+		req.Header.Add(key, value)
+	}
+
 	// send the request
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
 	return resp, nil
 }
@@ -88,4 +137,16 @@ func (c *Client) Put(path string, body []byte, headers Headers) (*http.Response,
 // TokenBearerString returns a Headerstring ct with the Authorization header set to the given token
 func TokenBearerString(token string) string {
 	return "Bearer " + token
+}
+
+func (c *Client) getNormalizedpath(path string) string {
+	var url string
+	// if path does not start with BaseUrl, prepend it
+	if path[0] != '/' {
+		url = path
+	} else {
+		url = c.BaseURL + path
+	}
+
+	return url
 }

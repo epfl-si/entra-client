@@ -6,6 +6,8 @@ import (
 	"epfl-entra/internal/models"
 	"epfl-entra/pkg/rest"
 	"errors"
+	"io"
+	"net/http"
 	"os"
 	"strings"
 
@@ -118,4 +120,10 @@ func (c *HTTPClient) GetConfig() error {
 	}
 
 	return nil
+}
+
+func getBody(response *http.Response) string {
+	body, _ := io.ReadAll(io.Reader(response.Body))
+
+	return string(body)
 }

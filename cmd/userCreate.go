@@ -1,4 +1,4 @@
-// Package cmd provides the command line application for the application
+// Package cmd provides the commands for the command line application
 package cmd
 
 import (

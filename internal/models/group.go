@@ -7,7 +7,7 @@ type Group struct {
 	ID                            string     `json:"id"`
 	DeletedDateTime               *time.Time `json:"deletedDateTime,omitempty"`
 	Classification                *string    `json:"classification,omitempty"`
-	CreatedDateTime               time.Time  `json:"createdDateTime"`
+	CreatedDateTime               *time.Time `json:"createdDateTime"`
 	CreationOptions               []string   `json:"creationOptions,omitempty"`
 	Description                   *string    `json:"description,omitempty"`
 	DisplayName                   string     `json:"displayName"`
@@ -20,7 +20,7 @@ type Group struct {
 	MembershipRule                *string    `json:"membershipRule,omitempty"`
 	MembershipRuleProcessingState *string    `json:"membershipRuleProcessingState,omitempty"`
 	OnPremisesDomainName          string     `json:"onPremisesDomainName,omitempty"`
-	OnPremisesLastSyncDateTime    time.Time  `json:"onPremisesLastSyncDateTime,omitempty"`
+	OnPremisesLastSyncDateTime    *time.Time `json:"onPremisesLastSyncDateTime,omitempty"`
 	OnPremisesNetBiosName         string     `json:"onPremisesNetBiosName,omitempty"`
 	OnPremisesSamAccountName      string     `json:"onPremisesSamAccountName,omitempty"`
 	OnPremisesSecurityIdentifier  string     `json:"onPremisesSecurityIdentifier,omitempty"`
@@ -28,7 +28,7 @@ type Group struct {
 	PreferredDataLocation         *string    `json:"preferredDataLocation,omitempty"`
 	PreferredLanguage             *string    `json:"preferredLanguage,omitempty"`
 	ProxyAddresses                []string   `json:"proxyAddresses,omitempty"`
-	RenewedDateTime               time.Time  `json:"renewedDateTime,omitempty"`
+	RenewedDateTime               *time.Time `json:"renewedDateTime,omitempty"`
 	ResourceBehaviorOptions       []string   `json:"resourceBehaviorOptions,omitempty"`
 	ResourceProvisioningOptions   []string   `json:"resourceProvisioningOptions,omitempty"`
 	SecurityEnabled               bool       `json:"securityEnabled"`

@@ -1,4 +1,4 @@
-// Package cmd provides the command line application for the application
+// Package cmd provides the commands for the command line application
 package cmd
 
 import (
@@ -18,20 +18,10 @@ var applicationGetCmd = &cobra.Command{
 			panic(err)
 		}
 
-		fmt.Printf("Application: %+v\n", application)
+		fmt.Printf("Application: %s\n", OutputJSON(application))
 	},
 }
 
 func init() {
 	applicationCmd.AddCommand(applicationGetCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// applicationGetCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// applicationGetCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
