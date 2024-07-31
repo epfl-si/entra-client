@@ -3,7 +3,6 @@ package rest
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 )
 
@@ -90,10 +89,6 @@ func (c *Client) Delete(path string, headers Headers) (*http.Response, error) {
 func (c *Client) Patch(path string, body []byte, headers Headers) (*http.Response, error) {
 	url := c.getNormalizedpath(path)
 	// create a new PATCH request
-	fmt.Print("****** PATCH ********\n")
-	fmt.Printf("****** URL: %s ********\n", url)
-	fmt.Printf("****** BODY: %s ********\n", string(body))
-	fmt.Printf("****** headers: %+v ********\n", headers)
 	req, err := http.NewRequest("PATCH", url, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
