@@ -8,7 +8,7 @@ type UnknownType struct {
 
 type URI struct {
 	URI   string       `json:"uri,omitempty"`
-	index *UnknownType `json:"index,omitempty"`
+	Index *UnknownType `json:"index,omitempty"`
 }
 
 type Grant struct {
