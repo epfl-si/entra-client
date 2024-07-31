@@ -8,7 +8,6 @@ import (
 
 	"epfl-entra/internal/client"
 	httpengine "epfl-entra/internal/client/http_client"
-	sdkengine "epfl-entra/internal/client/sdk_client"
 	"epfl-entra/internal/models"
 
 	"github.com/joho/godotenv"
@@ -68,20 +67,21 @@ var rootCmd = &cobra.Command{
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		var err error
 		if OptEngine == "sdk" {
-			Client, err = sdkengine.New()
-			if err != nil {
-				panic(err)
-			}
+			panic("SDK engine is not implemented")
+			// Client, err = sdkengine.New()
+			// if err != nil {
+			// 	panic(err)
+			// }
 		} else {
-			fmt.Printf("ENGINE: %s\n", OptEngine)
+			fmt.Fprintf(os.Stderr, "ENGINE: %s\n", OptEngine)
 
 			Client, err = httpengine.New()
 			if err != nil {
 				panic(err)
 			}
 		}
-		fmt.Printf("Top: %s\n", OptTop)
-		fmt.Printf("Select: %s\n", OptSelect)
+		fmt.Fprintf(os.Stderr, "Top: %s\n", OptTop)
+		fmt.Fprintf(os.Stderr, "Select: %s\n", OptSelect)
 
 		clientOptions = models.ClientOptions{}
 
