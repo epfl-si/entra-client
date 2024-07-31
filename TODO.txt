@@ -1,3 +1,4 @@
 * handle microsoft specific headers (retry-after, request-id, Location)
 * use pageIterator instead of manual nextLink navigation (https://learn.microsoft.com/en-us/graph/sdks/paging?tabs=go). !!! take care of headers passing !!!
 * Add mocking for delete/create tests...
+* Assign group/user to application using another way (https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/assign-user-or-group-access-portal?pivots=ms-graph#assign-users-and-groups-to-an-application-using-microsoft-graph-api)
