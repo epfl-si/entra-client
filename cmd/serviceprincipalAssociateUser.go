@@ -38,7 +38,7 @@ Example:
 			ResourceID:    OptID,
 		}
 
-		err := Client.AssociateAppRoleToServicePrincipal(assignment, clientOptions)
+		err := Client.AssignAppRoleToServicePrincipal(assignment, clientOptions)
 		if err != nil {
 			panic(err)
 		}

@@ -10,9 +10,6 @@ import (
 // OptSAMLID is associated with the --id flag
 var OptSAMLID string
 
-// OptSAMLRedirectURI is associated with the --redirect_uri flag
-var OptSAMLRedirectURI string
-
 // applicationSAMLCmd represents the applicationSAML command
 var applicationSAMLCmd = &cobra.Command{
 	Use:   "saml",
@@ -26,5 +23,4 @@ func init() {
 	applicationCmd.AddCommand(applicationSAMLCmd)
 
 	applicationSAMLCmd.PersistentFlags().StringVar(&OptSAMLID, "identifier", "", "SP SAML Identifier")
-	applicationSAMLCmd.PersistentFlags().StringVar(&OptSAMLRedirectURI, "redirect_uri", "", "Redirect URI")
 }

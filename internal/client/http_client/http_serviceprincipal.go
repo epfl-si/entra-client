@@ -9,7 +9,79 @@ import (
 	"io"
 )
 
-// AssociateAppRoleToServicePrincipal associates a serviceprincipal to a group and returns an error
+// GetClaimsPoliciesForServicePrincipal gets a list of claims policies for a serviceprincipal and returns a slice of claims policies, a pagination link and an error
+//
+// Required permissions:
+// Required permissions:
+//
+// Parameters:
+//
+//	servicePrincipalID: The service principal ID
+//	opts: The client options
+func (c *HTTPClient) GetClaimsMappingPoliciesForServicePrincipal(servicePrincipalID string, options models.ClientOptions) ([]*models.ClaimsMappingPolicy, string, error) {
+	results := make([]*models.ClaimsMappingPolicy, 0)
+	var claimsPoliciesResponse models.ClaimsMappingPolicyResponse
+	var err error
+
+	h := c.buildHeaders(options)
+
+	response, err := c.RestClient.Get("/servicePrincipals/"+servicePrincipalID+"/claimsMappingPolicies"+buildQueryString(options), h)
+
+	if response.StatusCode != 200 {
+		return nil, "", errors.New(response.Status)
+	}
+
+	if err != nil {
+		c.Log.Sugar().Debugf("GetClaimsPoliciesForServicePrincipal() - 1 - Error: %s\n", err.Error())
+	}
+
+	for {
+
+		if err != nil {
+			c.Log.Sugar().Debugf("GetClaimsPoliciesForServicePrincipal() - 1 - Error: %s\n", err.Error())
+			return nil, "", err
+		}
+
+		body, err := io.ReadAll(io.Reader(response.Body))
+		if err != nil {
+			c.Log.Sugar().Debugf("GetClaimsPoliciesForServicePrincipal() - 2 - Error: %s\n", err.Error())
+			return nil, "", err
+		}
+
+		err = json.Unmarshal(body, &claimsPoliciesResponse)
+		if err != nil {
+			c.Log.Sugar().Debugf("GetClaimsPoliciesForServicePrincipal() - 3 - Error: %s\n", err.Error())
+			return nil, "", err
+		}
+
+		response.Body.Close()
+
+		results = append(results, claimsPoliciesResponse.Value...)
+
+		if claimsPoliciesResponse.NextLink == "" {
+			break
+		}
+
+		c.Log.Sugar().Debugf("GetClaimsPoliciesForServicePrincipal() - 4 - Calling Next: %s\n", claimsPoliciesResponse.NextLink)
+		response, err = c.RestClient.Get(claimsPoliciesResponse.NextLink, h)
+		if err != nil {
+			c.Log.Sugar().Debugf("GetClaimsPoliciesForServicePrincipal() - 5 - Error: %s\n", err.Error())
+			return nil, "", err
+		}
+
+		if response.StatusCode != 200 {
+			return nil, "", errors.New(response.Status)
+		}
+
+		if options.Paging {
+			break
+		}
+	}
+
+	return results, claimsPoliciesResponse.NextLink, nil
+}
+
+// AssignAppRoleToServicePrincipal associates a serviceprincipal to a group and returns an error
 //
 // Required permissions: Application.Read.All
 // Required permissions: Application.ReadWrite.All
@@ -23,37 +95,37 @@ import (
 //	     PrincipalID: The principal ID
 //
 //	opts: The client options
-func (c *HTTPClient) AssociateAppRoleToServicePrincipal(assignment *models.AppRoleAssignment, opts models.ClientOptions) error {
+func (c *HTTPClient) AssignAppRoleToServicePrincipal(assignment *models.AppRoleAssignment, opts models.ClientOptions) error {
 	// TODO: see https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/assign-user-or-group-access-portal?pivots=ms-graph#assign-users-and-groups-to-an-application-using-microsoft-graph-api to simplify appRole selection and using default one
 
-	c.Log.Sugar().Debugf("AssociateAppRoleToServicePrincipal() - called\n")
+	c.Log.Sugar().Debugf("AssignAppRoleToServicePrincipal() - called\n")
 	u, err := json.Marshal(assignment)
 	if err != nil {
-		c.Log.Sugar().Debugf("AssociateAppRoleToServicePrincipal() - Error marshalling assignment: %+v\n", err)
+		c.Log.Sugar().Debugf("AssignAppRoleToServicePrincipal() - Error marshalling assignment: %+v\n", err)
 		return err
 	}
-	c.Log.Sugar().Debugf("AssociateAppRoleToServicePrincipal() - Assignment: %s\n", string(u))
+	c.Log.Sugar().Debugf("AssignAppRoleToServicePrincipal() - Assignment: %s\n", string(u))
 
 	h := c.buildHeaders(opts)
 	h["Content-Type"] = "application/json"
 
 	response, err := c.RestClient.Post("/servicePrincipals/"+assignment.ResourceID+"/appRoleAssignments", u, h)
 	if err != nil {
-		c.Log.Sugar().Debugf("AssociateAppRoleToServicePrincipal() - Error: %+v\n", response)
+		c.Log.Sugar().Debugf("AssignAppRoleToServicePrincipal() - Error: %+v\n", response)
 		return err
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode != 201 {
-		c.Log.Sugar().Debugf("AssociateAppRoleToServicePrincipal() - Unexpected response code: %+v\n", response)
-		c.Log.Sugar().Debugf("AssociateAppRoleToServicePrincipal() - Body: %s\n", getBody(response))
+		c.Log.Sugar().Debugf("AssignAppRoleToServicePrincipal() - Unexpected response code: %+v\n", response)
+		c.Log.Sugar().Debugf("AssignAppRoleToServicePrincipal() - Body: %s\n", getBody(response))
 		return errors.New(response.Status)
 	}
 
 	return nil
 }
 
-// AssociateClaimsPolicyToServicePrincipal associates a Claims Policy to a serviceprincipal and returns an error
+// AssignClaimsPolicyToServicePrincipal associates a Claims Policy to a serviceprincipal and returns an error
 //
 // Required permissions: Policy.Read.All
 // Required permissions: Application.ReadWrite.All
@@ -62,20 +134,21 @@ func (c *HTTPClient) AssociateAppRoleToServicePrincipal(assignment *models.AppRo
 //
 //	claimsPolicyID: The claims policy ID
 //	servicePrincipalID: The service principal ID
-func (c *HTTPClient) AssociateClaimsPolicyToServicePrincipal(claimsPolicyID, servicePrincipalID string) error {
+func (c *HTTPClient) AssignClaimsPolicyToServicePrincipal(claimsPolicyID, servicePrincipalID string) error {
 	body := []byte(`{"@odata.id":"https://graph.microsoft.com/v1.0/policies/claimsMappingPolicies/` + claimsPolicyID + `"}`)
 
 	h := c.buildHeaders(models.ClientOptions{})
 	h["Content-Type"] = "application/json"
 
-	response, err := c.RestClient.Post("/servicePrincipals/"+servicePrincipalID+"/claimsMappingPolicies", body, h)
+	// response, err := c.RestClient.Post("/servicePrincipals/"+servicePrincipalID+"/claimsMappingPolicies", body, h)
+	response, err := c.RestClient.Post("/servicePrincipals/"+servicePrincipalID+"/claimsMappingPolicies/$ref", body, h)
 	defer response.Body.Close()
 	if err != nil {
-		c.Log.Sugar().Debugf("AssociateClaimsPolicyToServicePrincipal() - Error: %+v\n", response)
+		c.Log.Sugar().Debugf("AssignClaimsPolicyToServicePrincipal() - Error: %+v\n", response)
 		return err
 	}
 	if response.StatusCode != 204 {
-		c.Log.Sugar().Debugf("AssociateClaimsPolicyToServicePrincipal() - Body: %s\n", getBody(response))
+		c.Log.Sugar().Debugf("AssignClaimsPolicyToServicePrincipal() - Body: %s\n", getBody(response))
 		return errors.New(response.Status)
 	}
 
@@ -98,13 +171,15 @@ func (c *HTTPClient) CreateServicePrincipal(app *models.ServicePrincipal, opts m
 	}
 
 	h := c.buildHeaders(opts)
+	h["Content-Type"] = "application/json"
 
-	response, err := c.RestClient.Post("/serviceprincipals"+buildQueryString(opts), u, h)
+	response, err := c.RestClient.Post("/serviceprincipals", u, h)
 	defer response.Body.Close()
 	if err != nil {
 		return err
 	}
 	if response.StatusCode != 201 {
+		c.Log.Sugar().Debugf("CreateServicePrincipal() - Body: %#v\n", getBody(response))
 		return errors.New(response.Status)
 	}
 
@@ -245,7 +320,7 @@ func (c *HTTPClient) GetServicePrincipals(opts models.ClientOptions) ([]*models.
 
 // PatchServicePrincipal patches an serviceprincipal and returns an error
 //
-// Required permissions: Application.ReadWrite.All
+// Required permissions: Application.ReadWrite.All*
 // Required permissions: Directory.ReadWrite.All
 //
 // Parameters:
@@ -307,4 +382,32 @@ func (c *HTTPClient) WaitServicePrincipal(id string, timeout int, options models
 
 	return nil
 
+}
+
+// UnassignClaimsPolicyFromServicePrincipal unassigns a claims policy from a serviceprincipal and returns an error
+//
+// Required permissions: Policy.Read.All
+// Required permissions: Application.ReadWrite.All
+//
+// Parameters:
+//
+//	claimsPolicyID: The claims policy ID
+//	servicePrincipalID: The service principal ID
+//	options: The client options
+func (c *HTTPClient) UnassignClaimsPolicyFromServicePrincipal(claimsPolicyID, servicePrincipalID string, options models.ClientOptions) (err error) {
+
+	h := c.buildHeaders(models.ClientOptions{})
+
+	response, err := c.RestClient.Delete("/servicePrincipals/"+servicePrincipalID+"/claimsMappingPolicies/"+claimsPolicyID+"/$ref", h)
+	defer response.Body.Close()
+	if err != nil {
+		c.Log.Sugar().Debugf("UnassignClaimsPolicyToServicePrincipal() - Error: %+v\n", response)
+		return err
+	}
+	if response.StatusCode != 204 {
+		c.Log.Sugar().Debugf("UnassignClaimsPolicyToServicePrincipal() - Body: %s\n", getBody(response))
+		return errors.New(response.Status)
+	}
+
+	return nil
 }

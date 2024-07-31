@@ -74,7 +74,7 @@ func (c *HTTPClient) DeleteClaimsMappingPolicy(id string, opts models.ClientOpti
 
 	h := c.buildHeaders(opts)
 
-	response, err := c.RestClient.Delete("/claimsmappingpolicies/"+id, h)
+	response, err := c.RestClient.Delete("/policies/claimsmappingpolicies/"+id, h)
 	if err != nil {
 		return err
 	}

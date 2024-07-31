@@ -12,7 +12,6 @@ var claimListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List claims mapping policies",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("claimList called")
 		claims, _, err := Client.GetClaimsMappingPolicies(clientOptions)
 		if err != nil {
 			panic(err)

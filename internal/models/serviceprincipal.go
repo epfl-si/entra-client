@@ -31,14 +31,17 @@ type VerifiedPublisher struct {
 	AddedDateTime       *time.Time `json:"addedDateTime,omitempty"`
 }
 
-// ServicePrincipal represents a service principal
+// ServicePrincipal represents the part of an application that can be instanciated in several tenants
+// (it relates to the Application->Enterprise applications menu in Entra)
+//
+// Resources: https://learn.microsoft.com/en-us/graph/api/resources/serviceprincipal?view=graph-rest-1.0
 type ServicePrincipal struct {
 	ID                                 string                  `json:"id,omitempty"`
 	DeletedDateTime                    *time.Time              `json:"deletedDateTime,omitempty"`
 	AccountEnabled                     bool                    `json:"accountEnabled,omitempty"`
 	AppID                              string                  `json:"appId,omitempty"`
 	ApplicationTemplateID              string                  `json:"applicationTemplateId,omitempty"`
-	AppDisplayName                     string                  `json:"appDisplayName,omitempty"`
+	AppDisplayName                     string                  `json:"appDisplayName,omitempty"` // Read-only
 	AlternativeNames                   []string                `json:"alternativeNames,omitempty"`
 	AppOwnerOrganizationID             string                  `json:"appOwnerOrganizationId,omitempty"`
 	DisplayName                        string                  `json:"displayName,omitempty"`
@@ -58,7 +61,7 @@ type ServicePrincipal struct {
 	AddIns                             []interface{}           `json:"addIns,omitempty"`
 	AppRoles                           []AppRole               `json:"appRoles,omitempty"`
 	Info                               *Info                   `json:"info,omitempty"`
-	KeyCredentials                     []interface{}           `json:"keyCredentials,omitempty"`
+	KeyCredentials                     []KeyCredential         `json:"keyCredentials,omitempty"`
 	OAuth2PermissionScopes             []OAuth2PermissionScope `json:"oauth2PermissionScopes,omitempty"`
 	PasswordCredentials                []interface{}           `json:"passwordCredentials,omitempty"`
 	VerifiedPublisher                  *VerifiedPublisher      `json:"verifiedPublisher,omitempty"`

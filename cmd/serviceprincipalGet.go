@@ -12,13 +12,15 @@ var serviceprincipalGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Get a service principal by ID",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("serviceprincipalGet called")
+		if OptID == "" {
+			panic("Service Principal ID is required (use --id)")
+		}
 		user, err := Client.GetServicePrincipal(OptID, clientOptions)
 		if err != nil {
 			panic(err)
 		}
 
-		fmt.Printf("User: %s\n", OutputJSON(user))
+		fmt.Printf("%s\n", OutputJSON(user))
 	},
 }
 

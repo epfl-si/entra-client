@@ -15,6 +15,7 @@ type Service interface {
 	PatchApplication(id string, app *models.Application, options models.ClientOptions) (err error)
 
 	CreateClaimsMappingPolicy(app *models.ClaimsMappingPolicy, options models.ClientOptions) (id string, err error)
+	DeleteClaimsMappingPolicy(id string, options models.ClientOptions) (err error)
 	GetClaimsMappingPolicies(options models.ClientOptions) (groups []*models.ClaimsMappingPolicy, nextURL string, err error)
 
 	CreateGroup(app *models.Group, options models.ClientOptions) (err error)
@@ -22,11 +23,13 @@ type Service interface {
 	GetGroup(id string, options models.ClientOptions) (groups *models.Group, err error)
 	GetGroups(options models.ClientOptions) (groups []*models.Group, nextURL string, err error)
 
-	AssociateAppRoleToServicePrincipal(assignment *models.AppRoleAssignment, options models.ClientOptions) (err error)
-	AssociateClaimsPolicyToServicePrincipal(claimsPolicyID, servicePrincipalID string) (err error)
+	AssignAppRoleToServicePrincipal(assignment *models.AppRoleAssignment, options models.ClientOptions) (err error)
+	AssignClaimsPolicyToServicePrincipal(claimsPolicyID, servicePrincipalID string) (err error)
 	PatchServicePrincipal(id string, app *models.ServicePrincipal, options models.ClientOptions) (err error)
+	GetClaimsMappingPoliciesForServicePrincipal(id string, options models.ClientOptions) (claimsMappingPolicies []*models.ClaimsMappingPolicy, nextURL string, err error)
 	GetServicePrincipal(id string, options models.ClientOptions) (serviceprincipal *models.ServicePrincipal, err error)
 	GetServicePrincipals(options models.ClientOptions) (serviceprincipals []*models.ServicePrincipal, nextURL string, err error)
+	UnassignClaimsPolicyFromServicePrincipal(claimsPolicyID, servicePrincipalID string, options models.ClientOptions) (err error)
 
 	CreateUser(app *models.User, options models.ClientOptions) (err error)
 	DeleteUser(id string, options models.ClientOptions) (err error)

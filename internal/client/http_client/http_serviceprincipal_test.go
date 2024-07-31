@@ -2,6 +2,7 @@ package httpengine
 
 import (
 	"epfl-entra/internal/models"
+	"epfl-entra/pkg/rest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

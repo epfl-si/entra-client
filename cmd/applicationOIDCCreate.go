@@ -10,35 +10,55 @@ import (
 )
 
 // applicationOIDCCreateCmd represents the applicationOIDCCreate command
+//
+// Ref: https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc
 var applicationOIDCCreateCmd = &cobra.Command{
 	Use:   "create",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Create an OIDC application",
+	Long: `Create an OIDC application
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Usage:
+  ./ecli application oidc create --displayname "<Application name>" --redirect_uri "<Redirect URI>"
+
+Example:
+  ./ecli application oidc create --displayname "AA OIDC provisioning 1" --redirect_uri "https://aaoidcprovisioning1/redirect"
+`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("applicationOIDCCreate called")
-		if OptAppName == "" {
-			panic("Name is required (use --name)")
+		if OptDisplayName == "" {
+			panic("Name is required (use --displayname)")
+		}
+		if OptRedirectURI == "" {
+			panic("Callback URL is required (use --redirect_uri)")
 		}
 		client, err := httpengine.New()
 		if err != nil {
 			panic(err)
 		}
 		opts := models.ClientOptions{}
-		app, sp, err := client.InstantiateApplicationTemplate("229946b9-a9fb-45b8-9531-efa47453ac9e", OptAppName, opts)
+
+		// TODO: What is the utility of the app returned as first value?
+		_, sp, err := client.InstantiateApplicationTemplate("229946b9-a9fb-45b8-9531-efa47453ac9e", OptDisplayName, opts)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Printf("Application SP: %+v\n", sp)
+
 		err = client.WaitServicePrincipal(sp.ID, 60, opts)
 		if err != nil {
 			panic(err)
 		}
-		err = client.WaitApplication(app.ID, 60, opts)
+
+		// Customize application
+		spPatch := &models.ServicePrincipal{}
+		sp.Homepage = "https://www.epfl.ch"
+		// spPatch.ReplyUrls = []string{OptRedirectURI}
+		spPatch.Tags = []string{"WindowsAzureActiveDirectoryIntegratedApp"}
+
+		err = client.PatchServicePrincipal(sp.ID, spPatch, opts)
 		if err != nil {
 			panic(err)
 		}
-		// Add redirect uri
 		// By default, use grant type: Authorization Code Flow with PKCE.
 
 		// Configure supported account types

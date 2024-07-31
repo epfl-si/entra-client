@@ -7,8 +7,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// OptAppName is associated with the --name flag
-var OptAppName string
+// OptSAMLRedirectURI is associated with the --redirect_uri flag
+var OptRedirectURI string
 
 // applicationCmd represents the application command
 var applicationCmd = &cobra.Command{
@@ -29,5 +29,5 @@ var applicationCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(applicationCmd)
-	applicationCmd.PersistentFlags().StringVar(&OptAppName, "name", "", "Name of the application")
+	applicationCmd.PersistentFlags().StringVar(&OptRedirectURI, "redirect_uri", "", "Redirect URI")
 }
