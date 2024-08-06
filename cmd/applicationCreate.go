@@ -2,7 +2,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"epfl-entra/internal/models"
 	"fmt"
 
@@ -13,22 +12,44 @@ import (
 var applicationCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create an application",
-	Long: `Create an application whose JSON is passed as argument with --post
+	Long: `Create an application
 	
 Example:
-  ecli application create --engine sdk --post '{"displayName": "test API POST AA"}'
+  ./ecli application create --displayname "AA test app create" --home_uri "https://www.epfl.ch"
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		var app models.Application
-		err := json.Unmarshal([]byte(OptPostData), &app)
+		if OptDisplayName == "" {
+			panic("Name is required (use --displayname)")
+		}
+
+		// Configure app
+		app.DisplayName = OptDisplayName
+		if OptHomeURI != "" {
+			app.Web = &models.WebSection{HomePageURL: OptHomeURI}
+		}
+
+		newApp, err := Client.CreateApplication(&app, clientOptions)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("applicationCreate called")
-		err = Client.CreateApplication(&app, clientOptions)
+
+		err = Client.WaitApplication(newApp.ID, 60, clientOptions)
 		if err != nil {
 			panic(err)
 		}
+
+		sp, err := Client.CreateServicePrincipal(&models.ServicePrincipal{
+			AppID: newApp.AppID,
+			Tags: []string{
+				"HideApp",
+				"WindowsAzureActiveDirectoryIntegratedApp",
+			},
+			ServicePrincipalType: "Application"}, clientOptions)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("Application created: %+v\n", sp)
 	},
 }
 
