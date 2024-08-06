@@ -24,8 +24,14 @@ type WebSection struct {
 	RedirectURISettings   []URI    `json:"redirectUriSettings,omitempty"`
 }
 
+// Application is the part that is unique to a tenant
+// (it relates to the Application->App registration menu in Entra)
+// (the other part is the service principal and can be instanciated in several tenants)
+//
+// Resources: https://learn.microsoft.com/en-us/graph/api/resources/applications-api-overview
 type Application struct {
 	ID                            string      `json:"id,omitempty"`
+	AppID                         string      `json:"appId,omitempty"`
 	DeletedDateTime               *time.Time  `json:"deletedDateTime,omitempty"`
 	Classification                *string     `json:"classification,omitempty"`
 	CreatedDateTime               *time.Time  `json:"createdDateTime,omitempty"`
