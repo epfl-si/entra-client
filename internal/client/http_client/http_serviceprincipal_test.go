@@ -44,7 +44,7 @@ func TestHTTPClient_AssociateAppRoleToServicePrincipal(t *testing.T) {
 				RestClient:  tt.fields.RestClient,
 				Log:         tt.fields.Log,
 			}
-			tt.assertion(t, c.AssociateAppRoleToServicePrincipal(tt.args.assignment, tt.args.opts))
+			tt.assertion(t, c.AssignAppRoleToServicePrincipal(tt.args.assignment, tt.args.opts))
 		})
 	}
 }

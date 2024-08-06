@@ -164,11 +164,13 @@ func (c *HTTPClient) AssignClaimsPolicyToServicePrincipal(claimsPolicyID, servic
 //
 //	 app: The service principal to be created
 //		opts: The client options
-func (c *HTTPClient) CreateServicePrincipal(app *models.ServicePrincipal, opts models.ClientOptions) error {
+func (c *HTTPClient) CreateServicePrincipal(app *models.ServicePrincipal, opts models.ClientOptions) (newServicePrincipal *models.ServicePrincipal, err error) {
 	u, err := json.Marshal(app)
 	if err != nil {
-		return err
+		return nil, err
 	}
+
+	c.Log.Sugar().Debugf("CreateServicePrincipal() - Body: %s\n", string(u))
 
 	h := c.buildHeaders(opts)
 	h["Content-Type"] = "application/json"
@@ -176,14 +178,24 @@ func (c *HTTPClient) CreateServicePrincipal(app *models.ServicePrincipal, opts m
 	response, err := c.RestClient.Post("/serviceprincipals", u, h)
 	defer response.Body.Close()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if response.StatusCode != 201 {
 		c.Log.Sugar().Debugf("CreateServicePrincipal() - Body: %#v\n", getBody(response))
-		return errors.New(response.Status)
+		return nil, errors.New(response.Status)
+	}
+	var resultServicePrincipal models.ServicePrincipal
+	body, err := io.ReadAll(io.Reader(response.Body))
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	err = json.Unmarshal(body, &resultServicePrincipal)
+	if err != nil {
+		return nil, err
+	}
+
+	return &resultServicePrincipal, nil
 }
 
 // DeleteServicePrincipal deletes an serviceprincipal and returns an error
@@ -356,34 +368,6 @@ func (c *HTTPClient) UpdateServicePrincipal(app *models.ServicePrincipal, option
 	return errors.New("not implemented")
 }
 
-// WaitServicePrincipal waits for an serviceprincipal to be created and returns an error
-//
-// Required permissions: Application.Read.All
-// Required permissions: Application.ReadWrite.All
-//
-// Parameters:
-//
-//	id: The service principal ID
-//	timeout: The timeout in seconds to wait for the service principal availability in the API before returning an error
-//	options: The client options
-func (c *HTTPClient) WaitServicePrincipal(id string, timeout int, options models.ClientOptions) (err error) {
-	duration := 0
-	_, err = c.GetServicePrincipal(id, options)
-	for err != nil && duration < timeout {
-		time.Sleep(2 * time.Second)
-		duration = duration + 2
-		_, err = c.GetServicePrincipal(id, options)
-		c.Log.Sugar().Debugf("WaitServicePrincipal() - Duration: %d - Error: %s\n", duration, err)
-	}
-
-	if duration >= timeout {
-		return errors.New("timeout")
-	}
-
-	return nil
-
-}
-
 // UnassignClaimsPolicyFromServicePrincipal unassigns a claims policy from a serviceprincipal and returns an error
 //
 // Required permissions: Policy.Read.All
@@ -410,4 +394,32 @@ func (c *HTTPClient) UnassignClaimsPolicyFromServicePrincipal(claimsPolicyID, se
 	}
 
 	return nil
+}
+
+// WaitServicePrincipal waits for an serviceprincipal to be created and returns an error
+//
+// Required permissions: Application.Read.All
+// Required permissions: Application.ReadWrite.All
+//
+// Parameters:
+//
+//	id: The service principal ID
+//	timeout: The timeout in seconds to wait for the service principal availability in the API before returning an error
+//	options: The client options
+func (c *HTTPClient) WaitServicePrincipal(id string, timeout int, options models.ClientOptions) (err error) {
+	duration := 0
+	_, err = c.GetServicePrincipal(id, options)
+	for err != nil && duration < timeout {
+		time.Sleep(2 * time.Second)
+		duration = duration + 2
+		_, err = c.GetServicePrincipal(id, options)
+		c.Log.Sugar().Debugf("WaitServicePrincipal() - Duration: %d - Error: %s\n", duration, err)
+	}
+
+	if duration >= timeout {
+		return errors.New("timeout")
+	}
+
+	return nil
+
 }

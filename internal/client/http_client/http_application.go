@@ -17,23 +17,37 @@ import (
 //
 //	app: The application to create
 //	opts: The client options
-func (c *HTTPClient) CreateApplication(app *models.Application, opts models.ClientOptions) error {
+func (c *HTTPClient) CreateApplication(app *models.Application, opts models.ClientOptions) (*models.Application, error) {
 	u, err := json.Marshal(app)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	h := c.buildHeaders(opts)
+	h["Content-Type"] = "application/json"
 
-	response, err := c.RestClient.Post("/applications"+buildQueryString(opts), u, h)
+	response, err := c.RestClient.Post("/applications", u, h)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	if response.StatusCode != 201 {
-		return errors.New(response.Status)
+		c.Log.Sugar().Debugf("CreateApplication() - Response: %s\n", getBody(response))
+		return nil, errors.New(response.Status)
 	}
 
-	return nil
+	var resultApp models.Application
+	body, err := io.ReadAll(io.Reader(response.Body))
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(body, &resultApp)
+	if err != nil {
+		c.Log.Sugar().Debugf("CreateApplication() - Body: %s\n", string(body))
+		return nil, err
+	}
+
+	return &resultApp, nil
 }
 
 // DeleteApplication deletes an application and returns an error
@@ -225,7 +239,6 @@ func (c *HTTPClient) WaitApplication(id string, timeout int, options models.Clie
 	}
 
 	return nil
-
 }
 
 // UpdateApplication updates an application and returns an error
