@@ -2,12 +2,15 @@
 package cmd
 
 import (
-	httpengine "epfl-entra/internal/client/http_client"
 	"epfl-entra/internal/models"
+	"epfl-entra/pkg/saml"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
+
+var OptMetadataFile string
 
 // applicationSAMLCreateCmd represents the applicationSAMLCreate command
 var applicationSAMLCreateCmd = &cobra.Command{
@@ -22,34 +25,44 @@ var applicationSAMLCreateCmd = &cobra.Command{
 		if OptDisplayName == "" {
 			panic("Name is required (use --displayname)")
 		}
+
+		if OptMetadataFile != "" {
+			m, err := saml.GetMetadata(OptMetadataFile)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("Metadata: %#v\n", m)
+			os.Exit(0)
+		}
+
 		if OptSAMLID == "" {
 			panic("SAML identifier is required (use --identifier)")
 		}
 		if OptRedirectURI == "" {
 			panic("SAML redirect URI is required (use --redirect_uri)")
 		}
-		client, err := httpengine.New()
-		if err != nil {
-			panic(err)
-		}
+		// client, err := httpengine.New()
+		// if err != nil {
+		// 	panic(err)
+		// }
 
 		opts := models.ClientOptions{}
-		app, sp, err := client.InstantiateApplicationTemplate("229946b9-a9fb-45b8-9531-efa47453ac9e", OptDisplayName, opts)
+		app, sp, err := Client.InstantiateApplicationTemplate("229946b9-a9fb-45b8-9531-efa47453ac9e", OptDisplayName, opts)
 		if err != nil {
 			panic(err)
 		}
 
-		err = client.WaitServicePrincipal(sp.ID, 60, opts)
+		err = Client.WaitServicePrincipal(sp.ID, 60, opts)
 		if err != nil {
 			panic(err)
 		}
 
 		// Custom settings
-		err = client.PatchServicePrincipal(sp.ID, &models.ServicePrincipal{
+		err = Client.PatchServicePrincipal(sp.ID, &models.ServicePrincipal{
 			PreferredSingleSignOnMode: "saml",
 			Homepage:                  "https://www.epfl.ch",
 		}, opts)
-		err = client.WaitApplication(app.ID, 60, opts)
+		err = Client.WaitApplication(app.ID, 60, opts)
 		if err != nil {
 			panic(err)
 		}
@@ -61,7 +74,7 @@ var applicationSAMLCreateCmd = &cobra.Command{
 			if OptRedirectURI != "" {
 				appPatch.Web = &models.WebSection{RedirectURIs: []string{OptRedirectURI}}
 			}
-			err = client.PatchApplication(app.ID, appPatch, opts)
+			err = Client.PatchApplication(app.ID, appPatch, opts)
 		}
 
 		// Get template claims mapping policies
@@ -86,12 +99,12 @@ var applicationSAMLCreateCmd = &cobra.Command{
 			IsOrganizationDefault: false,
 		}
 
-		claimsID, err := client.CreateClaimsMappingPolicy(claims, opts)
+		claimsID, err := Client.CreateClaimsMappingPolicy(claims, opts)
 		if err != nil {
 			panic(err)
 		}
 
-		err = client.AssignClaimsPolicyToServicePrincipal(claimsID, sp.ID)
+		err = Client.AssignClaimsPolicyToServicePrincipal(claimsID, sp.ID)
 		if err != nil {
 			panic(err)
 		}
@@ -100,4 +113,6 @@ var applicationSAMLCreateCmd = &cobra.Command{
 
 func init() {
 	applicationSAMLCmd.AddCommand(applicationSAMLCreateCmd)
+
+	applicationSAMLCreateCmd.PersistentFlags().StringVar(&OptMetadataFile, "metadata_file", "", "The metadata file name")
 }
