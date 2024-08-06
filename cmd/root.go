@@ -73,15 +73,21 @@ var rootCmd = &cobra.Command{
 			// 	panic(err)
 			// }
 		} else {
-			fmt.Fprintf(os.Stderr, "ENGINE: %s\n", OptEngine)
+			if OptDebug {
+				fmt.Fprintf(os.Stderr, "ENGINE: %s\n", OptEngine)
+			}
 
 			Client, err = httpengine.New()
 			if err != nil {
 				panic(err)
 			}
 		}
-		fmt.Fprintf(os.Stderr, "Top: %s\n", OptTop)
-		fmt.Fprintf(os.Stderr, "Select: %s\n", OptSelect)
+		if OptDebug {
+			fmt.Fprintf(os.Stderr, "Search: %s\n", OptSearch)
+			fmt.Fprintf(os.Stderr, "Skip: %s\n", OptSkip)
+			fmt.Fprintf(os.Stderr, "Top: %s\n", OptTop)
+			fmt.Fprintf(os.Stderr, "Select: %s\n", OptSelect)
+		}
 
 		clientOptions = models.ClientOptions{}
 
