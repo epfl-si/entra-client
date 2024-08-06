@@ -50,7 +50,11 @@ go test  ./...
 mv env.sample .env
 ```
 
-Ensuite modifier .env en renseignant les bonnes valeurs
+Ensuite modifier .env en renseignant les bonnes valeurs:
+ENTRA_ACCESS_TOKEN peut rester vide (le client va le negocier)
+ENTRA_CLIENTID conserver la valeur qui est correcte pour md-entra-client
+ENTRA_TENANT conserver la valeur qui est correcte pour md-entra-client
+La valeur d'ENTRA_SECRET doit être creer dans App regitration -> md-entra-client -> Certificats & secrets
 
 L'aide intégrée :
 
