@@ -2,8 +2,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +16,7 @@ var claimListCmd = &cobra.Command{
 		}
 
 		for _, claim := range claims {
-			fmt.Printf("%s\n", OutputJSON(claim))
+			cmd.Println(OutputJSON(claim))
 		}
 	},
 }

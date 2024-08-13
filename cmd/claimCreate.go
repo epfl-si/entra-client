@@ -3,7 +3,6 @@ package cmd
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"epfl-entra/internal/models"
 
@@ -37,7 +36,6 @@ var claimCreateCmd = &cobra.Command{
 }
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("claimCreate called")
 		if OptDisplayName == "" {
 			panic("DisplayName is required (use --displayName)")
 		}
@@ -63,19 +61,17 @@ var claimCreateCmd = &cobra.Command{
 		if OptPostData != "" {
 			err := json.Unmarshal([]byte(OptPostData), &claim)
 			if err != nil {
-				fmt.Println("Error unmarshalling JSON data")
 				panic(err)
 			}
 		}
 
 		id, err := Client.CreateClaimsMappingPolicy(&claim, clientOptions)
 		if err != nil {
-			fmt.Println("Error creating claims mapping policy")
 			panic(err)
 		}
 		claim.ID = id
 
-		fmt.Printf("%s\n", OutputJSON(claim))
+		cmd.Println(OutputJSON(claim))
 	},
 }
 
@@ -83,4 +79,16 @@ func init() {
 	claimCmd.AddCommand(claimCreateCmd)
 
 	claimCreateCmd.Flags().BoolVar(&OptDefault, "default", false, "Create a default claims mapping policy")
+
+	claimCreateCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
+		// Hide flags for this command
+		claimCreateCmd.Flags().MarkHidden("batch")
+		claimCreateCmd.Flags().MarkHidden("search")
+		claimCreateCmd.Flags().MarkHidden("select")
+		claimCreateCmd.Flags().MarkHidden("skip")
+		claimCreateCmd.Flags().MarkHidden("skiptoken")
+		claimCreateCmd.Flags().MarkHidden("top")
+		// Call parent help func
+		command.Parent().HelpFunc()(command, strings)
+	})
 }

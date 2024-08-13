@@ -2,8 +2,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -12,14 +10,13 @@ var serviceprincipalListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List ServicePrincipals",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("serviceprincipalList called")
 		sps, _, err := Client.GetServicePrincipals(clientOptions)
 		if err != nil {
 			panic(err)
 		}
 
 		for _, sp := range sps {
-			fmt.Printf("%s\n", OutputJSON(sp))
+			cmd.Println(OutputJSON(sp))
 		}
 	},
 }

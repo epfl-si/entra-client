@@ -3,6 +3,7 @@ package httpengine
 import (
 	"epfl-entra/internal/models"
 	"epfl-entra/pkg/rest"
+	"errors"
 	"testing"
 
 	"github.com/joho/godotenv"
@@ -28,15 +29,21 @@ func TestHTTPClient_GetApplication(t *testing.T) {
 			nil,
 		},
 		{
-			"Non existant ID causes empty application",
+			"Non existant ID causes error",
 			args{"NOWAYj", models.ClientOptions{Select: "id,displayName"}},
-			&models.Application{ID: "", DisplayName: ""},
 			nil,
+			errors.New("400 Bad Request"),
+		},
+		{
+			"Empty ID causes error",
+			args{"", models.ClientOptions{Select: "id,displayName"}},
+			nil,
+			errors.New("ID missing"),
 		},
 	}
 
 	godotenv.Load("../../../.env")
-	Client, err := New()
+	client, err := New()
 	if err != nil {
 		t.Log("Testing require working environment variables")
 		t.Fatal(err)
@@ -44,7 +51,7 @@ func TestHTTPClient_GetApplication(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Client.GetApplication(tt.args.id, tt.args.opts)
+			got, err := client.GetApplication(tt.args.id, tt.args.opts)
 			assert.Equal(t, tt.want, got)
 			assert.Equal(t, tt.err, err)
 		})

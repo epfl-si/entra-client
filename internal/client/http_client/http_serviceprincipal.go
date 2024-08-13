@@ -350,6 +350,7 @@ func (c *HTTPClient) PatchServicePrincipal(id string, app *models.ServicePrincip
 	h["Content-Type"] = "application/json"
 
 	response, err := c.RestClient.Patch("/servicePrincipals/"+id, u, h)
+	c.Log.Sugar().Debugf("PatchServicePrincipal() - Body: %s\n", u)
 	c.Log.Sugar().Debugf("PatchServicePrincipal() - Response: %#v\n", response)
 	body, err := io.ReadAll(io.Reader(response.Body))
 	c.Log.Sugar().Debugf("PatchServicePrincipal() - Response: %s\n", string(body))

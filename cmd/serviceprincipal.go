@@ -2,8 +2,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -12,10 +10,13 @@ var serviceprincipalCmd = &cobra.Command{
 	Use:   "serviceprincipal",
 	Short: "Manage service principasl",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("serviceprincipal called")
+		cmd.Println("serviceprincipal called")
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(serviceprincipalCmd)
+
+	serviceprincipalCmd.PersistentFlags().StringVar(&OptPrincipalID, "principalid", "", "ID of the principal")
+	serviceprincipalCmd.PersistentFlags().StringVar(&OptAppRoleID, "approleid", "", "ID of the AppRole")
 }

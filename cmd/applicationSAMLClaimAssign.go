@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -22,10 +20,20 @@ Example:
   ./ecli application saml claim assign --id 2ac47ba8-f2d2-4c9b-9395-3654fc7d2c3 --claimpolicyid 52c47ba8-f2d2-4c9b-9395-3654fc7d2b51
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("applicationSAMLClaimAssign called")
+		cmd.Println("applicationSAMLClaimAssign called")
 	},
 }
 
 func init() {
 	applicationSAMLClaimCmd.AddCommand(applicationSAMLClaimAssignCmd)
+	applicationSAMLClaimAssignCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
+		// Hide flags for this command
+		applicationSAMLClaimAssignCmd.Flags().MarkHidden("top")
+		applicationSAMLClaimAssignCmd.Flags().MarkHidden("skip")
+		applicationSAMLClaimAssignCmd.Flags().MarkHidden("skiptoken")
+		applicationSAMLClaimAssignCmd.Flags().MarkHidden("select")
+		applicationSAMLClaimAssignCmd.Flags().MarkHidden("search")
+		// Call parent help func
+		command.Parent().HelpFunc()(command, strings)
+	})
 }

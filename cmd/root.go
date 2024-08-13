@@ -2,7 +2,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 
@@ -140,7 +139,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&OptDebug, "debug", false, "Debug mode")
 	rootCmd.PersistentFlags().StringVar(&OptBatch, "batch", "900", "Default batch size for client side paging")
 	rootCmd.PersistentFlags().StringVar(&OptDisplayName, "displayname", "", "Display name")
-	rootCmd.PersistentFlags().StringVar(&OptEngine, "engine", "rest", "Engine to use ('sdk' or 'rest')")
+	// rootCmd.PersistentFlags().StringVar(&OptEngine, "engine", "rest", "Engine to use ('sdk' or 'rest')")
 	rootCmd.PersistentFlags().StringVar(&OptID, "id", "", "Id to use")
 	rootCmd.PersistentFlags().StringVar(&OptPostData, "post", "", "Post body data")
 	rootCmd.PersistentFlags().StringVar(&OptSearch, "search", "", "Search filter in the form of 'propery:value'")
@@ -153,11 +152,13 @@ func init() {
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	godotenv.Load()
-
-	secret := os.Getenv("ENTRA_SECRET")
-	if secret == "" {
-		panic("ENTRA_SECRET is not set")
+	// UGLY!! Find the proper way to do this..
+	err := godotenv.Load(".env")
+	if err != nil {
+		err := godotenv.Load("../.env")
+		if err != nil {
+			_ = godotenv.Load("../../.env")
+		}
 	}
 
 	tenant := os.Getenv("ENTRA_TENANT")
@@ -171,14 +172,4 @@ func init() {
 	}
 
 	// Accept empty token (will be retrived by credentials)
-}
-
-// OutputJSON returns a JSON representation of the data
-func OutputJSON(data interface{}) string {
-	jdata, err := json.Marshal(data)
-	if err != nil {
-		panic(err)
-	}
-
-	return string(jdata)
 }

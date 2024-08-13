@@ -3,12 +3,9 @@ package models
 
 import "time"
 
-type UnknownType struct {
-}
-
 type URI struct {
-	URI   string       `json:"uri,omitempty"`
-	Index *UnknownType `json:"index,omitempty"`
+	URI   string `json:"uri,omitempty"`
+	Index int    `json:"index,omitempty"`
 }
 
 type Grant struct {

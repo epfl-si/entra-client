@@ -2,12 +2,10 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
-// OptSAMLRedirectURI is associated with the --redirect_uri flag
+// OptRedirectURI is associated with the --redirect_uri flag
 var OptRedirectURI string
 
 // OptHomeURI is associated with the --home_uri flag
@@ -26,7 +24,8 @@ var applicationCmd = &cobra.Command{
 	application(s).
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("application called")
+		// Use cmd.Println() instead of fmt.Println() to be able to capture the output (in tests)
+		cmd.Println("application called")
 	},
 }
 

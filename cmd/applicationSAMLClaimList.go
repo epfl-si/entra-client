@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -27,7 +25,7 @@ Example:
 		}
 
 		for _, cmp := range cmps {
-			fmt.Println(OutputJSON(cmp))
+			cmd.Println(OutputJSON(cmp))
 		}
 	},
 }

@@ -2,8 +2,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -12,7 +10,7 @@ var claimCmd = &cobra.Command{
 	Use:   "claim",
 	Short: "Manage SAML2 claims",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("claim called")
+		cmd.Println("claim called")
 	},
 }
 

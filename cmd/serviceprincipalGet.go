@@ -2,8 +2,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -20,20 +18,22 @@ var serviceprincipalGetCmd = &cobra.Command{
 			panic(err)
 		}
 
-		fmt.Printf("%s\n", OutputJSON(user))
+		cmd.Println(OutputJSON(user))
 	},
 }
 
 func init() {
 	serviceprincipalCmd.AddCommand(serviceprincipalGetCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// serviceprincipalGetCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// serviceprincipalGetCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	serviceprincipalGetCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
+		// Hide flags for this command
+		serviceprincipalGetCmd.Flags().MarkHidden("batch")
+		serviceprincipalGetCmd.Flags().MarkHidden("search")
+		serviceprincipalGetCmd.Flags().MarkHidden("select")
+		serviceprincipalGetCmd.Flags().MarkHidden("skip")
+		serviceprincipalGetCmd.Flags().MarkHidden("skiptoken")
+		serviceprincipalGetCmd.Flags().MarkHidden("top")
+		// Call parent help func
+		command.Parent().HelpFunc()(command, strings)
+	})
 }

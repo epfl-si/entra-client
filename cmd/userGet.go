@@ -2,8 +2,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -12,26 +10,27 @@ var userGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Get a user by ID",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("userGet called")
 		user, err := Client.GetUser(OptID, clientOptions)
 		if err != nil {
 			panic(err)
 		}
 
-		fmt.Printf("User: %s\n", OutputJSON(user))
+		cmd.Println(OutputJSON(user))
 	},
 }
 
 func init() {
 	userCmd.AddCommand(userGetCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// userGetCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// userGetCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	userGetCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
+		// Hide flags for this command
+		userGetCmd.Flags().MarkHidden("batch")
+		userGetCmd.Flags().MarkHidden("search")
+		userGetCmd.Flags().MarkHidden("select")
+		userGetCmd.Flags().MarkHidden("skip")
+		userGetCmd.Flags().MarkHidden("skiptoken")
+		userGetCmd.Flags().MarkHidden("top")
+		// Call parent help func
+		command.Parent().HelpFunc()(command, strings)
+	})
 }

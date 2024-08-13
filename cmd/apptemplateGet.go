@@ -2,8 +2,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -12,13 +10,12 @@ var apptemplateGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Get an application template by ID",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("apptemplateGet called")
 		application, err := Client.GetApplicationTemplate(OptID, clientOptions)
 		if err != nil {
 			panic(err)
 		}
 
-		fmt.Printf("ApplicationTemplate: %s\n", OutputJSON(application))
+		cmd.Printf("ApplicationTemplate: %s\n", OutputJSON(application))
 	},
 }
 

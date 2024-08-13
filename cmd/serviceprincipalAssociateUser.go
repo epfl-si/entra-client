@@ -3,7 +3,6 @@ package cmd
 
 import (
 	"epfl-entra/internal/models"
-	"fmt"
 
 	"github.com/spf13/cobra"
 )
@@ -20,7 +19,6 @@ Example:
   Where --principalid is the ID of the user, --id is the ID of the service principal and "3a84e31e-bffa-470f-b9e6-754a61e4dc63" is the ID of the AppRole (in this case, the AppRole is "Admin,WAAD").
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("serviceprincipalAssociateUser called")
 		if OptPrincipalID == "" {
 			panic("PrincipalID is required (use --principalid)")
 		}
@@ -47,4 +45,16 @@ Example:
 
 func init() {
 	serviceprincipalAssociateCmd.AddCommand(serviceprincipalAssociateUserCmd)
+
+	serviceprincipalAssociateUserCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
+		// Hide flags for this command
+		serviceprincipalAssociateUserCmd.Flags().MarkHidden("batch")
+		serviceprincipalAssociateUserCmd.Flags().MarkHidden("search")
+		serviceprincipalAssociateUserCmd.Flags().MarkHidden("select")
+		serviceprincipalAssociateUserCmd.Flags().MarkHidden("skip")
+		serviceprincipalAssociateUserCmd.Flags().MarkHidden("skiptoken")
+		serviceprincipalAssociateUserCmd.Flags().MarkHidden("top")
+		// Call parent help func
+		command.Parent().HelpFunc()(command, strings)
+	})
 }

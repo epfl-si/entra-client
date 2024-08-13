@@ -3,12 +3,16 @@ package saml
 import (
 	"os"
 
-	"github.com/crewjam/saml"
+	samlorigin "github.com/crewjam/saml"
 	"github.com/crewjam/saml/samlsp"
 )
 
+type EntityDescriptor struct {
+	samlorigin.EntityDescriptor
+}
+
 // GetMetadata returns the metadata for the SAML XML metadata file whose name is passed as argument
-func GetMetadata(fileName string) (*saml.EntityDescriptor, error) {
+func GetMetadata(fileName string) (*EntityDescriptor, error) {
 	xmlFile, err := os.ReadFile(fileName)
 	if err != nil {
 		return nil, err
@@ -18,5 +22,5 @@ func GetMetadata(fileName string) (*saml.EntityDescriptor, error) {
 		return nil, err
 	}
 
-	return metadata, nil
+	return &EntityDescriptor{*metadata}, nil
 }

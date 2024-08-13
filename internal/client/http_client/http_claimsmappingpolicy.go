@@ -21,7 +21,7 @@ import (
 func (c *HTTPClient) CreateClaimsMappingPolicy(claimspolicy *models.ClaimsMappingPolicy, opts models.ClientOptions) (string, error) {
 	u, err := json.Marshal(claimspolicy)
 	if err != nil {
-		c.Log.Sugar().Debugf("GetApplication() - Error marshalling claims: %s\n", err.Error())
+		c.Log.Sugar().Debugf("CreateClaimsMappingPolicy() - Error marshalling claims: %s\n", err.Error())
 		return "", err
 	}
 
@@ -31,12 +31,12 @@ func (c *HTTPClient) CreateClaimsMappingPolicy(claimspolicy *models.ClaimsMappin
 	// response, err := c.RestClient.Post("/claimsmappingpolicies"+buildQueryString(opts), u, h)
 	response, err := c.RestClient.Post("/policies/claimsmappingpolicies", u, h)
 	if err != nil {
-		c.Log.Sugar().Debugf("GetApplication() - Body: %+v\n", response)
+		c.Log.Sugar().Debugf("CreateClaimsMappingPolicy() - Body: %+v\n", response)
 		return "", err
 	}
 	if response.StatusCode != 201 {
 		body, _ := io.ReadAll(io.Reader(response.Body))
-		c.Log.Sugar().Debugf("GetApplication() - Body: %s\n", string(body))
+		c.Log.Sugar().Debugf("CreateClaimsMappingPolicy() - Body: %s\n", string(body))
 		return "", errors.New(response.Status)
 	}
 
@@ -50,10 +50,10 @@ func (c *HTTPClient) CreateClaimsMappingPolicy(claimspolicy *models.ClaimsMappin
 	var claims models.ClaimsMappingPolicy
 	err = json.Unmarshal(body, &claims)
 	if err != nil {
-		c.Log.Sugar().Debugf("GetApplication() - Body: %s\n", string(body))
+		c.Log.Sugar().Debugf("CreateClaimsMappingPolicy() - Body: %s\n", string(body))
 		return "", err
 	}
-	c.Log.Sugar().Debugf("GetApplication() - Response: %+v\n", claims)
+	c.Log.Sugar().Debugf("CreateClaimsMappingPolicy() - Response: %+v\n", claims)
 
 	return claims.ID, nil
 }

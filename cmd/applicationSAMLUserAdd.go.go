@@ -3,7 +3,6 @@ package cmd
 
 import (
 	"epfl-entra/internal/models"
-	"fmt"
 
 	"github.com/spf13/cobra"
 )
@@ -24,7 +23,6 @@ var applicationSAMLUserAddCmd = &cobra.Command{
 	  ./ecli application saml user add --id a8ff0bc1-3046-43d8-a4b1-d8c42fd6623d --userID 0f2a8e2d-9c45-4c55-acd9-49c8e278f706
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("applicationSAMLUserAdd called")
 		if OptID == "" {
 			panic("Service Principal ID is required (use --id)")
 		}
@@ -51,4 +49,16 @@ func init() {
 	applicationSAMLUserCmd.AddCommand(applicationSAMLUserAddCmd)
 
 	applicationSAMLUserAddCmd.Flags().StringVar(&OptUserID, "userID", "", "ID of the user to add to the SAML application")
+
+	applicationSAMLUserAddCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
+		// Hide flags for this command
+		applicationSAMLUserAddCmd.Flags().MarkHidden("batch")
+		applicationSAMLUserAddCmd.Flags().MarkHidden("search")
+		applicationSAMLUserAddCmd.Flags().MarkHidden("select")
+		applicationSAMLUserAddCmd.Flags().MarkHidden("skip")
+		applicationSAMLUserAddCmd.Flags().MarkHidden("skiptoken")
+		applicationSAMLUserAddCmd.Flags().MarkHidden("top")
+		// Call parent help func
+		command.Parent().HelpFunc()(command, strings)
+	})
 }

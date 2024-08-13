@@ -2,8 +2,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -15,16 +13,27 @@ var apptemplateInstantiateCmd = &cobra.Command{
 
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("apptemplateInstantiate called")
 		app, sp, err := Client.InstantiateApplicationTemplate(OptID, OptDisplayName, clientOptions)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Applicaiton: %s\n", OutputJSON(app))
-		fmt.Printf("ServicePrincipal: %s\n", OutputJSON(sp))
+		cmd.Printf("Application: %s\n", OutputJSON(app))
+		cmd.Printf("ServicePrincipal: %s\n", OutputJSON(sp))
 	},
 }
 
 func init() {
 	apptemplateCmd.AddCommand(apptemplateInstantiateCmd)
+
+	apptemplateInstantiateCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
+		// Hide flags for this command
+		apptemplateInstantiateCmd.Flags().MarkHidden("batch")
+		apptemplateInstantiateCmd.Flags().MarkHidden("search")
+		apptemplateInstantiateCmd.Flags().MarkHidden("select")
+		apptemplateInstantiateCmd.Flags().MarkHidden("skip")
+		apptemplateInstantiateCmd.Flags().MarkHidden("skiptoken")
+		apptemplateInstantiateCmd.Flags().MarkHidden("top")
+		// Call parent help func
+		command.Parent().HelpFunc()(command, strings)
+	})
 }

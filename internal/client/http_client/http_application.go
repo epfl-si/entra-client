@@ -9,6 +9,55 @@ import (
 	"io"
 )
 
+// AddPasswordToApplication adds a password/secret to an application and returns an error
+//
+// Required permissions: Application.ReadWrite
+//
+// Parameters:
+//
+//	id: The application ID
+//	keyName: The password nane
+//	opts: The client options
+func (c *HTTPClient) AddPasswordToApplication(id, keyName string, opts models.ClientOptions) (*models.PasswordCredential, error) {
+	if id == "" {
+		return nil, errors.New("ID missing")
+	}
+
+	if keyName == "" {
+		return nil, errors.New("key name missing")
+	}
+
+	pc := &models.PasswordCredential{
+		DisplayName: keyName,
+	}
+
+	u, err := json.Marshal(pc)
+	if err != nil {
+		return nil, err
+	}
+
+	h := c.buildHeaders(opts)
+	h["Content-Type"] = "application/json"
+
+	response, err := c.RestClient.Post("/applications/"+id+"/addPassword", u, h)
+	if err != nil {
+		return nil, err
+	}
+	if response.StatusCode != 200 {
+		return nil, errors.New(response.Status)
+	}
+
+	body := getBody(response)
+
+	var result models.PasswordCredential
+	err = json.Unmarshal([]byte(body), &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
 // CreateApplication creates an application and returns an error
 //
 // Required permissions: Application.ReadWrite
@@ -90,6 +139,9 @@ func (c *HTTPClient) DeleteApplication(id string, opts models.ClientOptions) err
 //	id: The application ID
 //	opts: The client options
 func (c *HTTPClient) GetApplication(id string, opts models.ClientOptions) (*models.Application, error) {
+	if id == "" {
+		return nil, errors.New("ID missing")
+	}
 	h := c.buildHeaders(opts)
 	response, err := c.RestClient.Get("/applications/"+id+buildQueryString(opts), h)
 	if err != nil {
@@ -200,13 +252,13 @@ func (c *HTTPClient) PatchApplication(id string, app *models.Application, opts m
 	h["Content-Type"] = "application/json"
 
 	response, err := c.RestClient.Patch("/applications/"+id, u, h)
-	c.Log.Sugar().Debugf("PatchApplication() - Response: %#v\n", response)
-	body, err := io.ReadAll(io.Reader(response.Body))
-	c.Log.Sugar().Debugf("PatchApplication() - Body: %s\n", string(body))
 	if err != nil {
 		return err
 	}
+
 	if response.StatusCode != 204 {
+		c.Log.Sugar().Debugf("PatchApplication() - Response: %#v\n", response)
+		c.Log.Sugar().Debugf("PatchApplication() - Body: %s\n", getBody(response))
 		return errors.New(response.Status)
 	}
 

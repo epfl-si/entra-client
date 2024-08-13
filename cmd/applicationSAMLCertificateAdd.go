@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"epfl-entra/internal/models"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -23,7 +22,7 @@ Example:
 `,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("applicationSAMLCertificateAdd called")
+		cmd.Println("applicationSAMLCertificateAdd called")
 
 		if OptID == "" {
 			panic("Service Principal ID is required (use --id)")
@@ -45,9 +44,9 @@ Example:
 		// Build new KeyCredential
 		newCredential := models.KeyCredential{
 			KeyIdentifier: OptKeyName,
-			EndDateTime:   endDateTime,
+			EndDateTime:   &endDateTime,
 			KeyId:         uuid.Must(uuid.NewRandom()).String(),
-			StartDateTime: startDateTime,
+			StartDateTime: &startDateTime,
 			DisplayName:   OptKeyName,
 			Usage:         "Verify",
 			Type:          "AsymmetricX509Cert",
@@ -78,8 +77,7 @@ Example:
 			panic(err)
 		}
 
-		fmt.Printf("Service Principal %s updated with new certificate\n", sp.DisplayName)
-		fmt.Printf("Service Principal %s  with keyCredential %+v", sp.KeyCredentials)
+		cmd.Printf("Service Principal %s updated with new certificate and keyCredential %+v", sp.DisplayName, sp.KeyCredentials)
 
 		// Activate the certificate by its keyId
 		err = Client.PatchServicePrincipal(OptID, &models.ServicePrincipal{PreferredTokenSigningKeyThumbprint: OptKeyName}, clientOptions)
@@ -91,5 +89,15 @@ Example:
 
 func init() {
 	applicationSAMLCertificateCmd.AddCommand(applicationSAMLCertificateAddCmd)
-	applicationSAMLCertificateAddCmd.Flags().StringVar(&OptKeyName, "keyname", "", "Name of the added certificate")
+	// applicationSAMLCertificateAddCmd.Flags().StringVar(&OptKeyName, "keyname", "", "Name of the added certificate")
+	applicationSAMLCertificateAddCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
+		// Hide flags for this command
+		applicationSAMLCertificateAddCmd.Flags().MarkHidden("top")
+		applicationSAMLCertificateAddCmd.Flags().MarkHidden("skip")
+		applicationSAMLCertificateAddCmd.Flags().MarkHidden("skiptoken")
+		applicationSAMLCertificateAddCmd.Flags().MarkHidden("select")
+		applicationSAMLCertificateAddCmd.Flags().MarkHidden("search")
+		// Call parent help func
+		command.Parent().HelpFunc()(command, strings)
+	})
 }

@@ -4,8 +4,6 @@ Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -16,7 +14,7 @@ var applicationSAMLClaimCmd = &cobra.Command{
 	Use:   "claim",
 	Short: "Manage claims mapping for a SAML application",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("applicationSAMLClaim called")
+		cmd.Println("applicationSAMLClaim called")
 	},
 }
 

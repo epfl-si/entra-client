@@ -2,8 +2,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +16,7 @@ var applicationListCmd = &cobra.Command{
 		}
 
 		for _, application := range applications {
-			fmt.Printf("%s\n", OutputJSON(application))
+			cmd.Printf("%s\n", OutputJSON(application))
 		}
 	},
 }

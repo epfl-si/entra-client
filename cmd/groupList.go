@@ -2,8 +2,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +16,7 @@ var groupListCmd = &cobra.Command{
 		}
 
 		for _, group := range groups {
-			fmt.Printf("%s\n", OutputJSON(group))
+			cmd.Println(OutputJSON(group))
 		}
 	},
 }

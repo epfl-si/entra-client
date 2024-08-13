@@ -2,8 +2,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -12,13 +10,13 @@ var applicationGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Get an application by ID",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("applicationGet called")
+		cmd.Println("applicationGet called")
 		application, err := Client.GetApplication(OptID, clientOptions)
 		if err != nil {
 			panic(err)
 		}
 
-		fmt.Printf("Application: %s\n", OutputJSON(application))
+		cmd.Printf("Application: %s\n", OutputJSON(application))
 	},
 }
 

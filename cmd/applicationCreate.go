@@ -3,7 +3,6 @@ package cmd
 
 import (
 	"epfl-entra/internal/models"
-	"fmt"
 
 	"github.com/spf13/cobra"
 )
@@ -20,7 +19,7 @@ Example:
 	Run: func(cmd *cobra.Command, args []string) {
 		var app models.Application
 		if OptDisplayName == "" {
-			panic("Name is required (use --displayname)")
+			cobra.CheckErr("Name is required (use --displayname)")
 		}
 
 		// Configure app
@@ -49,10 +48,23 @@ Example:
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("Application created: %+v\n", sp)
+		cmd.Printf("Application created: %+v\n", sp)
 	},
 }
 
 func init() {
 	applicationCmd.AddCommand(applicationCreateCmd)
+
+	// hideInCommand(applicationCreateCmd, "top', 'skip', 'skiptoken', 'select', 'search")
+	applicationCreateCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
+		// Hide flags for this command
+		applicationCreateCmd.Flags().MarkHidden("batch")
+		applicationCreateCmd.Flags().MarkHidden("search")
+		applicationCreateCmd.Flags().MarkHidden("select")
+		applicationCreateCmd.Flags().MarkHidden("skip")
+		applicationCreateCmd.Flags().MarkHidden("skiptoken")
+		applicationCreateCmd.Flags().MarkHidden("top")
+		// Call parent help func
+		command.Parent().HelpFunc()(command, strings)
+	})
 }

@@ -8,6 +8,7 @@ type Service interface {
 	GetApplicationTemplate(id string, options models.ClientOptions) (apps *models.ApplicationTemplate, err error)
 	GetApplicationTemplates(options models.ClientOptions) (apps []*models.ApplicationTemplate, nextURL string, err error)
 
+	AddPasswordToApplication(id, keyName string, options models.ClientOptions) (password *models.PasswordCredential, err error)
 	CreateApplication(app *models.Application, options models.ClientOptions) (newApp *models.Application, err error)
 	DeleteApplication(id string, options models.ClientOptions) (err error)
 	GetApplication(id string, options models.ClientOptions) (apps *models.Application, err error)

@@ -2,8 +2,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -18,13 +16,22 @@ var serviceprincipalAssociateCmd = &cobra.Command{
 	Use:   "associate",
 	Short: "Associate various data to service principal",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("serviceprincipalAssociate called")
+		cmd.Println("serviceprincipalAssociate called")
 	},
 }
 
 func init() {
 	serviceprincipalCmd.AddCommand(serviceprincipalAssociateCmd)
 
-	rootCmd.PersistentFlags().StringVar(&OptPrincipalID, "principalid", "", "ID of the principal")
-	rootCmd.PersistentFlags().StringVar(&OptAppRoleID, "approleid", "", "ID of the AppRole")
+	serviceprincipalAssociateCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
+		// Hide flags for this command
+		serviceprincipalAssociateCmd.Flags().MarkHidden("batch")
+		serviceprincipalAssociateCmd.Flags().MarkHidden("search")
+		serviceprincipalAssociateCmd.Flags().MarkHidden("select")
+		serviceprincipalAssociateCmd.Flags().MarkHidden("skip")
+		serviceprincipalAssociateCmd.Flags().MarkHidden("skiptoken")
+		serviceprincipalAssociateCmd.Flags().MarkHidden("top")
+		// Call parent help func
+		command.Parent().HelpFunc()(command, strings)
+	})
 }

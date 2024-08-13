@@ -2,8 +2,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -12,16 +10,27 @@ var groupGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Get a group by ID",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("groupGet called")
 		group, err := Client.GetGroup(OptID, clientOptions)
 		if err != nil {
 			panic(err)
 		}
 
-		fmt.Printf("Group: %s\n", OutputJSON(group))
+		cmd.Printf("Group: %s\n", OutputJSON(group))
 	},
 }
 
 func init() {
 	groupCmd.AddCommand(groupGetCmd)
+
+	groupGetCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
+		// Hide flags for this command
+		groupGetCmd.Flags().MarkHidden("batch")
+		groupGetCmd.Flags().MarkHidden("search")
+		groupGetCmd.Flags().MarkHidden("select")
+		groupGetCmd.Flags().MarkHidden("skip")
+		groupGetCmd.Flags().MarkHidden("skiptoken")
+		groupGetCmd.Flags().MarkHidden("top")
+		// Call parent help func
+		command.Parent().HelpFunc()(command, strings)
+	})
 }

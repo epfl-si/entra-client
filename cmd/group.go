@@ -2,8 +2,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -20,7 +18,7 @@ var groupCmd = &cobra.Command{
 	group(s).
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("group called")
+		cmd.Println("group called")
 	},
 }
 

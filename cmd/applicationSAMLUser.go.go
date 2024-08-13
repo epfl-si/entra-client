@@ -2,8 +2,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 )
 
@@ -12,7 +10,7 @@ var applicationSAMLUserCmd = &cobra.Command{
 	Use:   "user",
 	Short: "Handle users for a SAML application",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("applicationSAMLUser called")
+		cmd.Println("applicationSAMLUser called")
 	},
 }
 

@@ -28,4 +28,15 @@ Exqample:
 
 func init() {
 	applicationSAMLClaimCmd.AddCommand(applicationSAMLClaimDeleteCmd)
+	applicationSAMLClaimDeleteCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
+		// Hide flags for this command
+		applicationSAMLClaimDeleteCmd.Flags().MarkHidden("batch")
+		applicationSAMLClaimDeleteCmd.Flags().MarkHidden("search")
+		applicationSAMLClaimDeleteCmd.Flags().MarkHidden("select")
+		applicationSAMLClaimDeleteCmd.Flags().MarkHidden("skip")
+		applicationSAMLClaimDeleteCmd.Flags().MarkHidden("skiptoken")
+		applicationSAMLClaimDeleteCmd.Flags().MarkHidden("top")
+		// Call parent help func
+		command.Parent().HelpFunc()(command, strings)
+	})
 }
