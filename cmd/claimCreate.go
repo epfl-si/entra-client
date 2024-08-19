@@ -9,7 +9,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var OptDefault bool = false
+// OptDefault is associated with the --default flag
+var OptDefault = false
 
 // claimCreateCmd represents the claimCreate command
 var claimCreateCmd = &cobra.Command{
@@ -37,15 +38,18 @@ var claimCreateCmd = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if OptDisplayName == "" {
-			panic("DisplayName is required (use --displayName)")
+			printErrString("DisplayName is required (use --displayName)")
+			return
 		}
 
 		if OptPostData == "" && !OptDefault {
-			panic("Data or default flag is required (use --data or --default)")
+			printErrString("Data or default flag is required (use --data or --default)")
+			return
 		}
 
 		if OptPostData != "" && OptDefault {
-			panic("Data OR default flag are mutually exclusive (use --data OR --default)")
+			printErrString("Data OR default flag are mutually exclusive (use --data OR --default)")
+			return
 		}
 
 		var claim models.ClaimsMappingPolicy
@@ -61,13 +65,15 @@ var claimCreateCmd = &cobra.Command{
 		if OptPostData != "" {
 			err := json.Unmarshal([]byte(OptPostData), &claim)
 			if err != nil {
-				panic(err)
+				printErr(err)
+				return
 			}
 		}
 
 		id, err := Client.CreateClaimsMappingPolicy(&claim, clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 		claim.ID = id
 

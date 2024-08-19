@@ -12,7 +12,8 @@ var apptemplateGetCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		application, err := Client.GetApplicationTemplate(OptID, clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 
 		cmd.Printf("ApplicationTemplate: %s\n", OutputJSON(application))

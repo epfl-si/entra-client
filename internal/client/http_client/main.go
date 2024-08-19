@@ -9,12 +9,14 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 )
 
+// HTTPClient is the client to the Microsoft Graph API
 type HTTPClient struct {
 	AccessToken string
 	BaseURL     string
@@ -26,6 +28,7 @@ type HTTPClient struct {
 	Log         *zap.Logger
 }
 
+// New creates a new HTTPClient
 func New() (*HTTPClient, error) {
 	var c HTTPClient
 
@@ -91,6 +94,7 @@ func buildQueryString(opts models.ClientOptions) string {
 	return qs + strings.Join(parameters, "&")
 }
 
+// GetConfig gets the configuration from the environment variables
 func (c *HTTPClient) GetConfig() error {
 	godotenv.Load()
 
@@ -126,4 +130,11 @@ func getBody(response *http.Response) string {
 	body, _ := io.ReadAll(io.Reader(response.Body))
 
 	return string(body)
+}
+
+func normalizeThumbprint(thumbprint string) string {
+	re, _ := regexp.Compile(`[\s\-]`)
+	thumbprint = re.ReplaceAllString(thumbprint, "")
+
+	return thumbprint
 }

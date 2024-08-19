@@ -16,12 +16,14 @@ Exqample:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if OptClaimPolicyID == "" {
-			panic("Claim Policy ID is required (use --claimpolicyid)")
+			printErrString("Claim Policy ID is required (use --claimpolicyid)")
+			return
 		}
 
 		err := Client.DeleteClaimsMappingPolicy(OptClaimPolicyID, clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 	},
 }

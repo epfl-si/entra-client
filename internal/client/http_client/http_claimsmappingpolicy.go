@@ -53,7 +53,10 @@ func (c *HTTPClient) CreateClaimsMappingPolicy(claimspolicy *models.ClaimsMappin
 		c.Log.Sugar().Debugf("CreateClaimsMappingPolicy() - Body: %s\n", string(body))
 		return "", err
 	}
-	c.Log.Sugar().Debugf("CreateClaimsMappingPolicy() - Response: %+v\n", claims)
+
+	if opts.Debug {
+		c.Log.Sugar().Debugf("CreateClaimsMappingPolicy() - Response: %+v\n", claims)
+	}
 
 	return claims.ID, nil
 }
@@ -223,9 +226,9 @@ func (c *HTTPClient) PatchClaimsMappingPolicy(id string, app *models.ClaimsMappi
 }
 
 // UpdateClaimsMappingPolicy updates a claims mapping policy and returns an error
-func (c *HTTPClient) UpdateClaimsMappingPolicy(app *models.ClaimsMappingPolicy, options models.ClientOptions) (err error) {
-	return errors.New("not implemented")
-}
+// func (c *HTTPClient) UpdateClaimsMappingPolicy(app *models.ClaimsMappingPolicy, options models.ClientOptions) (err error) {
+// 	return errors.New("not implemented")
+// }
 
 // WaitClaimsMappingPolicy waits for a claims mapping policy to be created and returns an error
 //

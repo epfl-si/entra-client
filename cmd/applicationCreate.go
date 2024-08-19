@@ -3,6 +3,7 @@ package cmd
 
 import (
 	"epfl-entra/internal/models"
+	"errors"
 
 	"github.com/spf13/cobra"
 )
@@ -19,7 +20,8 @@ Example:
 	Run: func(cmd *cobra.Command, args []string) {
 		var app models.Application
 		if OptDisplayName == "" {
-			cobra.CheckErr("Name is required (use --displayname)")
+			printErr(errors.New("Name is required (use --displayname)"))
+			return
 		}
 
 		// Configure app
@@ -30,12 +32,14 @@ Example:
 
 		newApp, err := Client.CreateApplication(&app, clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 
 		err = Client.WaitApplication(newApp.ID, 60, clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 
 		sp, err := Client.CreateServicePrincipal(&models.ServicePrincipal{
@@ -46,7 +50,8 @@ Example:
 			},
 			ServicePrincipalType: "Application"}, clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 		cmd.Printf("Application created: %+v\n", sp)
 	},

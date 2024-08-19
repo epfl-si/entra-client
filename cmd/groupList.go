@@ -12,7 +12,8 @@ var groupListCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		groups, _, err := Client.GetGroups(clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 
 		for _, group := range groups {

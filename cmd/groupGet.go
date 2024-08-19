@@ -12,7 +12,8 @@ var groupGetCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		group, err := Client.GetGroup(OptID, clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 
 		cmd.Printf("Group: %s\n", OutputJSON(group))

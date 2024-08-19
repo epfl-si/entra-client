@@ -12,7 +12,8 @@ var applicationSAMLUserListCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		sp, err := Client.GetServicePrincipal(OptID, clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 		for _, user := range sp.AppRoles {
 			cmd.Println(OutputJSON(user))

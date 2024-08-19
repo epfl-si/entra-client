@@ -1,7 +1,11 @@
 // Package client provides the client interface for the application
 package client
 
-import "epfl-entra/internal/models"
+import (
+	"epfl-entra/internal/models"
+
+	"github.com/crewjam/saml"
+)
 
 type Service interface {
 	InstantiateApplicationTemplate(id, name string, options models.ClientOptions) (application *models.Application, servicePrincipal *models.ServicePrincipal, err error)
@@ -25,6 +29,8 @@ type Service interface {
 	GetGroup(id string, options models.ClientOptions) (groups *models.Group, err error)
 	GetGroups(options models.ClientOptions) (groups []*models.Group, nextURL string, err error)
 
+	AddCertificateToServicePrincipal(servicePrincipalID string, base64 string, options models.ClientOptions) (err error)
+	AddKeyToServicePrincipal(servicePrincipalID string, keyCredential saml.KeyDescriptor, options models.ClientOptions) (err error)
 	AssignAppRoleToServicePrincipal(assignment *models.AppRoleAssignment, options models.ClientOptions) (err error)
 	AssignClaimsPolicyToServicePrincipal(claimsPolicyID, servicePrincipalID string) (err error)
 	CreateServicePrincipal(app *models.ServicePrincipal, options models.ClientOptions) (newServicePrincipal *models.ServicePrincipal, err error)

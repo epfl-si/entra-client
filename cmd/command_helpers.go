@@ -1,31 +1,30 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"epfl-entra/internal/models"
 	"fmt"
+	"os"
+	"regexp"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 )
 
 // CreateApplication create an application
-func createApplication(name string, clientOptions models.ClientOptions) (*models.Application, *models.ServicePrincipal, error) {
-	app := &models.Application{
-		DisplayName: name,
-	}
+func createApplication(app *models.Application, clientOptions models.ClientOptions) (*models.Application, *models.ServicePrincipal, error) {
 
 	newApp, err := Client.CreateApplication(app, clientOptions)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("CreateApplication: %w", err)
 	}
 
 	err = Client.WaitApplication(newApp.ID, 60, clientOptions)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("WaitApplication: %w", err)
 	}
-
-	fmt.Println("Application created")
 
 	sp, err := Client.CreateServicePrincipal(&models.ServicePrincipal{
 		AppID: newApp.AppID,
@@ -36,10 +35,8 @@ func createApplication(name string, clientOptions models.ClientOptions) (*models
 		ServicePrincipalType: "Application"}, clientOptions)
 
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("CreateServicePrincipal: %W", err)
 	}
-
-	fmt.Println("Service Principal created")
 
 	return newApp, sp, nil
 }
@@ -68,8 +65,17 @@ func OutputJSON(data interface{}) string {
 	if err != nil {
 		panic(err)
 	}
+	result := string(jdata)
+	if OptPrettyJSON {
+		var out bytes.Buffer
+		err := json.Indent(&out, []byte(result), "", "  ")
+		if err != nil {
+			panic(err)
+		}
+		result = out.String()
+	}
 
-	return string(jdata)
+	return result
 }
 
 // addCertificate adds a certificate to a Service Principal
@@ -77,14 +83,22 @@ func OutputJSON(data interface{}) string {
 //   - certUsage: the certificate usage (e.g. 'Verify'/'Sign')
 //   - certType: the certificate type	(e.g. 'AsymmetricX509Cert')
 //   - certBase64: the certificate in base64 format
+//
+// Resources:
+// - https://github.com/MicrosoftDocs/azure-docs/issues/58484
+// (Why Graph API is really misleading)
 func addCertificate(spID string, certUsage, certType, certBase64 string, clientOptions models.ClientOptions) error {
+
+	if certUsage != "Verify" && certUsage != "Sign" {
+		return fmt.Errorf("Invalid certificate usage: %s", certUsage)
+	}
 
 	sp, err := Client.GetServicePrincipal(spID, clientOptions)
 	if err != nil {
-		return err
+		return fmt.Errorf("could'nt get sp: %w", err)
 	}
 
-	spKeyCredentials := []models.KeyCredential{}
+	keyCredentials := []models.KeyCredential{}
 
 	startDateTime := time.Now()
 	startDateTime, _ = time.Parse(time.RFC3339, startDateTime.String())
@@ -94,49 +108,65 @@ func addCertificate(spID string, certUsage, certType, certBase64 string, clientO
 	// Weird bug due to Timezone, can make end date off of few hours
 
 	// Build new KeyCredential
-	// keyID := uuid.Must(uuid.NewRandom()).String()
-	newCredential := models.KeyCredential{
-		// KeyIdentifier: "key1",
+	keyID := NormalizeThumbprint(uuid.Must(uuid.NewRandom()).String())
+	newKeyCredential := models.KeyCredential{
+		CustomKeyIdentifier: keyID,
 		// EndDateTime: endDateTime,
 		// KeyId:         keyID,
 		// StartDateTime: startDateTime,
 		DisplayName: sp.DisplayName + " " + certUsage + "ing certificate",
 		Usage:       certUsage,
 		Type:        certType,
-		Key:         certBase64,
+		// Key:         "base64" + certBase64,
+		// Key: []byte(certBase64),
+		Key: certBase64,
 	}
 
-	// if sp.KeyCredentials != nil {
-	// 	spKeyCredentials = sp.KeyCredentials
+	keyCredentials = append(keyCredentials, newKeyCredential)
 
-	// } else {
-	// 	spKeyCredentials = []models.KeyCredential{}
+	// Build new PasswordCredential
+	// newPasswordCredential := models.PasswordCredential{
+	// 	CustomKeyIdentifier: keyID,
+	// 	// EndDateTime: endDateTime,
+	// 	KeyID: keyID,
+	// 	// StartDateTime: startDateTime,
+	// 	DisplayName: sp.DisplayName + " " + certUsage + "ing certificate",
+	// 	// Secret text is null for signing certificates
 	// }
 
-	spKeyCredentials = append(spKeyCredentials, newCredential)
+	// if sp.KeyCredentials != nil {
+	// 	keyCredentials = sp.KeyCredentials
 
-	patchedServicePrincipal := models.ServicePrincipal{
-		KeyCredentials: spKeyCredentials,
+	// } else {
+	// 	keyCredentials = []models.KeyCredential{}
+	// }
+
+	spPatch := models.ServicePrincipal{
+		KeyCredentials: keyCredentials,
+		// PasswordCredentials: sp.PasswordCredentials,
 	}
 
-	err = Client.PatchServicePrincipal(spID, &patchedServicePrincipal, clientOptions)
+	// if certUsage == "Verify" {
+	// 	sp.PasswordCredentials = append(sp.PasswordCredentials, newPasswordCredential)
+	// 	spPatch.PasswordCredentials = sp.PasswordCredentials
+	// }
+
+	err = Client.PatchServicePrincipal(spID, &spPatch, clientOptions)
 	if err != nil {
-		return err
+		return fmt.Errorf("could'nt patch sp for KeyCredentials: %w", err)
 	}
 
 	// Get the updated Service Principal
 	sp, err = Client.GetServicePrincipal(spID, clientOptions)
 	if err != nil {
-		return err
+		return fmt.Errorf("could'nt get updated sp: %w", err)
 	}
-
-	// fmt.Printf("Service Principal %s updated with new certificate and keyCredential %+v", sp.DisplayName, sp.KeyCredentials)
 
 	// Activate the certificate by its keyId
-	err = Client.PatchServicePrincipal(OptID, &models.ServicePrincipal{PreferredTokenSigningKeyThumbprint: OptKeyName}, clientOptions)
-	if err != nil {
-		return err
-	}
+	// err = Client.PatchServicePrincipal(spID, &models.ServicePrincipal{PreferredTokenSigningKeyThumbprint: normalizeThumbprint(sp.KeyCredentials[0].CustomKeyIdentifier)}, clientOptions)
+	// if err != nil {
+	// 	return fmt.Errorf("could'nt patch sp to activate certificate: %w", err)
+	// }
 
 	return nil
 }
@@ -152,4 +182,20 @@ func hideInCommand(c *cobra.Command, flags ...string) {
 		c.Parent().HelpFunc()(command, strings)
 	})
 
+}
+
+func printErr(err error) {
+	fmt.Fprintln(os.Stderr, err)
+}
+
+func printErrString(str string) {
+	fmt.Fprintln(os.Stderr, str)
+}
+
+// NormalizeThumbprint removes spaces and dashes from a thumbprint
+func NormalizeThumbprint(thumbprint string) string {
+	re, _ := regexp.Compile(`[\s\-]`)
+	thumbprint = re.ReplaceAllString(thumbprint, "")
+
+	return thumbprint
 }

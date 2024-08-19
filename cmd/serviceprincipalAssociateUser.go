@@ -20,13 +20,16 @@ Example:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if OptPrincipalID == "" {
-			panic("PrincipalID is required (use --principalid)")
+			printErrString("PrincipalID is required (use --principalid)")
+			return
 		}
 		if OptAppRoleID == "" {
-			panic("AppRoleID is required (use --approleid)")
+			printErrString("AppRoleID is required (use --approleid)")
+			return
 		}
 		if OptID == "" {
-			panic("ID is required (use --id)")
+			printErrString("ID is required (use --id)")
+			return
 		}
 
 		assignment := &models.AppRoleAssignment{
@@ -38,7 +41,8 @@ Example:
 
 		err := Client.AssignAppRoleToServicePrincipal(assignment, clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 	},
 }

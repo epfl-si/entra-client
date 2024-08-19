@@ -5,11 +5,15 @@ import (
 	"encoding/json"
 	"epfl-entra/internal/models"
 	"epfl-entra/pkg/saml"
+	"fmt"
 
 	"github.com/spf13/cobra"
 )
 
+// OptMetadataFile is associated with the --metadata_file flag
 var OptMetadataFile string
+
+// OptLogoutURI is associated with the --logout_uri flag
 var OptLogoutURI string
 
 // applicationSAMLCreateCmd represents the applicationSAMLCreate command
@@ -29,13 +33,20 @@ var applicationSAMLCreateCmd = &cobra.Command{
 		var err error
 
 		if OptDisplayName == "" {
-			panic("Name is required (use --displayname)")
+			printErrString("Name is required (use --displayname)")
+			return
+		}
+
+		bootstrApp := &models.Application{
+			DisplayName: OptDisplayName,
+			Web:         &models.WebSection{},
 		}
 
 		if OptMetadataFile != "" {
 			m, err = saml.GetMetadata(OptMetadataFile)
 			if err != nil {
-				panic(err)
+				printErr(fmt.Errorf("getting metadata: %w", err))
+				return
 			}
 
 			if OptDebug {
@@ -55,10 +66,12 @@ var applicationSAMLCreateCmd = &cobra.Command{
 		}
 
 		if OptSAMLID == "" && OptMetadataFile == "" {
-			panic("SAML identifier is required (use --identifier or --metadata_file)")
+			printErrString("SAML identifier is required (use --identifier or --metadata_file)")
+			return
 		}
 		if OptRedirectURI == "" && OptMetadataFile == "" {
-			panic("SAML redirect URI is required (use --redirect_uri or --metadata_file)")
+			printErrString("SAML redirect URI is required (use --redirect_uri or --metadata_file)")
+			return
 		}
 
 		// Explicit flags overrides metadata file
@@ -83,21 +96,21 @@ var applicationSAMLCreateCmd = &cobra.Command{
 			cmd.Printf("Logout URI: %s\n", LogoutURI)
 		}
 
+		if RedirectURI == "" {
+			bootstrApp.Web.RedirectURISettings = []models.URI{{URI: RedirectURI, Index: 1}}
+		}
+
+		if LogoutURI != "" {
+			bootstrApp.Web.LogoutURL = LogoutURI
+		}
+
 		opts := models.ClientOptions{}
-		/*
-			// Create the applicatio from template
-			app, sp, err := Client.InstantiateApplicationTemplate("229946b9-a9fb-45b8-9531-efa47453ac9e", OptDisplayName, opts)
-			if err != nil {
-				panic(err)
-			}
 
-			err = Client.WaitServicePrincipal(sp.ID, 60, opts)
-			if err != nil {
-				panic(err)
-			}
-		*/
-
-		app, sp, err := createApplication(OptDisplayName, opts)
+		app, sp, err := createApplication(bootstrApp, opts)
+		if err != nil {
+			printErr(fmt.Errorf("createApplication: %W", err))
+			return
+		}
 
 		appPatch := &models.Application{}
 		web := &models.WebSection{}
@@ -119,7 +132,9 @@ var applicationSAMLCreateCmd = &cobra.Command{
 
 		err = Client.PatchApplication(app.ID, appPatch, opts)
 		if err != nil {
-			panic(err)
+			fmt.Printf("appPatch: %+v\n", appPatch)
+			printErr(fmt.Errorf("patching Application %s: %w", app.ID, err))
+			return
 		}
 
 		// Custom settings for Service Principal
@@ -136,7 +151,8 @@ var applicationSAMLCreateCmd = &cobra.Command{
 			ServicePrincipalNames:     spName,
 		}, opts)
 		if err != nil {
-			panic(err)
+			printErr(fmt.Errorf("patching ServicePrincipal %s: %w", sp.ID, err))
+			return
 		}
 
 		// IdentifierUris has to be set later to avoid some issues with reserved domain names
@@ -144,7 +160,8 @@ var applicationSAMLCreateCmd = &cobra.Command{
 		appPatch.IdentifierUris = []string{SAMLID}
 		err = Client.PatchApplication(app.ID, appPatch, opts)
 		if err != nil {
-			panic(err)
+			printErr(fmt.Errorf("patching Application %s: %w", app.ID, err))
+			return
 		}
 
 		claims := &models.ClaimsMappingPolicy{
@@ -155,19 +172,47 @@ var applicationSAMLCreateCmd = &cobra.Command{
 
 		claimsID, err := Client.CreateClaimsMappingPolicy(claims, opts)
 		if err != nil {
-			panic(err)
+			printErr(fmt.Errorf("Creating ClaimsPolicy %s: %w", claimsID, err))
+			return
 		}
 
 		err = Client.AssignClaimsPolicyToServicePrincipal(claimsID, sp.ID)
 		if err != nil {
-			panic(err)
+			printErr(fmt.Errorf("Assign ClaimsPolicy %s to ServicePrincipal %s: %w", claimsID, sp.ID, err))
+			return
 		}
 
-		for _, crt := range m.SPSSODescriptors[0].KeyDescriptors {
-			use := map[string]string{"signing": "Verify", "encryption": "Encrypt"}
-			err = addCertificate(sp.ID, use[crt.Use], "AsymmetricX509Cert", crt.KeyInfo.X509Data.X509Certificates[0].Data, opts)
-			if err != nil {
-				panic(err)
+		// use := map[string]string{"signing": "Verify", "encryption": "Sign"}
+		for _, desc := range m.SPSSODescriptors {
+			for _, crt := range desc.KeyDescriptors {
+
+				// err = Client.AddKeyToServicePrincipal(sp.ID, crt, opts)
+				// if err != nil {
+				// 	printErr(fmt.Errorf("could'nt add key: %W", err))
+				// 	return
+				// }
+
+				fmt.Print("\n\n    Adding " + crt.Use + " certificate\n")
+
+				// Original from metadata
+				err = Client.AddCertificateToServicePrincipal(sp.ID, crt.KeyInfo.X509Data.X509Certificates[0].Data, opts)
+				if err != nil {
+					printErr(fmt.Errorf("could'nt add certificate: %W", err))
+					return
+				}
+
+				// New way Create both Sign/Verify certificates
+				// err = addCertificate(app.ID, sp.ID, "Verify", "AsymmetricX509Cert", crt.KeyInfo.X509Data.X509Certificates[0].Data, opts)
+				// if err != nil {
+				// 	printErr(fmt.Errorf("could'nt add SIGN certificate: %W", err))
+				// 	return
+				// }
+				// err = addCertificate(app.ID, sp.ID, "Sign", "AsymmetricX509Cert", crt.KeyInfo.X509Data.X509Certificates[0].Data, opts)
+				// if err != nil {
+				// 	printErr(fmt.Errorf("could'nt add VERIFY certificate: %W", err))
+				// 	return
+				// }
+
 			}
 		}
 	},

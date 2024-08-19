@@ -1,4 +1,3 @@
-// Package cmd provides the commands for the command line application
 package httpengine
 
 import (

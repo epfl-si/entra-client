@@ -10,13 +10,13 @@ var applicationGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Get an application by ID",
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Println("applicationGet called")
 		application, err := Client.GetApplication(OptID, clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 
-		cmd.Printf("Application: %s\n", OutputJSON(application))
+		cmd.Println(OutputJSON(application))
 	},
 }
 

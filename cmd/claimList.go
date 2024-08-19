@@ -12,7 +12,8 @@ var claimListCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		claims, _, err := Client.GetClaimsMappingPolicies(clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 
 		for _, claim := range claims {

@@ -12,7 +12,8 @@ var applicationListCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		applications, _, err := Client.GetApplications(clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 
 		for _, application := range applications {

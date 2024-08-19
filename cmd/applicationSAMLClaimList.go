@@ -16,12 +16,14 @@ Example:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if OptID == "" {
-			panic("Service Principal ID is required (use --id)")
+			printErrString("Service Principal ID is required (use --id)")
+			return
 		}
 
 		cmps, _, err := Client.GetClaimsMappingPoliciesForServicePrincipal(OptID, clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 
 		for _, cmp := range cmps {

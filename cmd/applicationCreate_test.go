@@ -16,9 +16,9 @@ func Test_applicationCreate(t *testing.T) {
 	rootCmd.SetArgs([]string{"application", "create"})
 	rootCmd.Execute()
 
-	expected_out := "application called\n"
-	expected_err := ""
+	expectedOut := "application called\n"
+	expectedErr := ""
 
-	assert.Equal(t, expected_out, out.String(), "actual is not expected")
-	assert.Equal(t, expected_err, err.String(), "actual is not expected")
+	assert.Equal(t, expectedOut, out.String(), "actual is not expected")
+	assert.Equal(t, expectedErr, err.String(), "actual is not expected")
 }

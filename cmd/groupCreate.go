@@ -21,11 +21,13 @@ Example:
 		var group models.Group
 		err := json.Unmarshal([]byte(OptPostData), &group)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 		err = Client.CreateGroup(&group, clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 	},
 }

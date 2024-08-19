@@ -2,7 +2,6 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"epfl-entra/internal/client"
@@ -37,6 +36,9 @@ var OptPaging bool
 // OptPostData is associated with the --post flag
 var OptPostData string
 
+// OptPrettyJSON is associated with the --pretty_json flag
+var OptPrettyJSON bool
+
 // OptSearch is associated with the --search flag
 var OptSearch string
 
@@ -66,29 +68,32 @@ var rootCmd = &cobra.Command{
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		var err error
 		if OptEngine == "sdk" {
-			panic("SDK engine is not implemented")
+			printErrString("SDK engine is not implemented")
+			return
 			// Client, err = sdkengine.New()
 			// if err != nil {
 			// 	panic(err)
 			// }
-		} else {
-			if OptDebug {
-				fmt.Fprintf(os.Stderr, "ENGINE: %s\n", OptEngine)
-			}
-
-			Client, err = httpengine.New()
-			if err != nil {
-				panic(err)
-			}
 		}
 		if OptDebug {
-			fmt.Fprintf(os.Stderr, "Search: %s\n", OptSearch)
-			fmt.Fprintf(os.Stderr, "Skip: %s\n", OptSkip)
-			fmt.Fprintf(os.Stderr, "Top: %s\n", OptTop)
-			fmt.Fprintf(os.Stderr, "Select: %s\n", OptSelect)
+			printErrString("ENGINE: " + OptEngine + "\n")
+		}
+
+		Client, err = httpengine.New()
+		if err != nil {
+			printErr(err)
+			return
 		}
 
 		clientOptions = models.ClientOptions{}
+
+		if OptDebug {
+			clientOptions.Debug = true
+			printErrString("Search: " + OptSearch + "\n")
+			printErrString("Skip: " + OptSkip + "\n")
+			printErrString("Top: " + OptTop + "\n")
+			printErrString("Select: " + OptSelect + "\n")
+		}
 
 		if OptSearch != "" {
 			clientOptions.Search = OptSearch
@@ -142,6 +147,7 @@ func init() {
 	// rootCmd.PersistentFlags().StringVar(&OptEngine, "engine", "rest", "Engine to use ('sdk' or 'rest')")
 	rootCmd.PersistentFlags().StringVar(&OptID, "id", "", "Id to use")
 	rootCmd.PersistentFlags().StringVar(&OptPostData, "post", "", "Post body data")
+	rootCmd.PersistentFlags().BoolVar(&OptPrettyJSON, "pretty_json", false, "JSON pretty output")
 	rootCmd.PersistentFlags().StringVar(&OptSearch, "search", "", "Search filter in the form of 'propery:value'")
 	rootCmd.PersistentFlags().StringVar(&OptSelect, "select", "", "Comma separated list of properties to be returnded for each object")
 	rootCmd.PersistentFlags().StringVar(&OptSkip, "skip", "", "Number of results to skip")

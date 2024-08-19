@@ -12,7 +12,8 @@ var applicationDeleteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err := Client.DeleteApplication(OptID, clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 	},
 }

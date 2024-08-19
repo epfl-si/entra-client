@@ -26,25 +26,38 @@ Example:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if OptDisplayName == "" {
-			panic("Name is required (use --displayname)")
+			printErrString("Name is required (use --displayname)")
+			return
 		}
 		if OptRedirectURI == "" {
-			panic("Callback URL is required (use --redirect_uri)")
+			printErrString("Callback URL is required (use --redirect_uri)")
+			return
 		}
 		client, err := httpengine.New()
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
+
+		bootstrApp := &models.Application{
+			DisplayName: OptDisplayName,
+			Web: &models.WebSection{
+				RedirectURISettings: []models.URI{{URI: OptRedirectURI, Index: 1}},
+			},
+		}
+
 		opts := models.ClientOptions{}
 
-		app, sp, err := createApplication(OptDisplayName, opts)
+		app, sp, err := createApplication(bootstrApp, opts)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 
 		secret, err := client.AddPasswordToApplication(app.ID, OptDisplayName+" secret", opts)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 
 		cmd.Printf("Application ID: %s\n\n\n", OutputJSON(app))
@@ -61,7 +74,8 @@ Example:
 
 		err = Client.PatchApplication(app.ID, appPatch, opts)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 
 		// By default, use grant type: Authorization Code Flow with PKCE.
@@ -78,7 +92,8 @@ Example:
 
 		err = client.PatchServicePrincipal(sp.ID, spPatch, opts)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 	},
 }

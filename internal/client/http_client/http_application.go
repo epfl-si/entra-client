@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"epfl-entra/internal/models"
 	"errors"
+	"fmt"
 	"time"
 
 	"io"
@@ -253,13 +254,12 @@ func (c *HTTPClient) PatchApplication(id string, app *models.Application, opts m
 
 	response, err := c.RestClient.Patch("/applications/"+id, u, h)
 	if err != nil {
-		return err
+		return fmt.Errorf("Rest Patch %s: %w", id, err)
 	}
 
 	if response.StatusCode != 204 {
-		c.Log.Sugar().Debugf("PatchApplication() - Response: %#v\n", response)
-		c.Log.Sugar().Debugf("PatchApplication() - Body: %s\n", getBody(response))
-		return errors.New(response.Status)
+		fmt.Printf("PatchApplication() - Body: %#v\n", getBody(response))
+		return errors.New("Rest Patch " + id + " unexpected status code " + response.Status)
 	}
 
 	return nil
@@ -285,7 +285,9 @@ func (c *HTTPClient) WaitApplication(id string, timeout int, options models.Clie
 		c.Log.Sugar().Debugf("WaitApplication() - Duration: %d - Error: %s\n", duration, err)
 	}
 
-	c.Log.Sugar().Debugf("WaitApplication() - ID: %d \n", id)
+	if options.Debug {
+		c.Log.Sugar().Debugf("WaitApplication() - ID: %d \n", id)
+	}
 	if duration >= timeout {
 		return errors.New("timeout")
 	}
@@ -294,6 +296,6 @@ func (c *HTTPClient) WaitApplication(id string, timeout int, options models.Clie
 }
 
 // UpdateApplication updates an application and returns an error
-func (c *HTTPClient) UpdateApplication(app *models.Application, options models.ClientOptions) (err error) {
-	return errors.New("not implemented")
-}
+// func (c *HTTPClient) UpdateApplication(app *models.Application, options models.ClientOptions) (err error) {
+// 	return errors.New("not implemented")
+// }

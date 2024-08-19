@@ -24,11 +24,13 @@ var applicationSAMLUserAddCmd = &cobra.Command{
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if OptID == "" {
-			panic("Service Principal ID is required (use --id)")
+			printErrString("Service Principal ID is required (use --id)")
+			return
 		}
 
 		if OptUserID == "" {
-			panic("UserID is required (use --userID)")
+			printErrString("UserID is required (use --userID)")
+			return
 		}
 
 		assignment := models.AppRoleAssignment{
@@ -40,7 +42,8 @@ var applicationSAMLUserAddCmd = &cobra.Command{
 
 		err := Client.AssignAppRoleToServicePrincipal(&assignment, clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 	},
 }

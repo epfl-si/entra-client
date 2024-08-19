@@ -63,6 +63,6 @@ type ServicePrincipal struct {
 	Info                               *Info                   `json:"info,omitempty"`
 	KeyCredentials                     []KeyCredential         `json:"keyCredentials,omitempty"`
 	OAuth2PermissionScopes             []OAuth2PermissionScope `json:"oauth2PermissionScopes,omitempty"`
-	PasswordCredentials                []interface{}           `json:"passwordCredentials,omitempty"`
+	PasswordCredentials                []PasswordCredential    `json:"passwordCredentials,omitempty"`
 	VerifiedPublisher                  *VerifiedPublisher      `json:"verifiedPublisher,omitempty"`
 }

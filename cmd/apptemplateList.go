@@ -17,7 +17,8 @@ var apptemplateListCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		apptemplates, _, err := Client.GetApplicationTemplates(clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 
 		for _, apptemplate := range apptemplates {

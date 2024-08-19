@@ -15,7 +15,8 @@ var apptemplateInstantiateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		app, sp, err := Client.InstantiateApplicationTemplate(OptID, OptDisplayName, clientOptions)
 		if err != nil {
-			panic(err)
+			printErr(err)
+			return
 		}
 		cmd.Printf("Application: %s\n", OutputJSON(app))
 		cmd.Printf("ServicePrincipal: %s\n", OutputJSON(sp))
