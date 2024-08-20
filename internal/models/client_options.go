@@ -5,6 +5,7 @@ package models
 type ClientOptions struct {
 	Batch     string
 	Debug     bool
+	Filter    string
 	Paging    bool
 	Search    string
 	Select    string

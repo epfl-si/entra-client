@@ -13,12 +13,12 @@ var serviceprincipalGetCmd = &cobra.Command{
 		if OptID == "" {
 			panic("Service Principal ID is required (use --id)")
 		}
-		user, err := Client.GetServicePrincipal(OptID, clientOptions)
+		sp, err := Client.GetServicePrincipal(OptID, clientOptions)
 		if err != nil {
 			panic(err)
 		}
 
-		cmd.Println(OutputJSON(user))
+		cmd.Println(OutputJSON(sp))
 	},
 }
 

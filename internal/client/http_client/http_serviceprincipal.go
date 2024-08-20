@@ -42,10 +42,12 @@ func (c *HTTPClient) AddCertificateToServicePrincipal(id string, certBase64 stri
 
 	keyCredentials := []models.KeyCredential{}
 
-	startDateTime := time.Now()
-	startDateTime, _ = time.Parse(time.RFC3339, startDateTime.String())
-	endDateTime := startDateTime.AddDate(0, 0, 364)
-	endDateTime, _ = time.Parse(time.RFC3339, endDateTime.String())
+	startDateTime := time.Now().UTC()
+	endDateTime := startDateTime.AddDate(0, 6, 0).UTC()
+	cEndDateTime := models.CustomTime(endDateTime)
+	cStartDateTime := models.CustomTime(startDateTime)
+	// start = startDateTime.Format(time.RFC3339)
+	// end = endDateTime.Format(time.RFC3339)
 	// Format date to this format: "2024-01-11T15:31:26Z
 	// Weird bug due to Timezone, can make end date off of few hours
 
@@ -68,15 +70,15 @@ func (c *HTTPClient) AddCertificateToServicePrincipal(id string, certBase64 stri
 	thumbprintHex := hex.EncodeToString(thumbprint[:])
 
 	// Build new KeyCredential
-	keyID := normalizeThumbprint(uuid.Must(uuid.NewRandom()).String())
+	// keyID := normalizeThumbprint(uuid.Must(uuid.NewRandom()).String())
 	newKeyCredential := models.KeyCredential{
-		CustomKeyIdentifier: keyID,
-		// EndDateTime: endDateTime,
+		CustomKeyIdentifier: thumbprintHex,
+		EndDateTime:         &cEndDateTime,
 		// KeyId:         keyID,
-		// StartDateTime: startDateTime,
-		DisplayName: sp.DisplayName + " Verifying certificate",
-		Usage:       "Verify",
-		Type:        "AsymmetricX509Cert",
+		StartDateTime: &cStartDateTime,
+		DisplayName:   sp.DisplayName + " certificate",
+		Usage:         "Verify",
+		Type:          "AsymmetricX509Cert",
 		// Key:         "base64" + certBase64,
 		// Key: []byte(certBase64),
 		Key: certBase64,
@@ -84,31 +86,33 @@ func (c *HTTPClient) AddCertificateToServicePrincipal(id string, certBase64 stri
 
 	keyCredentials = append(keyCredentials, newKeyCredential)
 
-	// keyID = normalizeThumbprint(uuid.Must(uuid.NewRandom()).String())
+	// KeyIdentifier doesn't change
+	keyID := normalizeThumbprint(uuid.Must(uuid.NewRandom()).String())
 	// newKeyCredential.CustomKeyIdentifier = keyID
-	// newKeyCredential.Usage = "Sign"
-	// newKeyCredential.DisplayName = sp.DisplayName + " Signing certificate"
+	newKeyCredential.KeyID = keyID
+	// newKeyCredential.DisplayName = sp.DisplayName + " Verifying certificate"
+	newKeyCredential.Usage = "Sign"
 
 	// keyCredentials = append(keyCredentials, newKeyCredential)
 
 	// This has to be done with addPassword endpoint
 	// Build new PasswordCredential
-	// newPasswordCredential := models.PasswordCredential{
-	// 	CustomKeyIdentifier: keyID,
-	// 	// EndDateTime: endDateTime,
-	// 	KeyID: keyID, // Use Signing certificate keyID
-	// 	// StartDateTime: startDateTime,
-	// 	// DisplayName: sp.DisplayName + " " + certUsage + "ing certificate",
-	// 	// Secret text is null for signing certificates
-	// 	SecretText: "",
-	// }
+	newPasswordCredential := models.PasswordCredential{
+		CustomKeyIdentifier: thumbprintHex,
+		// EndDateTime: endDateTime,
+		KeyID: keyID, // Use Signing certificate keyID
+		// StartDateTime: startDateTime,
+		DisplayName: sp.DisplayName + " certificate",
+		// Secret text is null for signing certificates
+		SecretText: nil,
+	}
 
-	// passwordCredentials := []models.PasswordCredential{}
-	// passwordCredentials = append(passwordCredentials, newPasswordCredential)
+	passwordCredentials := []models.PasswordCredential{}
+	passwordCredentials = append(passwordCredentials, newPasswordCredential)
 
 	spPatch := models.ServicePrincipal{
-		KeyCredentials: keyCredentials,
-		// PasswordCredentials: passwordCredentials,
+		KeyCredentials:                     keyCredentials,
+		PasswordCredentials:                passwordCredentials,
 		PreferredTokenSigningKeyThumbprint: thumbprintHex,
 	}
 
@@ -151,18 +155,6 @@ func (c *HTTPClient) AddKeyToServicePrincipal(id string, key saml.KeyDescriptor,
 	base64Crt = re.ReplaceAllString(base64Crt, "")
 	c.Log.Sugar().Debugf("AddKeyToServicePrincipal() - base64Crt: %s\n", base64Crt)
 
-	var keyUse string
-	switch key.Use {
-	case "signing":
-		fmt.Println("Verify")
-		keyUse = "Verify"
-	case "encryption":
-		fmt.Println("Sign")
-		keyUse = "Sign"
-	default:
-		return fmt.Errorf("unknown key type: %s", key.Use)
-	}
-
 	// startDateTime := time.Now()
 	// startDateTime, _ = time.Parse(time.RFC3339, startDateTime.String())
 	// endDateTime := startDateTime.AddDate(0, 0, 364)
@@ -177,22 +169,22 @@ func (c *HTTPClient) AddKeyToServicePrincipal(id string, key saml.KeyDescriptor,
 		// StartDateTime:       &startDateTime,
 		// EndDateTime:         &endDateTime,
 		// DisplayName: sp.DisplayName + " " + keyUse + "ing certificate",
-		Usage: keyUse,
+		Usage: "Sign",
 		Type:  "AsymmetricX509Cert",
 		Key:   base64Crt,
 		// Key: []byte(base64Crt),
 	}
 
 	type KeyCredentialSubmission struct {
-		KeyCredential                      models.KeyCredential       `json:"keyCredential"`
-		PasswordCredential                 *models.PasswordCredential `json:"passwordCredential"`
-		PreferredTokenSigningKeyThumbprint string                     `json:"preferredTokenSigningKeyThumbprint,omitempty"`
+		KeyCredential models.KeyCredential `json:"keyCredential"`
+		// PasswordCredential                 *models.PasswordCredential `json:"passwordCredential"`
+		// PreferredTokenSigningKeyThumbprint string                     `json:"preferredTokenSigningKeyThumbprint,omitempty"`
 	}
 
 	var submission KeyCredentialSubmission
 
 	submission.KeyCredential = newKeyCredential
-	submission.PasswordCredential = nil
+	// submission.PasswordCredential = nil
 
 	u, err := json.Marshal(submission)
 	if err != nil {
@@ -495,6 +487,10 @@ func (c *HTTPClient) GetServicePrincipals(opts models.ClientOptions) ([]*models.
 
 	h := c.buildHeaders(opts)
 
+	if opts.Debug {
+		c.Log.Sugar().Debugf("GetServicePrincipals() - 1 - Calling: /serviceprincipals%s\n", buildQueryString(opts))
+	}
+
 	response, err := c.RestClient.Get("/serviceprincipals"+buildQueryString(opts), h)
 
 	for {
@@ -565,7 +561,7 @@ func (c *HTTPClient) PatchServicePrincipal(id string, app *models.ServicePrincip
 	h["Content-Type"] = "application/json"
 
 	response, err := c.RestClient.Patch("/servicePrincipals/"+id, u, h)
-	// c.Log.Sugar().Debugf("PatchServicePrincipal() - Body: %s\n", u)
+	c.Log.Sugar().Debugf("PatchServicePrincipal() - Body: %s\n", u)
 	// c.Log.Sugar().Debugf("PatchServicePrincipal() - Response: %#v\n", response)
 	// body, err := io.ReadAll(io.Reader(response.Body))
 	// c.Log.Sugar().Debugf("PatchServicePrincipal() - Response: %s\n", string(body))

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"epfl-entra/internal/models"
 	"fmt"
+	"io"
 	"os"
 	"regexp"
 	"time"
@@ -198,4 +199,35 @@ func NormalizeThumbprint(thumbprint string) string {
 	thumbprint = re.ReplaceAllString(thumbprint, "")
 
 	return thumbprint
+}
+
+// captureOutput() redirect stdout/stderr to pipes and keep the old values
+// rout out reader, wout out writer, oldout old out writer
+// rerr err reader, werr err writer, olderr old err writer
+func captureOutput() (rout, wout, oldout, rerr, werr, olderr *os.File) {
+	oldout = os.Stdout
+	rout, wout, _ = os.Pipe()
+	os.Stdout = wout
+
+	olderr = os.Stderr
+	rerr, werr, _ = os.Pipe()
+	os.Stderr = werr
+
+	return rout, wout, oldout, rerr, werr, olderr
+}
+
+func releaseOutput(rout, wout, oldout, rerr, werr, olderr *os.File) (out, err []byte) {
+	// read output
+	wout.Close()
+	out, _ = io.ReadAll(rout)
+	rout.Close()
+	os.Stdout = oldout
+
+	// read err
+	werr.Close()
+	err, _ = io.ReadAll(rerr)
+	rerr.Close()
+	os.Stderr = olderr
+
+	return out, err
 }

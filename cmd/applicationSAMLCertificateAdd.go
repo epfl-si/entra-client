@@ -42,15 +42,17 @@ Example:
 
 		spKeyCredentials := []models.KeyCredential{}
 
-		startDateTime := time.Now()
-		endDateTime := startDateTime.AddDate(1, 0, 0)
+		startDateTime := time.Now().UTC()
+		endDateTime := startDateTime.AddDate(0, 6, 0).UTC()
+		cStartDateTime := models.CustomTime(startDateTime)
+		cEndDateTime := models.CustomTime(endDateTime)
 
 		// Build new KeyCredential
 		newCredential := models.KeyCredential{
 			CustomKeyIdentifier: OptKeyName,
-			EndDateTime:         &endDateTime,
+			EndDateTime:         &cEndDateTime,
 			KeyID:               uuid.Must(uuid.NewRandom()).String(),
-			StartDateTime:       &startDateTime,
+			StartDateTime:       &cStartDateTime,
 			DisplayName:         OptKeyName,
 			Usage:               "Verify",
 			Type:                "AsymmetricX509Cert",

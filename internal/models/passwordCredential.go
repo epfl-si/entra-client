@@ -11,5 +11,5 @@ type PasswordCredential struct {
 	Hint                string    `json:"hint,ommitEmpty"`
 	EndDateTime         time.Time `json:"endDateTime,ommitEmpty"`
 	StartDateTime       time.Time `json:"startDateTime,ommitEmpty"`
-	SecretText          string    `json:"secretText,ommitEmpty"`
+	SecretText          *string   `json:"secretText,ommitEmpty"`
 }

@@ -71,6 +71,10 @@ func buildQueryString(opts models.ClientOptions) string {
 
 	var parameters []string
 
+	if opts.Filter != "" {
+		parameters = append(parameters, "$filter="+opts.Filter)
+		opts.Top = ""
+	}
 	if opts.Search != "" {
 		parameters = append(parameters, "$search=\""+opts.Search+"\"")
 	}

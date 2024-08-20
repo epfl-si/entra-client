@@ -62,7 +62,7 @@ Example:
 
 		cmd.Printf("Application ID: %s\n\n\n", OutputJSON(app))
 		cmd.Printf("Client ID: %s\n", app.AppID)
-		cmd.Printf("Client secret: %s\n\n", secret.SecretText)
+		cmd.Printf("Client secret: %s\n\n", *secret.SecretText)
 
 		appPatch := &models.Application{}
 		web := &models.WebSection{}

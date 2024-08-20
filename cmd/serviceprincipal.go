@@ -8,7 +8,7 @@ import (
 // serviceprincipalCmd represents the serviceprincipal command
 var serviceprincipalCmd = &cobra.Command{
 	Use:   "serviceprincipal",
-	Short: "Manage service principasl",
+	Short: "Manage service principals",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Println("serviceprincipal called")
 	},

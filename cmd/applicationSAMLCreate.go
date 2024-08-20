@@ -17,6 +17,9 @@ var OptMetadataFile string
 var OptLogoutURI string
 
 // applicationSAMLCreateCmd represents the applicationSAMLCreate command
+// Resources:
+// - https://github.com/MicrosoftDocs/azure-docs/issues/59275
+// - https://learn.microsoft.com/en-us/graph/application-saml-sso-configure-api?tabs=http%2Cpowershell-script
 var applicationSAMLCreateCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a SAML application",
@@ -186,18 +189,19 @@ var applicationSAMLCreateCmd = &cobra.Command{
 		for _, desc := range m.SPSSODescriptors {
 			for _, crt := range desc.KeyDescriptors {
 
-				// err = Client.AddKeyToServicePrincipal(sp.ID, crt, opts)
-				// if err != nil {
-				// 	printErr(fmt.Errorf("could'nt add key: %W", err))
-				// 	return
-				// }
-
 				fmt.Print("\n\n    Adding " + crt.Use + " certificate\n")
 
 				// Original from metadata
 				err = Client.AddCertificateToServicePrincipal(sp.ID, crt.KeyInfo.X509Data.X509Certificates[0].Data, opts)
 				if err != nil {
 					printErr(fmt.Errorf("could'nt add certificate: %W", err))
+					return
+				}
+
+				fmt.Print("\n\n    Adding key\n")
+				err = Client.AddKeyToServicePrincipal(sp.ID, crt, opts)
+				if err != nil {
+					printErr(fmt.Errorf("could'nt add key: %W", err))
 					return
 				}
 
