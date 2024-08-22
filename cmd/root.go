@@ -140,6 +140,9 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
+	// By default, cmd.Printxxx() functions print to os.Stderr
+	rootCmd.SetOut(os.Stdout)
+
 	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.epfl-entra.yaml)")
 	rootCmd.PersistentFlags().BoolVar(&OptDebug, "debug", false, "Debug mode")
 	rootCmd.PersistentFlags().StringVar(&OptBatch, "batch", "900", "Default batch size for client side paging")
@@ -169,12 +172,14 @@ func init() {
 
 	tenant := os.Getenv("ENTRA_TENANT")
 	if tenant == "" {
-		panic("ENTRA_TENANT is not set")
+		printErrString("ENTRA_TENANT is not set")
+		return
 	}
 
 	clientID := os.Getenv("ENTRA_CLIENTID")
 	if clientID == "" {
-		panic("ENTRA_CLIENTID is not set")
+		printErrString("ENTRA_CLIENTID is not set")
+		return
 	}
 
 	// Accept empty token (will be retrived by credentials)
