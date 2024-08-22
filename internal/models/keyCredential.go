@@ -44,3 +44,8 @@ func (ct *CustomTime) UnmarshalJSON(b []byte) error {
 	*ct = CustomTime(t)
 	return nil
 }
+
+// String converts CustomTime to a string
+func (ct *CustomTime) String(b []byte) string {
+	return time.Time(*ct).String()
+}

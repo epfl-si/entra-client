@@ -30,6 +30,6 @@ func init() {
 		manifestCmd.Flags().MarkHidden("skiptoken")
 		manifestCmd.Flags().MarkHidden("top")
 		// Call parent help func
-		command.Parent().HelpFunc()(command, strings)
+		manifestCmd.Parent().HelpFunc()(command, strings)
 	})
 }

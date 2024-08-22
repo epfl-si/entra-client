@@ -3,7 +3,6 @@ package rest
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 )
 
@@ -32,7 +31,6 @@ func (c *Client) Get(path string, headers Headers) (*http.Response, error) {
 	} else {
 		url = c.BaseURL + path
 	}
-	fmt.Println(url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err

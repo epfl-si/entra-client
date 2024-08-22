@@ -74,6 +74,8 @@ func (c *HTTPClient) AddCertificateToServicePrincipal(id string, certBase64 stri
 	newKeyCredential := models.KeyCredential{
 		CustomKeyIdentifier: thumbprintHex,
 		EndDateTime:         &cEndDateTime,
+		// TODO ********** use cert expiration date ****************
+		// EndDateTime:         (*models.CustomTime)(&cert.NotAfter),
 		// KeyId:         keyID,
 		StartDateTime: &cStartDateTime,
 		DisplayName:   sp.DisplayName + " certificate",
