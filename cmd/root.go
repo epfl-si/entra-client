@@ -54,11 +54,11 @@ var OptSkipToken string
 // OptTop is associated with the --top flag
 var OptTop string
 
-// clientOptions is the options (from command line) passed to the client
-var clientOptions models.ClientOptions
+// ClientOptions is the options (from command line) passed to the client
+var ClientOptions models.ClientOptions
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
+// RootCmd represents the base command when called without any subcommands
+var RootCmd = &cobra.Command{
 	Use:   "ecli",
 	Short: "Entra API command line client",
 	Long:  `ecli is a command line tool that enables you to interact with Entra API`,
@@ -68,68 +68,69 @@ var rootCmd = &cobra.Command{
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		var err error
 		if OptEngine == "sdk" {
-			printErrString("SDK engine is not implemented")
+			PrintErrString("SDK engine is not implemented")
 			return
 			// Client, err = sdkengine.New()
 			// if err != nil {
-			// 	panic(err)
+			// 	printErr(err)
+			//  return
 			// }
 		}
 		if OptDebug {
-			printErrString("ENGINE: " + OptEngine + "\n")
+			PrintErrString("ENGINE: " + OptEngine + "\n")
 		}
 
 		Client, err = httpengine.New()
 		if err != nil {
-			printErr(err)
+			PrintErr(err)
 			return
 		}
 
-		clientOptions = models.ClientOptions{}
+		ClientOptions = models.ClientOptions{}
 
 		if OptDebug {
-			clientOptions.Debug = true
-			printErrString("Search: " + OptSearch + "\n")
-			printErrString("Skip: " + OptSkip + "\n")
-			printErrString("Top: " + OptTop + "\n")
-			printErrString("Select: " + OptSelect + "\n")
+			ClientOptions.Debug = true
+			PrintErrString("Search: " + OptSearch + "\n")
+			PrintErrString("Skip: " + OptSkip + "\n")
+			PrintErrString("Top: " + OptTop + "\n")
+			PrintErrString("Select: " + OptSelect + "\n")
 		}
 
 		if OptSearch != "" {
-			clientOptions.Search = OptSearch
+			ClientOptions.Search = OptSearch
 		}
 
 		if OptSelect != "" {
-			clientOptions.Select = OptSelect
-			clientOptions.Paging = true
+			ClientOptions.Select = OptSelect
+			ClientOptions.Paging = true
 		}
 
 		if OptSkip != "" {
-			clientOptions.Skip = OptSkip
-			clientOptions.Paging = true
+			ClientOptions.Skip = OptSkip
+			ClientOptions.Paging = true
 		}
 
 		if OptSkipToken != "" {
-			clientOptions.SkipToken = OptSkipToken
-			clientOptions.Paging = true
+			ClientOptions.SkipToken = OptSkipToken
+			ClientOptions.Paging = true
 		}
 
 		if OptTop != "" {
-			clientOptions.Top = OptTop
-			clientOptions.Paging = true
+			ClientOptions.Top = OptTop
+			ClientOptions.Paging = true
 		}
 
 		if OptBatch != "" && OptTop == "" {
-			clientOptions.Top = OptBatch
-			clientOptions.Paging = false
+			ClientOptions.Top = OptBatch
+			ClientOptions.Paging = false
 		}
 	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
+// This is called by main.main(). It only needs to happen once to the RootCmd.
 func Execute() {
-	err := rootCmd.Execute()
+	err := RootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
 	}
@@ -141,25 +142,25 @@ func init() {
 	// will be global for your application.
 
 	// By default, cmd.Printxxx() functions print to os.Stderr
-	rootCmd.SetOut(os.Stdout)
+	RootCmd.SetOut(os.Stdout)
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.epfl-entra.yaml)")
-	rootCmd.PersistentFlags().BoolVar(&OptDebug, "debug", false, "Debug mode")
-	rootCmd.PersistentFlags().StringVar(&OptBatch, "batch", "900", "Default batch size for client side paging")
-	rootCmd.PersistentFlags().StringVar(&OptDisplayName, "displayname", "", "Display name")
-	// rootCmd.PersistentFlags().StringVar(&OptEngine, "engine", "rest", "Engine to use ('sdk' or 'rest')")
-	rootCmd.PersistentFlags().StringVar(&OptID, "id", "", "Id to use")
-	rootCmd.PersistentFlags().StringVar(&OptPostData, "post", "", "Post body data")
-	rootCmd.PersistentFlags().BoolVar(&OptPrettyJSON, "pretty_json", false, "JSON pretty output")
-	rootCmd.PersistentFlags().StringVar(&OptSearch, "search", "", "Search filter in the form of 'propery:value'")
-	rootCmd.PersistentFlags().StringVar(&OptSelect, "select", "", "Comma separated list of properties to be returnded for each object")
-	rootCmd.PersistentFlags().StringVar(&OptSkip, "skip", "", "Number of results to skip")
-	rootCmd.PersistentFlags().StringVar(&OptSkipToken, "skiptoken", "", "Paging token")
-	rootCmd.PersistentFlags().StringVar(&OptTop, "top", "", "Number results to return ('top n results')")
+	// RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.epfl-entra.yaml)")
+	RootCmd.PersistentFlags().BoolVar(&OptDebug, "debug", false, "Debug mode")
+	RootCmd.PersistentFlags().StringVar(&OptBatch, "batch", "900", "Default batch size for client side paging")
+	RootCmd.PersistentFlags().StringVar(&OptDisplayName, "displayname", "", "Display name")
+	// RootCmd.PersistentFlags().StringVar(&OptEngine, "engine", "rest", "Engine to use ('sdk' or 'rest')")
+	RootCmd.PersistentFlags().StringVar(&OptID, "id", "", "Id to use")
+	RootCmd.PersistentFlags().StringVar(&OptPostData, "post", "", "Post body data")
+	RootCmd.PersistentFlags().BoolVar(&OptPrettyJSON, "pretty_json", false, "JSON pretty output")
+	RootCmd.PersistentFlags().StringVar(&OptSearch, "search", "", "Search filter in the form of 'propery:value'")
+	RootCmd.PersistentFlags().StringVar(&OptSelect, "select", "", "Comma separated list of properties to be returnded for each object")
+	RootCmd.PersistentFlags().StringVar(&OptSkip, "skip", "", "Number of results to skip")
+	RootCmd.PersistentFlags().StringVar(&OptSkipToken, "skiptoken", "", "Paging token")
+	RootCmd.PersistentFlags().StringVar(&OptTop, "top", "", "Number results to return ('top n results')")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	RootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	// UGLY!! Find the proper way to do this..
 	err := godotenv.Load(".env")
@@ -172,13 +173,13 @@ func init() {
 
 	tenant := os.Getenv("ENTRA_TENANT")
 	if tenant == "" {
-		printErrString("ENTRA_TENANT is not set")
+		PrintErrString("ENTRA_TENANT is not set")
 		return
 	}
 
 	clientID := os.Getenv("ENTRA_CLIENTID")
 	if clientID == "" {
-		printErrString("ENTRA_CLIENTID is not set")
+		PrintErrString("ENTRA_CLIENTID is not set")
 		return
 	}
 

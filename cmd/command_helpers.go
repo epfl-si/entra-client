@@ -15,7 +15,7 @@ import (
 )
 
 // CreateApplication create an application
-func createApplication(app *models.Application, clientOptions models.ClientOptions) (*models.Application, *models.ServicePrincipal, error) {
+func CreateApplication(app *models.Application, clientOptions models.ClientOptions) (*models.Application, *models.ServicePrincipal, error) {
 
 	newApp, err := Client.CreateApplication(app, clientOptions)
 	if err != nil {
@@ -64,14 +64,16 @@ func NormalizeURI(s string) string {
 func OutputJSON(data interface{}) string {
 	jdata, err := json.Marshal(data)
 	if err != nil {
-		panic(err)
+		PrintErr(err)
+		os.Exit(0)
 	}
 	result := string(jdata)
 	if OptPrettyJSON {
 		var out bytes.Buffer
 		err := json.Indent(&out, []byte(result), "", "  ")
 		if err != nil {
-			panic(err)
+			PrintErr(err)
+			os.Exit(0)
 		}
 		result = out.String()
 	}
@@ -79,7 +81,7 @@ func OutputJSON(data interface{}) string {
 	return result
 }
 
-// addCertificate adds a certificate to a Service Principal
+// AddCertificate adds a certificate to a Service Principal
 //   - spID: the Service Principal ID
 //   - certUsage: the certificate usage (e.g. 'Verify'/'Sign')
 //   - certType: the certificate type	(e.g. 'AsymmetricX509Cert')
@@ -88,7 +90,7 @@ func OutputJSON(data interface{}) string {
 // Resources:
 // - https://github.com/MicrosoftDocs/azure-docs/issues/58484
 // (Why Graph API is really misleading)
-func addCertificate(spID string, certUsage, certType, certBase64 string, clientOptions models.ClientOptions) error {
+func AddCertificate(spID string, certUsage, certType, certBase64 string, clientOptions models.ClientOptions) error {
 
 	if certUsage != "Verify" && certUsage != "Sign" {
 		return fmt.Errorf("Invalid certificate usage: %s", certUsage)
@@ -172,7 +174,8 @@ func addCertificate(spID string, certUsage, certType, certBase64 string, clientO
 	return nil
 }
 
-func hideInCommand(c *cobra.Command, flags ...string) {
+// HideInCommand hides flags in a command
+func HideInCommand(c *cobra.Command, flags ...string) {
 	c.SetHelpFunc(func(command *cobra.Command, strings []string) {
 		// Hide flags for this command
 		for _, flag := range flags {
@@ -185,11 +188,13 @@ func hideInCommand(c *cobra.Command, flags ...string) {
 
 }
 
-func printErr(err error) {
+// PrintErr prints an error to stderr
+func PrintErr(err error) {
 	fmt.Fprintln(os.Stderr, err)
 }
 
-func printErrString(str string) {
+// PrintErrString prints an error string to stderr
+func PrintErrString(str string) {
 	fmt.Fprintln(os.Stderr, str)
 }
 
@@ -201,10 +206,10 @@ func NormalizeThumbprint(thumbprint string) string {
 	return thumbprint
 }
 
-// captureOutput() redirect stdout/stderr to pipes and keep the old values
+// CaptureOutput redirect stdout/stderr to pipes and keep the old values
 // rout out reader, wout out writer, oldout old out writer
 // rerr err reader, werr err writer, olderr old err writer
-func captureOutput() (rout, wout, oldout, rerr, werr, olderr *os.File) {
+func CaptureOutput() (rout, wout, oldout, rerr, werr, olderr *os.File) {
 	oldout = os.Stdout
 	rout, wout, _ = os.Pipe()
 	os.Stdout = wout
@@ -216,7 +221,8 @@ func captureOutput() (rout, wout, oldout, rerr, werr, olderr *os.File) {
 	return rout, wout, oldout, rerr, werr, olderr
 }
 
-func releaseOutput(rout, wout, oldout, rerr, werr, olderr *os.File) (out, err []byte) {
+// ReleaseOutput read the ghoutput from the pipes and restore the old values
+func ReleaseOutput(rout, wout, oldout, rerr, werr, olderr *os.File) (out, err []byte) {
 	// read output
 	wout.Close()
 	out, _ = io.ReadAll(rout)

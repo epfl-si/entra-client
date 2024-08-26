@@ -195,7 +195,7 @@ func (c *HTTPClient) AddKeyToServicePrincipal(id string, key saml.KeyDescriptor,
 	var out bytes.Buffer
 	err = json.Indent(&out, []byte(u), "", "  ")
 	if err != nil {
-		panic(err)
+		return err
 	}
 	u = []byte(out.String())
 
