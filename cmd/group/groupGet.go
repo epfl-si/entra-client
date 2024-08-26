@@ -1,7 +1,7 @@
 package groupcmd
 
 import (
-	rootCmd "epfl-entra/cmd"
+	rootcmd "epfl-entra/cmd"
 
 	"github.com/spf13/cobra"
 )
@@ -11,13 +11,13 @@ var groupGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Get a group by ID",
 	Run: func(cmd *cobra.Command, args []string) {
-		group, err := rootCmd.Client.GetGroup(rootCmd.OptID, rootCmd.ClientOptions)
+		group, err := rootcmd.Client.GetGroup(rootcmd.OptID, rootcmd.ClientOptions)
 		if err != nil {
 			cmd.PrintErr(err)
 			return
 		}
 
-		cmd.Printf("Group: %s\n", rootCmd.OutputJSON(group))
+		cmd.Printf("Group: %s\n", rootcmd.OutputJSON(group))
 	},
 }
 

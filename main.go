@@ -2,6 +2,7 @@ package main
 
 import (
 	"epfl-entra/cmd"
+	_ "epfl-entra/cmd/application"
 	_ "epfl-entra/cmd/certificate"
 	_ "epfl-entra/cmd/claim"
 	_ "epfl-entra/cmd/group"

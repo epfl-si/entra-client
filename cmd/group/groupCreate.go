@@ -2,7 +2,7 @@ package groupcmd
 
 import (
 	"encoding/json"
-	rootCmd "epfl-entra/cmd"
+	rootcmd "epfl-entra/cmd"
 	"epfl-entra/internal/models"
 
 	"github.com/spf13/cobra"
@@ -19,14 +19,14 @@ Example:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		var group models.Group
-		err := json.Unmarshal([]byte(rootCmd.OptPostData), &group)
+		err := json.Unmarshal([]byte(rootcmd.OptPostData), &group)
 		if err != nil {
-			rootCmd.PrintErr(err)
+			rootcmd.PrintErr(err)
 			return
 		}
-		err = rootCmd.Client.CreateGroup(&group, rootCmd.ClientOptions)
+		err = rootcmd.Client.CreateGroup(&group, rootcmd.ClientOptions)
 		if err != nil {
-			rootCmd.PrintErr(err)
+			rootcmd.PrintErr(err)
 			return
 		}
 	},

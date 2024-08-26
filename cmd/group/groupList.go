@@ -1,7 +1,7 @@
 package groupcmd
 
 import (
-	rootCmd "epfl-entra/cmd"
+	rootcmd "epfl-entra/cmd"
 
 	"github.com/spf13/cobra"
 )
@@ -11,14 +11,14 @@ var groupListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List groups",
 	Run: func(cmd *cobra.Command, args []string) {
-		groups, _, err := rootCmd.Client.GetGroups(rootCmd.ClientOptions)
+		groups, _, err := rootcmd.Client.GetGroups(rootcmd.ClientOptions)
 		if err != nil {
 			cmd.PrintErr(err)
 			return
 		}
 
 		for _, group := range groups {
-			cmd.Println(rootCmd.OutputJSON(group))
+			cmd.Println(rootcmd.OutputJSON(group))
 		}
 	},
 }

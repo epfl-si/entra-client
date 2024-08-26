@@ -2,7 +2,7 @@
 package groupcmd
 
 import (
-	rootCmd "epfl-entra/cmd"
+	rootcmd "epfl-entra/cmd"
 
 	"github.com/spf13/cobra"
 )
@@ -25,5 +25,5 @@ var groupCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.RootCmd.AddCommand(groupCmd)
+	rootcmd.RootCmd.AddCommand(groupCmd)
 }
