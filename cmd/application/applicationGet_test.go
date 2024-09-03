@@ -17,10 +17,10 @@ func Test_applicationGet(t *testing.T) {
 		expectedErr string
 	}{
 		{
-			name:        "displayname is required",
-			args:        []string{"application", "create"},
+			name:        "ID is required",
+			args:        []string{"application", "get"},
 			expectedOut: "",
-			expectedErr: "Name is required (use --displayname)\n",
+			expectedErr: "ID is required (use --id)\n",
 		},
 	}
 

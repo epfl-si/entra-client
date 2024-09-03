@@ -17,8 +17,8 @@ func Test_applicationDelete(t *testing.T) {
 		expectedErr string
 	}{
 		{
-			name:        "displayname is required",
-			args:        []string{"application", "create"},
+			name:        "ID is required",
+			args:        []string{"application", "delete"},
 			expectedOut: "",
 			expectedErr: "Name is required (use --displayname)\n",
 		},

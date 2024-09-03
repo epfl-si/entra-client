@@ -17,7 +17,7 @@ var certificateListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List certificates",
 	Run: func(cmd *cobra.Command, args []string) {
-		rootcmd.ClientOptions.Select = "keyCredentials"
+		rootcmd.ClientOptions.Select = "keyCredentials,displayName"
 		certs := make(map[string]models.KeyCredential, 0)
 		apps := make(map[string]string, 0)
 
@@ -68,7 +68,7 @@ var certificateListCmd = &cobra.Command{
 					continue
 				}
 			}
-			fmt.Printf("KeyID: %s (%s) %s\n", cert.KeyID, time.Time(*cert.EndDateTime).String(), apps[cert.KeyID])
+			fmt.Printf("%s (%s) %s\n", cert.KeyID, time.Time(*cert.EndDateTime).String(), apps[cert.KeyID])
 		}
 	},
 }

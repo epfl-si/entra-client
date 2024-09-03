@@ -23,8 +23,13 @@ var manifestGetCmd = &cobra.Command{
 		// 	clientOptions.Select = "id,appId,appDisplayName,appOwnerOrganizationId,applicationTemplateId,deletedDateTime,accountEnabled,createdDateTime,displayName,homepage,servicePrincipalNames,signInAudience,tags,appRoleAssignmentRequired,appRoles,oauth2PermissionScopes,preferredSingleSignOnMode,preferredTokenSigningKeyThumbprint,replyUrls,resourceSpecificApplicationPermissions,samlSingleSignOnSettings,servicePrincipalType,tokenEncryptionKeyId,alternativeNames,addIns,authenticationMethods,certificateBasedAuthConfiguration,certification,claimMappingPolicies,customSecurityAttributes,endpoints,errorUrl,informationalUrls,keyCredentials,licenseDetails,loginUrl,logoutUrl,notes,notificationEmailAddresses,oauth2PermissionGrants,ownedObjects,owners,passThroughUsers,passwordCredentials,publicClient,resourceBehaviorOptions,servicePrincipalLockConfiguration,transitiveMemberOf,verifiedPublisher"
 		// }
 		rootcmd.ClientOptions.Filter = "appId%20eq%20'" + rootcmd.OptID + "'"
-		sps, _, err := rootcmd.Client.GetServicePrincipals(rootcmd.ClientOptions)
 		apps, _, err := rootcmd.Client.GetApplications(rootcmd.ClientOptions)
+		if err != nil {
+			rootcmd.PrintErr(err)
+			return
+		}
+
+		sps, _, err := rootcmd.Client.GetServicePrincipals(rootcmd.ClientOptions)
 		if err != nil {
 			rootcmd.PrintErr(err)
 			return

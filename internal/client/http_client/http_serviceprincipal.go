@@ -216,6 +216,32 @@ func (c *HTTPClient) AddKeyToServicePrincipal(id string, key saml.KeyDescriptor,
 	return nil
 }
 
+// AddGroupToServicePrincipal adds a group to a serviceprincipal and returns an error
+//
+// Required permissions: Application.ReadWrite.All
+// Required permissions: Directory.ReadWrite.All
+//
+// Parameters:
+//
+//	spID: The service principal ID
+//	groupID: The group ID
+//	options: The client options
+func (c *HTTPClient) AddGroupToServicePrincipal(spID, groupID string, opts models.ClientOptions) (err error) {
+	assignment := models.AppRoleAssignment{
+		AppRoleID:     "00000000-0000-0000-0000-000000000000",
+		PrincipalID:   groupID,
+		PrincipalType: "Group",
+		ResourceID:    spID,
+	}
+
+	err = c.AssignAppRoleToServicePrincipal(&assignment, opts)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // GetClaimsMappingPoliciesForServicePrincipal gets a list of claims policies for a serviceprincipal and returns a slice of claims policies, a pagination link and an error
 //
 // Required permissions:
@@ -311,7 +337,6 @@ func (c *HTTPClient) AssignAppRoleToServicePrincipal(assignment *models.AppRoleA
 		c.Log.Sugar().Debugf("AssignAppRoleToServicePrincipal() - Error marshalling assignment: %+v\n", err)
 		return err
 	}
-	c.Log.Sugar().Debugf("AssignAppRoleToServicePrincipal() - Assignment: %s\n", string(u))
 
 	h := c.buildHeaders(opts)
 	h["Content-Type"] = "application/json"
@@ -474,6 +499,48 @@ func (c *HTTPClient) GetServicePrincipal(id string, opts models.ClientOptions) (
 	return &serviceprincipal, nil
 }
 
+// GetAssignedAppRoles gets a list of serviceprincipals and returns a slice of serviceprincipals, a pagination link and an error
+//
+// Required permissions: Application.Read.All
+// Required permissions: Application.ReadWrite.All
+//
+// Parameters:
+//
+//	opts: The client options
+func (c *HTTPClient) GetAssignedAppRoles(id string, opts models.ClientOptions) ([]*models.AppRoleAssignment, error) {
+	var err error
+
+	h := c.buildHeaders(opts)
+
+	if opts.Debug {
+		c.Log.Sugar().Debugf("GetAssignedAppRoles() - 1 - Calling: /serviceprincipals%s\n", buildQueryString(opts))
+	}
+
+	response, err := c.RestClient.Get("/serviceprincipals/"+id+"/appRoleAssignedTo"+buildQueryString(opts), h)
+
+	body, err := io.ReadAll(io.Reader(response.Body))
+	if err != nil {
+		c.Log.Sugar().Debugf("GetAssignedAppRoles() - 2 - Error: %s\n", err.Error())
+		return nil, err
+	}
+
+	// Define locally as long as used only here
+	type appRoleAssignedToResponse struct {
+		Value []*models.AppRoleAssignment
+	}
+
+	var results appRoleAssignedToResponse
+
+	err = json.Unmarshal(body, &results)
+	if err != nil {
+		c.Log.Sugar().Debugf("GetAssignedAppRoles() - 3 - body: %s\n", body)
+		c.Log.Sugar().Debugf("GetAssignedAppRoles() - 3 - Error: %s\n", err.Error())
+		return nil, err
+	}
+
+	return results.Value, nil
+}
+
 // GetServicePrincipals gets a list of serviceprincipals and returns a slice of serviceprincipals, a pagination link and an error
 //
 // Required permissions: Application.Read.All
@@ -510,6 +577,7 @@ func (c *HTTPClient) GetServicePrincipals(opts models.ClientOptions) ([]*models.
 
 		err = json.Unmarshal(body, &serviceprincipalResponse)
 		if err != nil {
+			c.Log.Sugar().Debugf("GetServicePrincipals() - 3 - body: %s\n", body)
 			c.Log.Sugar().Debugf("GetServicePrincipals() - 3 - Error: %s\n", err.Error())
 			return nil, "", err
 		}

@@ -2,7 +2,7 @@
 package usercmd
 
 import (
-	rootCmd "epfl-entra/cmd"
+	rootcmd "epfl-entra/cmd"
 
 	"github.com/spf13/cobra"
 )
@@ -25,5 +25,5 @@ var userCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.RootCmd.AddCommand(userCmd)
+	rootcmd.RootCmd.AddCommand(userCmd)
 }

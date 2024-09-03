@@ -95,6 +95,21 @@ Example:
 			rootcmd.PrintErr(err)
 			return
 		}
+
+		for _, groupID := range []string{
+			"ecd361a9-0089-451d-b851-a4223aad73f7",
+			"1f8006b6-ae21-42de-957c-7487cdbe7ddd",
+			"02ab45fd-6c06-4053-8aa9-06068929d806",
+			"43c1e1df-2a86-44c4-abba-9656aeeac56d",
+		} {
+
+			err = client.AddGroupToServicePrincipal(sp.ID, groupID, opts)
+			if err != nil {
+				rootcmd.PrintErr(err)
+				return
+			}
+		}
+
 	},
 }
 

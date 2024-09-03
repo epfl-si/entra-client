@@ -1,41 +1,41 @@
 package cmdapplication
 
 import (
+	"encoding/json"
 	rootcmd "epfl-entra/cmd"
+	"epfl-entra/internal/models"
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_applicationList(t *testing.T) {
+	t.Run("List returns multiple application", func(t *testing.T) {
+		rout, wout, oldout, rerr, werr, olderr := rootcmd.CaptureOutput()
 
-	// Transform the function into a test table
-	tests := []struct {
-		name        string
-		args        []string
-		expectedOut string
-		expectedErr string
-	}{
-		{
-			name:        "displayname is required",
-			args:        []string{"application", "create"},
-			expectedOut: "",
-			expectedErr: "Name is required (use --displayname)\n",
-		},
-	}
+		rootcmd.RootCmd.SetArgs([]string{"application", "list"})
+		rootcmd.RootCmd.Execute()
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			rout, wout, oldout, rerr, werr, olderr := rootcmd.CaptureOutput()
+		stdout, stderr := rootcmd.ReleaseOutput(rout, wout, oldout, rerr, werr, olderr)
 
-			rootcmd.RootCmd.SetArgs(tt.args)
-			rootcmd.RootCmd.Execute()
+		fmt.Println("AAAAAA", string(stdout))
+		fmt.Println("AAAAAA", string(stderr))
 
-			out, err := rootcmd.ReleaseOutput(rout, wout, oldout, rerr, werr, olderr)
+		outs := strings.Split(string(stdout), "\n")
 
-			assert.Equal(t, tt.expectedOut, string(out))
-			assert.Equal(t, tt.expectedErr, string(err))
-		})
-	}
+		assert.True(t, len(outs) > 1, "More thant one application returned")
+		assert.Equal(t, "", string(stderr))
+
+		// unmarshal out[0] to check if it is a valid JSON
+		app := &models.Application{}
+		appJSON := []byte(outs[0])
+		err := json.Unmarshal(appJSON, &app)
+		assert.Nil(t, err)
+		assert.True(t, len(app.ID) > 1, "ID defined ("+app.ID+")")
+		assert.True(t, len(app.AppID) > 1, "AppID defined")
+		assert.True(t, len(app.DisplayName) > 1, "DisplayName defined")
+	})
 
 }

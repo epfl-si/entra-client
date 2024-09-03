@@ -5,14 +5,14 @@ import (
 )
 
 // applicationSAMLUser.goCmd represents the applicationSAMLUser.go command
-var applicationSAMLUserCmd = &cobra.Command{
+var applicationUserCmd = &cobra.Command{
 	Use:   "user",
-	Short: "Handle users for a SAML application",
+	Short: "Handle users for an application",
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Println("applicationSAMLUser called")
+		cmd.Println("applicationUser called")
 	},
 }
 
 func init() {
-	applicationSAMLCmd.AddCommand(applicationSAMLUserCmd)
+	applicationCmd.AddCommand(applicationUserCmd)
 }
