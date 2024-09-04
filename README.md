@@ -13,13 +13,15 @@ Le but de ce client entra (ecli) est multiple :
 
 Le client s'appuie sur cobra (github.com/spf13/cobra) et donc main.go ne fait qu'appeler les commandes définies dans /cmd
 
-Les commandes utilisent elles les packages httpClient et sdkClient qui sont des implémentations de client.Service.
-Ces 2 packages httpClient et sdkClient sont les deux "moteurs" (--engine) que l'application peut utiliser pour accéder aux API Entra.
+Les commandes utilisaient les packages httpClient et sdkClient qui sont des implémentations de client.Service.
+Ces 2 packages httpClient et sdkClient sont les deux "moteurs" que l'application peut utiliser pour accéder aux API Entra.
 * httpClient est un moteur bas niveau qui s'appuie sur net/http pour faire des requêtes REST.
-* sdkClient s'appuie sur le sdk microsoft qui est de plus haut niveau
+* sdkClient s'appuyait sur le sdk microsoft qui est de plus haut niveau
 
 Ces deux moteurs utilisent les models qui sont dans internal/models
 Et httpClient utilise une fine surcouche de net/http qui est définie dans pkg/rest
+
+L'utilisation du noteur sdkClient est deprecated et du coup le flag de selection --engine est lui aussi supprimé
 
 
 ## Build
@@ -86,9 +88,9 @@ Afficher les informations des applicatoins matchant certains critères
 ./ecli application list --search displayname:Portal
 ```
 
-Créer une application (entité de base uniquemenent)
+Créer une application OIDC
 ```
-./ecli application create --engine sdk --post '{"displayName": "test API POST AA"}'
+./ecli application oidc create --displayname "Mon appli" --redirect_uri "https://mon.domaine.com/auth"
 ```
 
 Supprimer une application par son id
