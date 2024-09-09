@@ -4,7 +4,6 @@ package cmdapplication
 
 import (
 	rootcmd "epfl-entra/cmd"
-	httpengine "epfl-entra/internal/client/http_client"
 	"epfl-entra/internal/models"
 
 	"github.com/spf13/cobra"
@@ -33,11 +32,6 @@ Example:
 			rootcmd.PrintErrString("Callback URL is required (use --redirect_uri)")
 			return
 		}
-		client, err := httpengine.New()
-		if err != nil {
-			rootcmd.PrintErr(err)
-			return
-		}
 
 		bootstrApp := &models.Application{
 			DisplayName: rootcmd.OptDisplayName,
@@ -54,23 +48,36 @@ Example:
 			return
 		}
 
-		secret, err := client.AddPasswordToApplication(app.ID, rootcmd.OptDisplayName+" secret", opts)
+		secret, err := rootcmd.Client.AddPasswordToApplication(app.ID, rootcmd.OptDisplayName+" secret", opts)
 		if err != nil {
 			rootcmd.PrintErr(err)
 			return
 		}
 
-		cmd.Printf("Application ID: %s\n\n\n", rootcmd.OutputJSON(app))
+		// cmd.Printf("Application ID: %s\n\n\n", rootcmd.OutputJSON(app))
+		cmd.Printf("Application ID: %s\n\n\n", rootcmd.OutputJSON(sp))
 		cmd.Printf("Client ID: %s\n", app.AppID)
 		cmd.Printf("Client secret: %s\n\n", *secret.SecretText)
 
 		appPatch := &models.Application{}
-		web := &models.WebSection{}
-		web.RedirectURIs = []string{OptRedirectURI}
+		appPatch.Web = &models.WebSection{
+			RedirectURIs: []string{OptRedirectURI},
+			ImplicitGrantSettings: &models.Grant{
+				EnableIDTokenIssuance:     true,
+				EnableAccessTokenIssuance: true,
+			},
+		}
 
-		web.ImplicitGrantSettings = &models.Grant{EnableIDTokenIssuance: true}
+		version := 2
+		t := true
+		// appPatch.Tags = []string{"HideApp"}
+		appPatch.Api = &models.ApiApplication{
+			AcceptMappedClaims:          &t,
+			RequestedAccessTokenVersion: &version,
+		}
 
-		appPatch.Web = web
+		// Causes error:
+		// appPatch.AllowPublicClient = true
 
 		err = rootcmd.Client.PatchApplication(app.ID, appPatch, opts)
 		if err != nil {
@@ -89,26 +96,37 @@ Example:
 		sp.Homepage = "https://www.epfl.ch"
 		// spPatch.ReplyUrls = []string{OptRedirectURI}
 		spPatch.Tags = []string{"WindowsAzureActiveDirectoryIntegratedApp"}
+		// spPatch.Tags = []string{"HideApp"}
+		spPatch.AppRoleAssignmentRequired = true
 
-		err = client.PatchServicePrincipal(sp.ID, spPatch, opts)
+		// Causes error:
+
+		err = rootcmd.Client.PatchServicePrincipal(sp.ID, spPatch, opts)
 		if err != nil {
 			rootcmd.PrintErr(err)
 			return
 		}
 
 		for _, groupID := range []string{
-			"ecd361a9-0089-451d-b851-a4223aad73f7",
-			"1f8006b6-ae21-42de-957c-7487cdbe7ddd",
-			"02ab45fd-6c06-4053-8aa9-06068929d806",
-			"43c1e1df-2a86-44c4-abba-9656aeeac56d",
+			"AAD_All Hosts Users",
+			"AAD_All Outside EPFL Users",
+			"AAD_All Staff Users",
+			"AAD_All Student Users",
 		} {
 
-			err = client.AddGroupToServicePrincipal(sp.ID, groupID, opts)
+			err = rootcmd.Client.AddGroupToServicePrincipal(sp.ID, groupID, opts)
 			if err != nil {
 				rootcmd.PrintErr(err)
 				return
 			}
 		}
+
+		// Works but can't be edited by portal
+		// err = rootcmd.Client.AssignClaimsPolicyToServicePrincipal("b0a98d4a-221f-4d76-b6fb-7f6f0089175f", sp.ID)
+		// if err != nil {
+		// 	rootcmd.PrintErr(fmt.Errorf("Assign ClaimsPolicy %s to ServicePrincipal %s: %w", "b0a98d4a-221f-4d76-b6fb-7f6f0089175", sp.ID, err))
+		// 	return
+		// }
 
 	},
 }

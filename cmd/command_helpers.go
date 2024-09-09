@@ -28,11 +28,7 @@ func CreateApplication(app *models.Application, clientOptions models.ClientOptio
 	}
 
 	sp, err := Client.CreateServicePrincipal(&models.ServicePrincipal{
-		AppID: newApp.AppID,
-		Tags: []string{
-			// "HideApp",
-			"WindowsAzureActiveDirectoryIntegratedApp",
-		},
+		AppID:                newApp.AppID,
 		ServicePrincipalType: "Application"}, clientOptions)
 
 	if err != nil {

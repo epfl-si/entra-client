@@ -259,6 +259,7 @@ func (c *HTTPClient) PatchApplication(id string, app *models.Application, opts m
 
 	if response.StatusCode != 204 {
 		fmt.Printf("PatchApplication() - Body: %#v\n", getBody(response))
+		fmt.Printf("PatchApplication() - Payload: %s\n", u)
 		return errors.New("Rest Patch " + id + " unexpected status code " + response.Status)
 	}
 

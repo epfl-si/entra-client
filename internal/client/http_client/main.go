@@ -72,6 +72,8 @@ func buildQueryString(opts models.ClientOptions) string {
 	var parameters []string
 
 	if opts.Filter != "" {
+		// uriencode opts.Filter
+		opts.Filter = strings.ReplaceAll(opts.Filter, " ", "%20")
 		parameters = append(parameters, "$filter="+opts.Filter)
 		opts.Top = ""
 	}
@@ -134,6 +136,12 @@ func getBody(response *http.Response) string {
 	body, _ := io.ReadAll(io.Reader(response.Body))
 
 	return string(body)
+}
+
+// GetToken returns the access token
+func (c *HTTPClient) GetToken() string {
+
+	return c.AccessToken
 }
 
 func normalizeThumbprint(thumbprint string) string {

@@ -28,7 +28,11 @@ type WebSection struct {
 // Resources: https://learn.microsoft.com/en-us/graph/api/resources/applications-api-overview
 type Application struct {
 	ID                            string                   `json:"id,omitempty"`
+	Api                           *ApiApplication          `json:"api,omitempty"`
 	AppID                         string                   `json:"appId,omitempty"`
+	AcceptMappedClaims            *bool                    `json:"acceptMappedClaims,omitempty"`
+	AccessTokenAcceptedVersion    *int                     `json:"accessTokenAcceptedVersion,omitempty"`
+	AllowPublicClient             bool                     `json:"allowPublicClient,omitempty"`
 	DeletedDateTime               *time.Time               `json:"deletedDateTime,omitempty"`
 	Classification                *string                  `json:"classification,omitempty"`
 	CreatedDateTime               *time.Time               `json:"createdDateTime,omitempty"`
@@ -59,12 +63,15 @@ type Application struct {
 	ProxyAddresses                []string                 `json:"proxyAddresses,omitempty"`
 	PublisherDomain               *string                  `json:"publisherDomain,omitempty"`
 	RenewedDateTime               *time.Time               `json:"renewedDateTime,omitempty"`
+	ReplyURLSWithType             []URLWithType            `json:"replyUrlsWithType,omitempty"`
 	RequiredResourceAccess        []RequiredResource       `json:"requiredResourceAccess,omitempty"`
 	ResourceBehaviorOptions       []string                 `json:"resourceBehaviorOptions,omitempty"`
 	ResourceProvisioningOptions   []string                 `json:"resourceProvisioningOptions,omitempty"`
 	SecurityEnabled               bool                     `json:"securityEnabled,omitempty"`
 	SecurityIdentifier            string                   `json:"securityIdentifier,omitempty"`
 	SingInAudience                *string                  `json:"signInAudience,omitempty"`
+	Spa                           *SpaApplication          `json:"spa,omitempty"`
+	Tags                          []string                 `json:"tags,omitempty"`
 	Theme                         *string                  `json:"theme,omitempty"`
 	TokenEncryptionKeyID          *string                  `json:"tokenEncryptionKeyId,omitempty"`
 	UniqueName                    *string                  `json:"uniqueName,omitempty"`
@@ -73,3 +80,7 @@ type Application struct {
 	OnPremisesProvisioningErrors  []string                 `json:"onPremisesProvisioningErrors,omitempty"`
 	ServiceProvisioningErrors     []string                 `json:"serviceProvisioningErrors,omitempty"`
 }
+
+//AccessTokenAcceptedVersion is the version of the access token that the resource server can accept
+// (it relates to the Application->App registration menu in Entra)
+// https://learn.microsoft.com/en-us/answers/questions/1118962/azure-ad-setting-the-accesstokenacceptedversion

@@ -37,8 +37,8 @@ var claimCreateCmd = &cobra.Command{
 }
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if rootcmd.OptDisplayName == "" {
-			rootcmd.PrintErrString("DisplayName is required (use --displayName)")
+		if rootcmd.OptDisplayName == "" && !OptDefault {
+			rootcmd.PrintErrString("DisplayName is required (use --displayName, or use --default)")
 			return
 		}
 
@@ -56,8 +56,8 @@ var claimCreateCmd = &cobra.Command{
 
 		if OptDefault {
 			claim = models.ClaimsMappingPolicy{
-				Definition:            []string{"{\"ClaimsMappingPolicy\":{\"Version\":1,\"IncludeBasicClaimSet\":\"true\", \"ClaimsSchema\": [{\"Source\":\"user\",\"ID\":\"assignedroles\",\"SamlClaimType\": \"https://aws.amazon.com/SAML/Attributes/Role\"}, {\"Source\":\"user\",\"ID\":\"userprincipalname\",\"SamlClaimType\": \"https://aws.amazon.com/SAML/Attributes/RoleSessionName\"}, {\"Value\":\"900\",\"SamlClaimType\": \"https://aws.amazon.com/SAML/Attributes/SessionDuration\"}, {\"Source\":\"user\",\"ID\":\"assignedroles\",\"SamlClaimType\": \"appRoles\"}, {\"Source\":\"user\",\"ID\":\"userprincipalname\",\"SamlClaimType\": \"https://aws.amazon.com/SAML/Attributes/nameidentifier\"}]}}"},
-				DisplayName:           rootcmd.OptDisplayName,
+				Definition:            []string{"{\"ClaimsMappingPolicy\":{\"Version\":1,\"IncludeBasicClaimSet\":\"false\",\"ClaimsSchema\": [{\"Source\":\"user\",\"ID\":\"user.employeeid\",\"JwtClaimType\": \"uniqueid\"}]}}"},
+				DisplayName:           "EPFL Default Claims Policy",
 				IsOrganizationDefault: false,
 			}
 		}

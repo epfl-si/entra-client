@@ -8,6 +8,7 @@ import (
 	_ "epfl-entra/cmd/group"
 	_ "epfl-entra/cmd/manifest"
 	_ "epfl-entra/cmd/serviceprincipal"
+	_ "epfl-entra/cmd/token"
 	_ "epfl-entra/cmd/user"
 )
 

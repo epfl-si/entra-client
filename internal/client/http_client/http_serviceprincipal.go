@@ -227,9 +227,23 @@ func (c *HTTPClient) AddKeyToServicePrincipal(id string, key saml.KeyDescriptor,
 //	groupID: The group ID
 //	options: The client options
 func (c *HTTPClient) AddGroupToServicePrincipal(spID, groupID string, opts models.ClientOptions) (err error) {
+	var g *models.Group
+
+	g, err = c.GetGroup(groupID, opts)
+	if err != nil {
+		opts.Filter = "displayName%20eq%20'" + groupID + "'"
+		glist, _, err := c.GetGroups(opts)
+		if err != nil {
+			return fmt.Errorf("could'nt get group: %w", err)
+		}
+		if len(glist) != 1 {
+			return fmt.Errorf("could'nt get group: ambiguous name")
+		}
+		g = glist[0]
+	}
 	assignment := models.AppRoleAssignment{
 		AppRoleID:     "00000000-0000-0000-0000-000000000000",
-		PrincipalID:   groupID,
+		PrincipalID:   g.ID,
 		PrincipalType: "Group",
 		ResourceID:    spID,
 	}
@@ -331,7 +345,7 @@ func (c *HTTPClient) GetClaimsMappingPoliciesForServicePrincipal(servicePrincipa
 func (c *HTTPClient) AssignAppRoleToServicePrincipal(assignment *models.AppRoleAssignment, opts models.ClientOptions) error {
 	// TODO: see https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/assign-user-or-group-access-portal?pivots=ms-graph#assign-users-and-groups-to-an-application-using-microsoft-graph-api to simplify appRole selection and using default one
 
-	c.Log.Sugar().Debugf("AssignAppRoleToServicePrincipal() - called\n")
+	// c.Log.Sugar().Debugf("AssignAppRoleToServicePrincipal() - called\n")
 	u, err := json.Marshal(assignment)
 	if err != nil {
 		c.Log.Sugar().Debugf("AssignAppRoleToServicePrincipal() - Error marshalling assignment: %+v\n", err)
@@ -351,6 +365,7 @@ func (c *HTTPClient) AssignAppRoleToServicePrincipal(assignment *models.AppRoleA
 	if response.StatusCode != 201 {
 		c.Log.Sugar().Debugf("AssignAppRoleToServicePrincipal() - Unexpected response code: %+v\n", response)
 		c.Log.Sugar().Debugf("AssignAppRoleToServicePrincipal() - Body: %s\n", getBody(response))
+		c.Log.Sugar().Debugf("AssignAppRoleToServicePrincipal() - Submited: %s\n", u)
 		return errors.New(response.Status)
 	}
 
@@ -372,7 +387,6 @@ func (c *HTTPClient) AssignClaimsPolicyToServicePrincipal(claimsPolicyID, servic
 	h := c.buildHeaders(models.ClientOptions{})
 	h["Content-Type"] = "application/json"
 
-	// response, err := c.RestClient.Post("/servicePrincipals/"+servicePrincipalID+"/claimsMappingPolicies", body, h)
 	response, err := c.RestClient.Post("/servicePrincipals/"+servicePrincipalID+"/claimsMappingPolicies/$ref", body, h)
 	defer response.Body.Close()
 	if err != nil {
@@ -631,7 +645,7 @@ func (c *HTTPClient) PatchServicePrincipal(id string, app *models.ServicePrincip
 	h["Content-Type"] = "application/json"
 
 	response, err := c.RestClient.Patch("/servicePrincipals/"+id, u, h)
-	c.Log.Sugar().Debugf("PatchServicePrincipal() - Body: %s\n", u)
+	// c.Log.Sugar().Debugf("PatchServicePrincipal() - Body: %s\n", u)
 	// c.Log.Sugar().Debugf("PatchServicePrincipal() - Response: %#v\n", response)
 	// body, err := io.ReadAll(io.Reader(response.Body))
 	// c.Log.Sugar().Debugf("PatchServicePrincipal() - Response: %s\n", string(body))
