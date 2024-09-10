@@ -8,7 +8,7 @@ import (
 )
 
 // OptRedirectURI is associated with the --redirect_uri flag
-var OptRedirectURI string
+var OptRedirectURI []string
 
 // OptHomeURI is associated with the --home_uri flag
 var OptHomeURI string
@@ -33,6 +33,6 @@ var applicationCmd = &cobra.Command{
 
 func init() {
 	rootcmd.RootCmd.AddCommand(applicationCmd)
-	applicationCmd.PersistentFlags().StringVar(&OptRedirectURI, "redirect_uri", "", "Redirect URI")
+	applicationCmd.PersistentFlags().StringArrayVar(&OptRedirectURI, "redirect_uri", []string{}, "Redirect URI")
 	applicationCmd.PersistentFlags().StringVar(&OptHomeURI, "home_uri", "", "Homepage URI")
 }

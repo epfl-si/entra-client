@@ -28,15 +28,19 @@ Example:
 			rootcmd.PrintErrString("Name is required (use --displayname)")
 			return
 		}
-		if OptRedirectURI == "" {
+		if len(OptRedirectURI) == 0 {
 			rootcmd.PrintErrString("Callback URL is required (use --redirect_uri)")
 			return
 		}
 
+		URIList := []models.URI{}
+		for i, uri := range OptRedirectURI {
+			URIList = append(URIList, models.URI{URI: uri, Index: i})
+		}
 		bootstrApp := &models.Application{
 			DisplayName: rootcmd.OptDisplayName,
 			Web: &models.WebSection{
-				RedirectURISettings: []models.URI{{URI: OptRedirectURI, Index: 1}},
+				RedirectURISettings: URIList,
 			},
 		}
 
@@ -72,11 +76,11 @@ Example:
 		}
 		switch OptType {
 		case "web":
-			appPatch.Web.RedirectURIs = []string{OptRedirectURI}
-			appPatch.Web.RedirectURISettings = []models.URI{{URI: OptRedirectURI, Index: 1}}
+			appPatch.Web.RedirectURIs = OptRedirectURI
+			appPatch.Web.RedirectURISettings = URIList
 		case "spa":
 			appPatch.Spa = &models.SpaApplication{
-				RedirectURIs: []string{OptRedirectURI},
+				RedirectURIs: OptRedirectURI,
 			}
 		}
 

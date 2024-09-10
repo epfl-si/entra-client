@@ -30,7 +30,7 @@ var applicationSAMLCreateCmd = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		var SAMLID string
-		var RedirectURI string
+		var RedirectURI []string
 		var LogoutURI string
 		var m *saml.EntityDescriptor
 		var err error
@@ -61,7 +61,7 @@ var applicationSAMLCreateCmd = &cobra.Command{
 			// app, sp, err := CreateApplication(OptDisplayName)
 			SAMLID = m.EntityID
 			if m.SPSSODescriptors != nil && m.SPSSODescriptors[0].AssertionConsumerServices != nil {
-				RedirectURI = m.SPSSODescriptors[0].AssertionConsumerServices[0].Location
+				RedirectURI = []string{m.SPSSODescriptors[0].AssertionConsumerServices[0].Location}
 			}
 			if m.SPSSODescriptors != nil && m.SPSSODescriptors[0].SingleLogoutServices != nil {
 				LogoutURI = m.SPSSODescriptors[0].SingleLogoutServices[0].Location
@@ -72,7 +72,7 @@ var applicationSAMLCreateCmd = &cobra.Command{
 			rootcmd.PrintErrString("SAML identifier is required (use --identifier or --metadata_file)")
 			return
 		}
-		if OptRedirectURI == "" && OptMetadataFile == "" {
+		if len(OptRedirectURI) == 0 && OptMetadataFile == "" {
 			rootcmd.PrintErrString("SAML redirect URI is required (use --redirect_uri or --metadata_file)")
 			return
 		}
@@ -81,7 +81,7 @@ var applicationSAMLCreateCmd = &cobra.Command{
 		if OptSAMLID != "" {
 			SAMLID = OptSAMLID
 		}
-		if OptRedirectURI != "" {
+		if len(OptRedirectURI) != 0 {
 			RedirectURI = OptRedirectURI
 		}
 		if OptLogoutURI != "" {
@@ -89,7 +89,9 @@ var applicationSAMLCreateCmd = &cobra.Command{
 		}
 
 		// Should be applied at the flag level (with a kind of transformer/validator)
-		RedirectURI = rootcmd.NormalizeURI(RedirectURI)
+		for i, uri := range RedirectURI {
+			RedirectURI[i] = rootcmd.NormalizeURI(uri)
+		}
 		LogoutURI = rootcmd.NormalizeURI(LogoutURI)
 		SAMLID = rootcmd.NormalizeURI(SAMLID)
 
@@ -99,8 +101,12 @@ var applicationSAMLCreateCmd = &cobra.Command{
 			cmd.Printf("Logout URI: %s\n", LogoutURI)
 		}
 
-		if RedirectURI == "" {
-			bootstrApp.Web.RedirectURISettings = []models.URI{{URI: RedirectURI, Index: 1}}
+		URIList := []models.URI{}
+		for i, uri := range RedirectURI {
+			URIList = append(URIList, models.URI{URI: uri, Index: i})
+		}
+		if len(RedirectURI) == 0 {
+			bootstrApp.Web.RedirectURISettings = URIList
 		}
 
 		if LogoutURI != "" {
@@ -120,8 +126,8 @@ var applicationSAMLCreateCmd = &cobra.Command{
 		if SAMLID != "" {
 			appPatch.IdentifierUris = []string{SAMLID}
 		}
-		if RedirectURI != "" {
-			web.RedirectURIs = []string{RedirectURI}
+		if len(RedirectURI) != 0 {
+			web.RedirectURIs = RedirectURI
 			// Can't be modified at the same time
 			// web.RedirectURISettings = []models.URI{{URI: RedirectURI, Index: 1}}
 		}
@@ -148,7 +154,7 @@ var applicationSAMLCreateCmd = &cobra.Command{
 
 		err = rootcmd.Client.PatchServicePrincipal(sp.ID, &models.ServicePrincipal{
 			PreferredSingleSignOnMode: "saml",
-			ReplyUrls:                 []string{RedirectURI},
+			ReplyUrls:                 RedirectURI,
 			LogoutURL:                 LogoutURI,
 			Tags:                      tags,
 			ServicePrincipalNames:     spName,
