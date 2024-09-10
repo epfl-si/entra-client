@@ -1,7 +1,7 @@
 package httpengine
 
 import (
-	"epfl-entra/internal/models"
+	"epfl-entra/pkg/entra-client/models"
 	"epfl-entra/pkg/rest"
 	"testing"
 

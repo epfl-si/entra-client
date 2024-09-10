@@ -1,7 +1,7 @@
 package httpengine
 
 import (
-	"epfl-entra/internal/models"
+	"epfl-entra/pkg/entra-client/models"
 	"epfl-entra/pkg/rest"
 	"testing"
 
@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func TestHTTPClient_GetGroup(t *testing.T) {
+func TestHTTPClient_GetUser(t *testing.T) {
 	type fields struct {
 		AccessToken string
 		BaseURL     string
@@ -28,7 +28,7 @@ func TestHTTPClient_GetGroup(t *testing.T) {
 		name      string
 		fields    fields
 		args      args
-		want      *models.Group
+		want      *models.User
 		assertion assert.ErrorAssertionFunc
 	}{
 		// TODO: Add test cases.
@@ -45,14 +45,14 @@ func TestHTTPClient_GetGroup(t *testing.T) {
 				RestClient:  tt.fields.RestClient,
 				Log:         tt.fields.Log,
 			}
-			got, err := c.GetGroup(tt.args.id, tt.args.opts)
+			got, err := c.GetUser(tt.args.id, tt.args.opts)
 			tt.assertion(t, err)
 			assert.Equal(t, tt.want, got)
 		})
 	}
 }
 
-func TestHTTPClient_GetGroups(t *testing.T) {
+func TestHTTPClient_GetUsers(t *testing.T) {
 	type fields struct {
 		AccessToken string
 		BaseURL     string
@@ -70,7 +70,7 @@ func TestHTTPClient_GetGroups(t *testing.T) {
 		name      string
 		fields    fields
 		args      args
-		want      []*models.Group
+		want      []*models.User
 		want1     string
 		assertion assert.ErrorAssertionFunc
 	}{
@@ -88,7 +88,7 @@ func TestHTTPClient_GetGroups(t *testing.T) {
 				RestClient:  tt.fields.RestClient,
 				Log:         tt.fields.Log,
 			}
-			got, got1, err := c.GetGroups(tt.args.opts)
+			got, got1, err := c.GetUsers(tt.args.opts)
 			tt.assertion(t, err)
 			assert.Equal(t, tt.want, got)
 			assert.Equal(t, tt.want1, got1)

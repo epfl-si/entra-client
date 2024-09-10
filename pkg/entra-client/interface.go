@@ -2,7 +2,7 @@
 package client
 
 import (
-	"epfl-entra/internal/models"
+	"epfl-entra/pkg/entra-client/models"
 
 	"github.com/crewjam/saml"
 )

@@ -3,7 +3,7 @@ package cmdapplication
 import (
 	"encoding/json"
 	rootcmd "epfl-entra/cmd"
-	"epfl-entra/internal/models"
+	"epfl-entra/pkg/entra-client/models"
 	"fmt"
 	"strings"
 	"testing"

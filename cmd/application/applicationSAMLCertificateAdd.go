@@ -2,7 +2,7 @@ package cmdapplication
 
 import (
 	rootcmd "epfl-entra/cmd"
-	"epfl-entra/internal/models"
+	"epfl-entra/pkg/entra-client/models"
 	"time"
 
 	"github.com/google/uuid"

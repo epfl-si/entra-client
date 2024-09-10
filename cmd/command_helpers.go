@@ -3,7 +3,7 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
-	"epfl-entra/internal/models"
+	"epfl-entra/pkg/entra-client/models"
 	"fmt"
 	"io"
 	"os"

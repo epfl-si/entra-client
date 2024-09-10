@@ -2,7 +2,7 @@ package httpengine
 
 import (
 	"encoding/json"
-	"epfl-entra/internal/models"
+	"epfl-entra/pkg/entra-client/models"
 	"errors"
 	"fmt"
 	"time"

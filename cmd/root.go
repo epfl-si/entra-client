@@ -4,9 +4,9 @@ package cmd
 import (
 	"os"
 
-	"epfl-entra/internal/client"
-	httpengine "epfl-entra/internal/client/http_client"
-	"epfl-entra/internal/models"
+	client "epfl-entra/pkg/entra-client"
+	httpengine "epfl-entra/pkg/entra-client/httpengine"
+	"epfl-entra/pkg/entra-client/models"
 
 	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"

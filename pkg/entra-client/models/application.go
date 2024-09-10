@@ -28,9 +28,8 @@ type WebSection struct {
 // Resources: https://learn.microsoft.com/en-us/graph/api/resources/applications-api-overview
 type Application struct {
 	ID                            string                   `json:"id,omitempty"`
-	Api                           *ApiApplication          `json:"api,omitempty"`
+	API                           *ApiApplication          `json:"api,omitempty"`
 	AppID                         string                   `json:"appId,omitempty"`
-	AcceptMappedClaims            *bool                    `json:"acceptMappedClaims,omitempty"`
 	AccessTokenAcceptedVersion    *int                     `json:"accessTokenAcceptedVersion,omitempty"`
 	AllowPublicClient             bool                     `json:"allowPublicClient,omitempty"`
 	DeletedDateTime               *time.Time               `json:"deletedDateTime,omitempty"`
@@ -43,6 +42,7 @@ type Application struct {
 	GroupTypes                    []string                 `json:"groupTypes,omitempty"`
 	IdentifierUris                []string                 `json:"identifierUris,omitempty"`
 	IsAssignableToRole            *bool                    `json:"isAssignableToRole,omitempty"`
+	IsFallbackPublicClient        *bool                    `json:"isFallbackPublicClient,omitempty"`
 	KeyCredentials                []KeyCredential          `json:"keyCredentials,omitempty"`
 	Mail                          *string                  `json:"mail,omitempty"`
 	MailEnabled                   bool                     `json:"mailEnabled,omitempty"`

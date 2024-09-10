@@ -4,7 +4,7 @@ package cmdapplication
 
 import (
 	rootcmd "epfl-entra/cmd"
-	"epfl-entra/internal/models"
+	"epfl-entra/pkg/entra-client/models"
 
 	"github.com/spf13/cobra"
 )
@@ -61,23 +61,36 @@ Example:
 
 		appPatch := &models.Application{}
 		appPatch.Web = &models.WebSection{
-			RedirectURIs: []string{OptRedirectURI},
 			ImplicitGrantSettings: &models.Grant{
 				EnableIDTokenIssuance:     true,
 				EnableAccessTokenIssuance: true,
 			},
 		}
+		// Default to SPA
+		if OptType == "" {
+			OptType = "spa"
+		}
+		switch OptType {
+		case "web":
+			appPatch.Web.RedirectURIs = []string{OptRedirectURI}
+			appPatch.Web.RedirectURISettings = []models.URI{{URI: OptRedirectURI, Index: 1}}
+		case "spa":
+			appPatch.Spa = &models.SpaApplication{
+				RedirectURIs: []string{OptRedirectURI},
+			}
+		}
 
 		version := 2
 		t := true
 		// appPatch.Tags = []string{"HideApp"}
-		appPatch.Api = &models.ApiApplication{
+		appPatch.API = &models.ApiApplication{
 			AcceptMappedClaims:          &t,
 			RequestedAccessTokenVersion: &version,
 		}
 
 		// Causes error:
 		// appPatch.AllowPublicClient = true
+		appPatch.IsFallbackPublicClient = &t // For PKCE
 
 		err = rootcmd.Client.PatchApplication(app.ID, appPatch, opts)
 		if err != nil {

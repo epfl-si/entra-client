@@ -2,8 +2,8 @@
 package httpengine
 
 import (
-	"epfl-entra/internal/client"
-	"epfl-entra/internal/models"
+	client "epfl-entra/pkg/entra-client"
+	"epfl-entra/pkg/entra-client/models"
 	"epfl-entra/pkg/rest"
 	"errors"
 	"io"

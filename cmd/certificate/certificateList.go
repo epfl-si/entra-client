@@ -1,7 +1,7 @@
 package cmdcertificate
 
 import (
-	"epfl-entra/internal/models"
+	"epfl-entra/pkg/entra-client/models"
 	"fmt"
 	"time"
 
