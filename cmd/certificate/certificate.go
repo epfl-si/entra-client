@@ -4,7 +4,7 @@ package cmdcertificate
 import (
 	"fmt"
 
-	rootcmd "epfl-entra/cmd"
+	rootcmd "entra-client/cmd"
 
 	"github.com/spf13/cobra"
 )

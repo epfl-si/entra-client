@@ -1,7 +1,7 @@
 package sdkengine
 
 import (
-	"epfl-entra/internal/models"
+	"entra-client/internal/models"
 	"errors"
 )
 

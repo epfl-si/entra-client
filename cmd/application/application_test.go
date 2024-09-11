@@ -2,7 +2,7 @@ package cmdapplication
 
 import (
 	"bytes"
-	rootcmd "epfl-entra/cmd"
+	rootcmd "entra-client/cmd"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

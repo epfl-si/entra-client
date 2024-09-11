@@ -1,4 +1,4 @@
-module epfl-entra
+module entra-client
 
 go 1.22.1
 

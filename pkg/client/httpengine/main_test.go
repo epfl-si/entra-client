@@ -1,8 +1,8 @@
 package httpengine
 
 import (
-	"epfl-entra/pkg/entra-client/models"
-	"epfl-entra/pkg/rest"
+	"entra-client/pkg/client/models"
+	"entra-client/pkg/rest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

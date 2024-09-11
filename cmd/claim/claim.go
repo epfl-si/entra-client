@@ -2,7 +2,7 @@
 package cmdclaim
 
 import (
-	rootcmd "epfl-entra/cmd"
+	rootcmd "entra-client/cmd"
 
 	"github.com/spf13/cobra"
 )
