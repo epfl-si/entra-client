@@ -46,7 +46,7 @@ Example:
 
 		opts := models.ClientOptions{}
 
-		app, sp, err := rootcmd.CreateApplication(bootstrApp, opts)
+		app, sp, err := rootcmd.Client.CreatePortalApplication(bootstrApp, opts)
 		if err != nil {
 			rootcmd.PrintErr(err)
 			return

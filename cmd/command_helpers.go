@@ -15,8 +15,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// CreateApplication create an application
-func CreateApplication(app *models.Application, clientOptions models.ClientOptions) (*models.Application, *models.ServicePrincipal, error) {
+// TODELETECreateApplication create an application
+func TODELETECreateApplication(app *models.Application, clientOptions models.ClientOptions) (*models.Application, *models.ServicePrincipal, error) {
 
 	newApp, err := Client.CreateApplication(app, clientOptions)
 	if err != nil {
