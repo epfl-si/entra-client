@@ -1,10 +1,11 @@
 package httpengine
 
 import (
-	"entra-client/pkg/client/models"
-	"entra-client/pkg/rest"
 	"errors"
 	"testing"
+
+	"github.com/epfl-si/entra-client/pkg/client/models"
+	"github.com/epfl-si/entra-client/pkg/rest"
 
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"

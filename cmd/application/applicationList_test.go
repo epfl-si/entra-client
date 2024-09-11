@@ -2,11 +2,12 @@ package cmdapplication
 
 import (
 	"encoding/json"
-	rootcmd "entra-client/cmd"
-	"entra-client/pkg/client/models"
 	"fmt"
 	"strings"
 	"testing"
+
+	rootcmd "github.com/epfl-si/entra-client/cmd"
+	"github.com/epfl-si/entra-client/pkg/client/models"
 
 	"github.com/stretchr/testify/assert"
 )

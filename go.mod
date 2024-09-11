@@ -1,4 +1,4 @@
-module entra-client
+module github.com/epfl-si/entra-client
 
 go 1.22.1
 

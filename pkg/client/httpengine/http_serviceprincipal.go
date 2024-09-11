@@ -9,11 +9,12 @@ import (
 
 	"bytes"
 	"encoding/json"
-	"entra-client/pkg/client/models"
 	"errors"
 	"fmt"
 	"regexp"
 	"time"
+
+	"github.com/epfl-si/entra-client/pkg/client/models"
 
 	"io"
 

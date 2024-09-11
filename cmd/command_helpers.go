@@ -3,12 +3,13 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
-	"entra-client/pkg/client/models"
 	"fmt"
 	"io"
 	"os"
 	"regexp"
 	"time"
+
+	"github.com/epfl-si/entra-client/pkg/client/models"
 
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"

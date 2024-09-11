@@ -1,7 +1,7 @@
 package cmdapptemplate
 
 import (
-	rootcmd "entra-client/cmd"
+	rootcmd "github.com/epfl-si/entra-client/cmd"
 
 	"github.com/spf13/cobra"
 )

@@ -2,8 +2,9 @@ package sdkengine
 
 import (
 	"context"
-	"entra-client/pkg/client/models"
 	"errors"
+
+	"github.com/epfl-si/entra-client/pkg/client/models"
 
 	"log"
 

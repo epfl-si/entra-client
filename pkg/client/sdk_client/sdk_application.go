@@ -2,9 +2,10 @@ package sdkengine
 
 import (
 	"context"
-	"entra-client/pkg/client/models"
 	"errors"
 	"fmt"
+
+	"github.com/epfl-si/entra-client/pkg/client/models"
 
 	mm "github.com/microsoftgraph/msgraph-sdk-go/models"
 )

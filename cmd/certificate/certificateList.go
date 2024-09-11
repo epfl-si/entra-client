@@ -1,11 +1,12 @@
 package cmdcertificate
 
 import (
-	"entra-client/pkg/client/models"
 	"fmt"
 	"time"
 
-	rootcmd "entra-client/cmd"
+	"github.com/epfl-si/entra-client/pkg/client/models"
+
+	rootcmd "github.com/epfl-si/entra-client/cmd"
 
 	"github.com/spf13/cobra"
 )

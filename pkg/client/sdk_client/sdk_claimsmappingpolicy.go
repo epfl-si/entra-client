@@ -1,8 +1,9 @@
 package sdkengine
 
 import (
-	"entra-client/pkg/client/models"
 	"errors"
+
+	"github.com/epfl-si/entra-client/pkg/client/models"
 )
 
 // CreateClaimsMappingPolicy creates an serviceprincipal and returns an error
