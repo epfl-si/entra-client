@@ -2,15 +2,16 @@
 package httpengine
 
 import (
-	client "entra-client/pkg/client"
-	"entra-client/pkg/client/models"
-	"entra-client/pkg/rest"
 	"errors"
 	"io"
 	"net/http"
 	"os"
 	"regexp"
 	"strings"
+
+	client "github.com/epfl-si/entra-client/pkg/client"
+	"github.com/epfl-si/entra-client/pkg/client/models"
+	"github.com/epfl-si/entra-client/pkg/rest"
 
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"

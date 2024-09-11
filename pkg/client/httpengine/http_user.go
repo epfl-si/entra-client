@@ -2,11 +2,12 @@ package httpengine
 
 import (
 	"encoding/json"
-	"entra-client/pkg/client/models"
-	"entra-client/pkg/rest"
 	"errors"
 	"io"
 	"net/http"
+
+	"github.com/epfl-si/entra-client/pkg/client/models"
+	"github.com/epfl-si/entra-client/pkg/rest"
 )
 
 // CreateUser creates a user and returns an error

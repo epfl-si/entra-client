@@ -2,8 +2,9 @@ package httpengine
 
 import (
 	"encoding/json"
-	"entra-client/pkg/client/models"
 	"errors"
+
+	"github.com/epfl-si/entra-client/pkg/client/models"
 
 	"io"
 )

@@ -2,10 +2,11 @@ package httpengine
 
 import (
 	"encoding/json"
-	"entra-client/pkg/client/models"
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/epfl-si/entra-client/pkg/client/models"
 
 	"io"
 )
