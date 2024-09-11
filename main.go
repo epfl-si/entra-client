@@ -1,15 +1,15 @@
 package main
 
 import (
-	"epfl-entra/cmd"
-	_ "epfl-entra/cmd/application"
-	_ "epfl-entra/cmd/certificate"
-	_ "epfl-entra/cmd/claim"
-	_ "epfl-entra/cmd/group"
-	_ "epfl-entra/cmd/manifest"
-	_ "epfl-entra/cmd/serviceprincipal"
-	_ "epfl-entra/cmd/token"
-	_ "epfl-entra/cmd/user"
+	"entra-client/cmd"
+	_ "entra-client/cmd/application"
+	_ "entra-client/cmd/certificate"
+	_ "entra-client/cmd/claim"
+	_ "entra-client/cmd/group"
+	_ "entra-client/cmd/manifest"
+	_ "entra-client/cmd/serviceprincipal"
+	_ "entra-client/cmd/token"
+	_ "entra-client/cmd/user"
 )
 
 func main() {

@@ -2,8 +2,8 @@ package usercmd
 
 import (
 	"encoding/json"
-	rootcmd "epfl-entra/cmd"
-	"epfl-entra/pkg/entra-client/models"
+	rootcmd "entra-client/cmd"
+	"entra-client/pkg/client/models"
 
 	"github.com/spf13/cobra"
 )

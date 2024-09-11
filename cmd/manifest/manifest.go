@@ -2,7 +2,7 @@
 package cmdmanifest
 
 import (
-	rootcmd "epfl-entra/cmd"
+	rootcmd "entra-client/cmd"
 	"fmt"
 
 	"github.com/spf13/cobra"

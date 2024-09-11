@@ -2,9 +2,9 @@ package cmdapplication
 
 import (
 	"encoding/json"
-	rootcmd "epfl-entra/cmd"
-	"epfl-entra/pkg/entra-client/models"
-	"epfl-entra/pkg/saml"
+	rootcmd "entra-client/cmd"
+	"entra-client/pkg/client/models"
+	"entra-client/pkg/saml"
 	"fmt"
 
 	"github.com/spf13/cobra"
