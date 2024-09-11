@@ -116,7 +116,7 @@ var applicationSAMLCreateCmd = &cobra.Command{
 
 		opts := models.ClientOptions{}
 
-		app, sp, err := rootcmd.CreateApplication(bootstrApp, opts)
+		app, sp, err := rootcmd.Client.CreatePortalApplication(bootstrApp, opts)
 		if err != nil {
 			rootcmd.PrintErr(fmt.Errorf("createApplication: %W", err))
 			return

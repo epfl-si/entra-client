@@ -3,6 +3,7 @@ package httpengine
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -150,4 +151,28 @@ func normalizeThumbprint(thumbprint string) string {
 	thumbprint = re.ReplaceAllString(thumbprint, "")
 
 	return thumbprint
+}
+
+// CreatePortalApplication create an application and service principal
+func (c *HTTPClient) CreatePortalApplication(app *models.Application, clientOptions models.ClientOptions) (*models.Application, *models.ServicePrincipal, error) {
+
+	newApp, err := c.CreateApplication(app, clientOptions)
+	if err != nil {
+		return nil, nil, fmt.Errorf("CreateApplication: %w", err)
+	}
+
+	err = c.WaitApplication(newApp.ID, 60, clientOptions)
+	if err != nil {
+		return nil, nil, fmt.Errorf("WaitApplication: %w", err)
+	}
+
+	sp, err := c.CreateServicePrincipal(&models.ServicePrincipal{
+		AppID:                newApp.AppID,
+		ServicePrincipalType: "Application"}, clientOptions)
+
+	if err != nil {
+		return nil, nil, fmt.Errorf("CreateServicePrincipal: %W", err)
+	}
+
+	return newApp, sp, nil
 }
