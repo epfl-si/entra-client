@@ -1,7 +1,7 @@
 package sdkengine
 
 import (
-	"entra-client/internal/models"
+	"entra-client/pkg/client/models"
 	"errors"
 )
 

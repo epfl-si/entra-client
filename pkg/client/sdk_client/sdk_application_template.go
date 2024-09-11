@@ -2,7 +2,7 @@ package sdkengine
 
 import (
 	"context"
-	"entra-client/internal/models"
+	"entra-client/pkg/client/models"
 	"errors"
 	"fmt"
 
