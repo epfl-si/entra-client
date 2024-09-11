@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// OptType is associated with the --type flag
 var OptType string
 
 // applicationOIDCCmd represents the applicationOIDC command
