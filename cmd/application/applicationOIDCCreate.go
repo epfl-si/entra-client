@@ -9,6 +9,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// OptTypeWeb is true if the application is of type web
+var OptTypeWeb = false
+
+// OptTypeSpa is true if the application is of type spa (default)
+var OptTypeSpa = false
+
 // applicationOIDCCreateCmd represents the applicationOIDCCreate command
 //
 // Ref: https://learn.microsoft.com/en-us/entra/identity-platform/v2-protocols-oidc
@@ -18,7 +24,7 @@ var applicationOIDCCreateCmd = &cobra.Command{
 	Long: `Create an OIDC application
 
 Usage:
-  ./ecli application oidc create --displayname "<Application name>" --redirect_uri "<Redirect URI>"
+  ./ecli application oidc create --displayname "<Application name>" --redirect_uri "<Redirect URI> --spa"
 
 Example:
   ./ecli application oidc create --displayname "AA OIDC provisioning 1" --redirect_uri "https://aaoidcprovisioning1/redirect"
@@ -33,123 +39,47 @@ Example:
 			return
 		}
 
-		URIList := []models.URI{}
-		for i, uri := range OptRedirectURI {
-			URIList = append(URIList, models.URI{URI: uri, Index: i})
-		}
 		bootstrApp := &models.Application{
 			DisplayName: rootcmd.OptDisplayName,
-			Web: &models.WebSection{
+		}
+
+		if OptTypeSpa == true {
+			bootstrApp.Spa = &models.SpaApplication{
+				RedirectURIs: OptRedirectURI,
+			}
+		} else if OptTypeWeb == true {
+			URIList := []models.URI{}
+			for i, uri := range OptRedirectURI {
+				URIList = append(URIList, models.URI{URI: uri, Index: i})
+			}
+			bootstrApp.Web = &models.WebSection{
+				RedirectURIs:        OptRedirectURI,
 				RedirectURISettings: URIList,
-			},
+			}
+		} else {
+			panic("Invalid application type")
 		}
 
-		opts := models.ClientOptions{}
-
-		app, sp, err := rootcmd.Client.CreatePortalApplication(bootstrApp, opts)
-		if err != nil {
-			rootcmd.PrintErr(err)
-			return
-		}
-
-		secret, err := rootcmd.Client.AddPasswordToApplication(app.ID, rootcmd.OptDisplayName+" secret", opts)
+		app, _, secret, err := rootcmd.Client.CreateOIDCApplication(bootstrApp)
 		if err != nil {
 			rootcmd.PrintErr(err)
 			return
 		}
 
 		// cmd.Printf("Application ID: %s\n\n\n", rootcmd.OutputJSON(app))
-		cmd.Printf("Application ID: %s\n\n\n", rootcmd.OutputJSON(sp))
-		cmd.Printf("Client ID: %s\n", app.AppID)
-		cmd.Printf("Client secret: %s\n\n", *secret.SecretText)
-
-		appPatch := &models.Application{}
-		appPatch.Web = &models.WebSection{
-			ImplicitGrantSettings: &models.Grant{
-				EnableIDTokenIssuance:     true,
-				EnableAccessTokenIssuance: true,
-			},
-		}
-		// Default to SPA
-		if OptType == "" {
-			OptType = "spa"
-		}
-		switch OptType {
-		case "web":
-			appPatch.Web.RedirectURIs = OptRedirectURI
-			appPatch.Web.RedirectURISettings = URIList
-		case "spa":
-			appPatch.Spa = &models.SpaApplication{
-				RedirectURIs: OptRedirectURI,
-			}
-		}
-
-		version := 2
-		t := true
-		// appPatch.Tags = []string{"HideApp"}
-		appPatch.API = &models.ApiApplication{
-			AcceptMappedClaims:          &t,
-			RequestedAccessTokenVersion: &version,
-		}
-
-		// Causes error:
-		// appPatch.AllowPublicClient = true
-		appPatch.IsFallbackPublicClient = &t // For PKCE
-
-		err = rootcmd.Client.PatchApplication(app.ID, appPatch, opts)
-		if err != nil {
-			rootcmd.PrintErr(err)
-			return
-		}
-
-		// By default, use grant type: Authorization Code Flow with PKCE.
-
-		// Configure supported account types
-
-		// Configure claims
-
-		// Customize application
-		spPatch := &models.ServicePrincipal{}
-		sp.Homepage = "https://www.epfl.ch"
-		// spPatch.ReplyUrls = []string{OptRedirectURI}
-		spPatch.Tags = []string{"WindowsAzureActiveDirectoryIntegratedApp"}
-		// spPatch.Tags = []string{"HideApp"}
-		spPatch.AppRoleAssignmentRequired = true
-
-		// Causes error:
-
-		err = rootcmd.Client.PatchServicePrincipal(sp.ID, spPatch, opts)
-		if err != nil {
-			rootcmd.PrintErr(err)
-			return
-		}
-
-		for _, groupID := range []string{
-			"AAD_All Hosts Users",
-			"AAD_All Outside EPFL Users",
-			"AAD_All Staff Users",
-			"AAD_All Student Users",
-		} {
-
-			err = rootcmd.Client.AddGroupToServicePrincipal(sp.ID, groupID, opts)
-			if err != nil {
-				rootcmd.PrintErr(err)
-				return
-			}
-		}
-
-		// Works but can't be edited by portal
-		// err = rootcmd.Client.AssignClaimsPolicyToServicePrincipal("b0a98d4a-221f-4d76-b6fb-7f6f0089175f", sp.ID)
-		// if err != nil {
-		// 	rootcmd.PrintErr(fmt.Errorf("Assign ClaimsPolicy %s to ServicePrincipal %s: %w", "b0a98d4a-221f-4d76-b6fb-7f6f0089175", sp.ID, err))
-		// 	return
-		// }
-
+		cmd.Printf("Application ID: %s\n\n\n", app.AppID)
+		cmd.Printf("Client secret: %s\n\n", secret)
 	},
 }
 
 func init() {
 	applicationOIDCCmd.AddCommand(applicationOIDCCreateCmd)
+
+	applicationOIDCCreateCmd.Flags().BoolVar(&OptTypeWeb, "web", false, "The application type is web")
+	applicationOIDCCreateCmd.Flags().BoolVar(&OptTypeSpa, "spa", true, "The application type is spa (default)")
+
+	applicationOIDCCreateCmd.MarkFlagsMutuallyExclusive("web", "spa")
+	applicationOIDCCreateCmd.MarkFlagsRequiredTogether("web", "spa")
 
 	applicationOIDCCreateCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
 		// Hide flags for this command
