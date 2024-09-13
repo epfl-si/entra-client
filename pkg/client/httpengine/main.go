@@ -176,3 +176,103 @@ func (c *HTTPClient) CreatePortalApplication(app *models.Application, clientOpti
 
 	return newApp, sp, nil
 }
+
+// CreateOIDCApplication create an application and service principal
+// redirect URIs if present must be
+//
+//	either in Web.RedirectURIs
+//	or     in Spa.RedirectURIs
+func (c *HTTPClient) CreateOIDCApplication(app *models.Application) (newApp *models.Application, newSP *models.ServicePrincipal, secret string, err error) {
+
+	URIList := []models.URI{}
+
+	bootstrApp := &models.Application{
+		DisplayName: app.DisplayName,
+	}
+
+	if app.Web != nil && app.Web.RedirectURIs != nil {
+		// Web application
+		bootstrApp.Web.RedirectURIs = app.Web.RedirectURIs
+		for i, uri := range app.Web.RedirectURIs {
+			URIList = append(URIList, models.URI{URI: uri, Index: i})
+		}
+		bootstrApp.Web.RedirectURISettings = URIList
+	} else if app.Spa != nil && app.Spa.RedirectURIs != nil {
+		// SPA application
+		bootstrApp.Spa = &models.SpaApplication{
+			RedirectURIs: app.Spa.RedirectURIs,
+		}
+	}
+
+	opts := models.ClientOptions{}
+	app, sp, err := c.CreatePortalApplication(bootstrApp, opts)
+	if err != nil {
+		return app, sp, "", err
+	}
+
+	scrt, err := c.AddPasswordToApplication(app.ID, app.DisplayName+" secret", opts)
+	if err != nil {
+		return app, sp, "", err
+	}
+
+	appPatch := &models.Application{}
+	appPatch.Web = &models.WebSection{
+		ImplicitGrantSettings: &models.Grant{
+			EnableIDTokenIssuance:     true,
+			EnableAccessTokenIssuance: true,
+		},
+	}
+
+	version := 2
+	t := true
+	appPatch.API = &models.ApiApplication{
+		AcceptMappedClaims:          &t,
+		RequestedAccessTokenVersion: &version,
+	}
+
+	// Causes error:
+	// appPatch.AllowPublicClient = true
+	appPatch.IsFallbackPublicClient = &t // For PKCE
+
+	err = c.PatchApplication(app.ID, appPatch, opts)
+	if err != nil {
+		return app, sp, "", err
+	}
+
+	// Configure claims
+
+	// Customize application
+	spPatch := &models.ServicePrincipal{}
+	sp.Homepage = "https://www.epfl.ch"
+	// spPatch.ReplyUrls = []string{OptRedirectURI}
+	spPatch.Tags = []string{"WindowsAzureActiveDirectoryIntegratedApp"}
+	spPatch.AppRoleAssignmentRequired = true
+
+	err = c.PatchServicePrincipal(sp.ID, spPatch, opts)
+	if err != nil {
+		return app, sp, "", err
+	}
+
+	for _, groupID := range []string{
+		"AAD_All Hosts Users",
+		"AAD_All Outside EPFL Users",
+		"AAD_All Staff Users",
+		"AAD_All Student Users",
+	} {
+
+		err = c.AddGroupToServicePrincipal(sp.ID, groupID, opts)
+		if err != nil {
+			return app, sp, "", err
+		}
+	}
+
+	// Works but can't be edited by portal
+	// err = rootcmd.Client.AssignClaimsPolicyToServicePrincipal("b0a98d4a-221f-4d76-b6fb-7f6f0089175f", sp.ID)
+	// if err != nil {
+	// 	rootcmd.PrintErr(fmt.Errorf("Assign ClaimsPolicy %s to ServicePrincipal %s: %w", "b0a98d4a-221f-4d76-b6fb-7f6f0089175", sp.ID, err))
+	// 	return
+	// }
+
+	return app, sp, *scrt.SecretText, nil
+
+}
