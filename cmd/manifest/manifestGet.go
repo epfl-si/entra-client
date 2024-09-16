@@ -44,7 +44,7 @@ var manifestGetCmd = &cobra.Command{
 			return
 		}
 
-		cmd.Println("{\n \"application\": \"" + rootcmd.OutputJSON(apps[0]) + "\",\n \"servicePrincipal\": \"" + rootcmd.OutputJSON(sps[0]) + "\"\n}")
+		cmd.Println("{\n \"application\": " + rootcmd.OutputJSON(apps[0]) + ",\n \"servicePrincipal\": " + rootcmd.OutputJSON(sps[0]) + "\n}")
 	},
 }
 
