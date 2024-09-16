@@ -43,11 +43,7 @@ Example:
 			DisplayName: rootcmd.OptDisplayName,
 		}
 
-		if OptTypeSpa == true {
-			bootstrApp.Spa = &models.SpaApplication{
-				RedirectURIs: OptRedirectURI,
-			}
-		} else if OptTypeWeb == true {
+		if OptTypeWeb == true {
 			URIList := []models.URI{}
 			for i, uri := range OptRedirectURI {
 				URIList = append(URIList, models.URI{URI: uri, Index: i})
@@ -57,7 +53,10 @@ Example:
 				RedirectURISettings: URIList,
 			}
 		} else {
-			panic("Invalid application type")
+			// is default
+			bootstrApp.Spa = &models.SpaApplication{
+				RedirectURIs: OptRedirectURI,
+			}
 		}
 
 		app, _, secret, err := rootcmd.Client.CreateOIDCApplication(bootstrApp)
@@ -79,7 +78,6 @@ func init() {
 	applicationOIDCCreateCmd.Flags().BoolVar(&OptTypeSpa, "spa", true, "The application type is spa (default)")
 
 	applicationOIDCCreateCmd.MarkFlagsMutuallyExclusive("web", "spa")
-	applicationOIDCCreateCmd.MarkFlagsRequiredTogether("web", "spa")
 
 	applicationOIDCCreateCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
 		// Hide flags for this command

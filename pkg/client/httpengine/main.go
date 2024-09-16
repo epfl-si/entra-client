@@ -184,7 +184,7 @@ func (c *HTTPClient) CreatePortalApplication(app *models.Application, clientOpti
 //	or     in Spa.RedirectURIs
 func (c *HTTPClient) CreateOIDCApplication(app *models.Application) (newApp *models.Application, newSP *models.ServicePrincipal, secret string, err error) {
 
-	URIList := []models.URI{}
+	// URIList := []models.URI{}
 
 	bootstrApp := &models.Application{
 		DisplayName: app.DisplayName,
@@ -192,11 +192,12 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application) (newApp *mod
 
 	if app.Web != nil && app.Web.RedirectURIs != nil {
 		// Web application
+		bootstrApp.Web = &models.WebSection{}
 		bootstrApp.Web.RedirectURIs = app.Web.RedirectURIs
-		for i, uri := range app.Web.RedirectURIs {
-			URIList = append(URIList, models.URI{URI: uri, Index: i})
-		}
-		bootstrApp.Web.RedirectURISettings = URIList
+		// for i, uri := range app.Web.RedirectURIs {
+		// 	URIList = append(URIList, models.URI{URI: uri, Index: i})
+		// }
+		// bootstrApp.Web.RedirectURISettings = URIList
 	} else if app.Spa != nil && app.Spa.RedirectURIs != nil {
 		// SPA application
 		bootstrApp.Spa = &models.SpaApplication{
