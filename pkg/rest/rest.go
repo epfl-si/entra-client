@@ -4,6 +4,7 @@ package rest
 import (
 	"bytes"
 	"net/http"
+	"strings"
 )
 
 // Client is a REST client that can make requests to a REST API
@@ -144,4 +145,17 @@ func (c *Client) getNormalizedpath(path string) string {
 	}
 
 	return url
+}
+
+func refreshTokenNeeded(err error) bool {
+	if err != nil {
+		if strings.Contains(err.Error(), "the token is expired") {
+			// refresh token
+			return true
+
+		}
+
+		return true
+	}
+	return false
 }

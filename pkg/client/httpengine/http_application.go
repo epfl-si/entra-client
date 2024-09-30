@@ -11,6 +11,76 @@ import (
 	"io"
 )
 
+// AddClaimToApplication adds a Claim to an application and returns an error
+//
+// Required permissions: (Same as PatchApplication)
+//
+// Parameters:
+//
+//	id: The application ID
+//	name: The Claim nane
+//	source: The Claim source
+//	location: The Claim location
+//	opts: The client options
+func (c *HTTPClient) AddClaimToApplication(id, name, source, location string, opts models.ClientOptions) error {
+	if id == "" {
+		return errors.New("ID missing")
+	}
+
+	if name == "" {
+		return errors.New("name missing")
+	}
+
+	if source == "" {
+		return errors.New("source missing")
+	}
+
+	if location == "" {
+		return errors.New("location missing")
+	}
+	application, err := c.GetApplication(id, opts)
+	if err != nil {
+		return err
+	}
+
+	switch location {
+	case "id":
+		claims := application.OptionalClaims.IDToken
+
+		claims = append(claims, models.OptionalClaim{
+			Name:   name,
+			Source: source,
+		})
+		application.OptionalClaims.IDToken = claims
+
+	case "access":
+		claims := application.OptionalClaims.AccessToken
+
+		claims = append(claims, models.OptionalClaim{
+			Name: name,
+
+			Source: source,
+		})
+		application.OptionalClaims.AccessToken = claims
+
+	case "saml2":
+		claims := application.OptionalClaims.SAML2Token
+
+		claims = append(claims, models.OptionalClaim{
+			Name:   name,
+			Source: source,
+		})
+		application.OptionalClaims.SAML2Token = claims
+	}
+
+	err = c.PatchApplication(application.ID, application, opts)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // AddPasswordToApplication adds a password/secret to an application and returns an error
 //
 // Required permissions: Application.ReadWrite

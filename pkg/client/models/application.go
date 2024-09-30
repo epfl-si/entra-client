@@ -56,6 +56,7 @@ type Application struct {
 	OnPremisesSamAccountName      string                   `json:"onPremisesSamAccountName,omitempty"`
 	OnPremisesSecurityIdentifier  string                   `json:"onPremisesSecurityIdentifier,omitempty"`
 	OnPremisesSyncEnabled         bool                     `json:"onPremisesSyncEnabled,omitempty"`
+	OptionalClaims                *OptionalClaims          `json:"optionalClaims,omitempty"`
 	ParentalControlSettings       *ParentalControlSettings `json:"parentalControlSettings,omitempty"`
 	PasswordCredentials           []PasswordCredential     `json:"passwordCredentials,omitempty"`
 	PreferredDataLocation         *string                  `json:"preferredDataLocation,omitempty"`
