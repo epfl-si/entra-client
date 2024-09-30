@@ -2,12 +2,11 @@ package cmdapplication
 
 import (
 	rootcmd "github.com/epfl-si/entra-client/cmd"
-	"github.com/epfl-si/entra-client/pkg/client/models"
 
 	"github.com/spf13/cobra"
 )
 
-var ClaimType string
+var ClaimLocation string
 var ClaimName string
 var ClaimSource string
 
@@ -30,62 +29,23 @@ Example:
 			rootcmd.PrintErrString("Claim name is required (use --name)")
 			return
 		}
-		if ClaimType == "" {
+		if ClaimLocation == "" {
 			rootcmd.PrintErrString("Claim type is required (use --type [id/access/saml2])")
 			return
 		}
 
-		application, err := rootcmd.Client.GetApplication(rootcmd.OptID, rootcmd.ClientOptions)
+		err := rootcmd.Client.AddClaimToApplication(rootcmd.OptID, ClaimName, ClaimSource, ClaimLocation, rootcmd.ClientOptions)
 		if err != nil {
 			rootcmd.PrintErr(err)
 			return
 		}
-
-		switch ClaimType {
-		case "id":
-			claims := application.OptionalClaims.IDToken
-
-			claims = append(claims, models.OptionalClaim{
-				Name:   ClaimName,
-				Source: ClaimSource,
-			})
-			application.OptionalClaims.IDToken = claims
-
-		case "access":
-			claims := application.OptionalClaims.AccessToken
-
-			claims = append(claims, models.OptionalClaim{
-				Name: ClaimName,
-
-				Source: ClaimSource,
-			})
-			application.OptionalClaims.AccessToken = claims
-
-		case "saml2":
-			claims := application.OptionalClaims.SAML2Token
-
-			claims = append(claims, models.OptionalClaim{
-				Name:   ClaimName,
-				Source: ClaimSource,
-			})
-			application.OptionalClaims.SAML2Token = claims
-		}
-
-		err = rootcmd.Client.PatchApplication(application.ID, application, rootcmd.ClientOptions)
-		if err != nil {
-			rootcmd.PrintErr(err)
-			return
-		}
-
-		cmd.Println(rootcmd.OutputJSON(application.OptionalClaims))
-
 	},
 }
 
 func init() {
 	applicationClaimCmd.AddCommand(applicationClaimAddCmd)
 
-	applicationClaimAddCmd.Flags().StringVar(&ClaimType, "type", "", "The type of claim (id/access/saml2)")
+	applicationClaimAddCmd.Flags().StringVar(&ClaimLocation, "location", "", "The type of claim (id/access/saml2)")
 	applicationClaimAddCmd.Flags().StringVar(&ClaimName, "name", "", "The name of claim")
 	applicationClaimAddCmd.Flags().StringVar(&ClaimSource, "source", "", "The source of claim")
 }
