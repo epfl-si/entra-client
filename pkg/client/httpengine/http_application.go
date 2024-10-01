@@ -21,59 +21,85 @@ import (
 //	name: The Claim nane
 //	source: The Claim source
 //	location: The Claim location
+//	basicPreset: If true, add a set of basic claims (overrides name, source and location)
 //	opts: The client options
-func (c *HTTPClient) AddClaimToApplication(id, name, source, location string, opts models.ClientOptions) error {
+func (c *HTTPClient) AddClaimToApplication(id, name, source, location string, basicPreset bool, opts models.ClientOptions) error {
 	if id == "" {
 		return errors.New("ID missing")
 	}
 
-	if name == "" {
-		return errors.New("name missing")
+	application := &models.Application{ID: id}
+
+	if basicPreset {
+		claims := []models.OptionalClaim{
+			{
+				Name:   "uniqueid",
+				Source: "user.employeeid",
+			},
+			{
+				Name:   "gaspar",
+				Source: "user.onpremisessamaccountname",
+			},
+			{
+				Name: "family_name",
+			},
+			{
+				Name: "given_name",
+			},
+			{
+				Name: "email",
+			},
+		}
+		// application.OptionalClaims = &models.OptionalClaims{AccessToken: claims, SAML2Token: claims}
+		application.OptionalClaims = &models.OptionalClaims{AccessToken: claims}
+
+	} else {
+
+		if name == "" {
+			return errors.New("name missing")
+		}
+
+		if source == "" {
+			return errors.New("source missing")
+		}
+
+		if location == "" {
+			return errors.New("location missing")
+		}
+
+		switch location {
+		case "id":
+			claims := application.OptionalClaims.IDToken
+
+			claims = append(claims, models.OptionalClaim{
+				Name:      name,
+				Source:    source,
+				Essential: true,
+			})
+			application.OptionalClaims.IDToken = claims
+
+		case "access":
+			claims := application.OptionalClaims.AccessToken
+
+			claims = append(claims, models.OptionalClaim{
+				Name: name,
+
+				Source: source,
+			})
+			application.OptionalClaims.AccessToken = claims
+
+		case "saml2":
+			claims := application.OptionalClaims.SAML2Token
+
+			claims = append(claims, models.OptionalClaim{
+				Name:   name,
+				Source: source,
+			})
+			application.OptionalClaims.SAML2Token = claims
+		}
 	}
 
-	if source == "" {
-		return errors.New("source missing")
-	}
-
-	if location == "" {
-		return errors.New("location missing")
-	}
-	application, err := c.GetApplication(id, opts)
-	if err != nil {
-		return err
-	}
-
-	switch location {
-	case "id":
-		claims := application.OptionalClaims.IDToken
-
-		claims = append(claims, models.OptionalClaim{
-			Name:   name,
-			Source: source,
-		})
-		application.OptionalClaims.IDToken = claims
-
-	case "access":
-		claims := application.OptionalClaims.AccessToken
-
-		claims = append(claims, models.OptionalClaim{
-			Name: name,
-
-			Source: source,
-		})
-		application.OptionalClaims.AccessToken = claims
-
-	case "saml2":
-		claims := application.OptionalClaims.SAML2Token
-
-		claims = append(claims, models.OptionalClaim{
-			Name:   name,
-			Source: source,
-		})
-		application.OptionalClaims.SAML2Token = claims
-	}
-
-	err = c.PatchApplication(application.ID, application, opts)
+	err := c.PatchApplication(application.ID, application, opts)
 	if err != nil {
 		return err
 	}

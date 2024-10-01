@@ -9,6 +9,7 @@ import (
 var ClaimLocation string
 var ClaimName string
 var ClaimSource string
+var ClaimPresetBasics bool
 
 // applicationClaimAddCmd represents the applicationClaimAdd command
 var applicationClaimAddCmd = &cobra.Command{
@@ -25,16 +26,25 @@ Example:
 			rootcmd.PrintErrString("Service Principal ID is required (use --id)")
 			return
 		}
-		if ClaimName == "" {
-			rootcmd.PrintErrString("Claim name is required (use --name)")
-			return
-		}
-		if ClaimLocation == "" {
-			rootcmd.PrintErrString("Claim type is required (use --type [id/access/saml2])")
-			return
+
+		if !ClaimPresetBasics {
+
+			if ClaimName == "" {
+				rootcmd.PrintErrString("Claim name is required (use --name)")
+				return
+			}
+			if ClaimLocation == "" {
+				rootcmd.PrintErrString("Claim type is required (use --type [id/access/saml2])")
+				return
+			}
+
+			if ClaimSource == "" {
+				rootcmd.PrintErrString("Claim source is required (use --source)")
+				return
+			}
 		}
 
-		err := rootcmd.Client.AddClaimToApplication(rootcmd.OptID, ClaimName, ClaimSource, ClaimLocation, rootcmd.ClientOptions)
+		err := rootcmd.Client.AddClaimToApplication(rootcmd.OptID, ClaimName, ClaimSource, ClaimLocation, ClaimPresetBasics, rootcmd.ClientOptions)
 		if err != nil {
 			rootcmd.PrintErr(err)
 			return
@@ -48,4 +58,5 @@ func init() {
 	applicationClaimAddCmd.Flags().StringVar(&ClaimLocation, "location", "", "The type of claim (id/access/saml2)")
 	applicationClaimAddCmd.Flags().StringVar(&ClaimName, "name", "", "The name of claim")
 	applicationClaimAddCmd.Flags().StringVar(&ClaimSource, "source", "", "The source of claim")
+	applicationClaimAddCmd.Flags().BoolVar(&ClaimPresetBasics, "basics", false, "Add a predefinite set of basic claims")
 }
