@@ -15,30 +15,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// TODELETECreateApplication create an application
-func TODELETECreateApplication(app *models.Application, clientOptions models.ClientOptions) (*models.Application, *models.ServicePrincipal, error) {
-
-	newApp, err := Client.CreateApplication(app, clientOptions)
-	if err != nil {
-		return nil, nil, fmt.Errorf("CreateApplication: %w", err)
-	}
-
-	err = Client.WaitApplication(newApp.ID, 60, clientOptions)
-	if err != nil {
-		return nil, nil, fmt.Errorf("WaitApplication: %w", err)
-	}
-
-	sp, err := Client.CreateServicePrincipal(&models.ServicePrincipal{
-		AppID:                newApp.AppID,
-		ServicePrincipalType: "Application"}, clientOptions)
-
-	if err != nil {
-		return nil, nil, fmt.Errorf("CreateServicePrincipal: %W", err)
-	}
-
-	return newApp, sp, nil
-}
-
 // NormalizeURI performs some modification (required by Microsoft QPI) on URI
 //   - removes the trailing slash from a string
 //   - replace http with api

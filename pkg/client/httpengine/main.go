@@ -216,7 +216,31 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application) (newApp *mod
 		return app, sp, "", err
 	}
 
-	appPatch := &models.Application{}
+	appPatch := &models.Application{
+		RequiredResourceAccess: []models.RequiredResource{
+			{
+				ResourceAppID: "00000003-0000-0000-c000-000000000000",
+				ResourceAccess: []models.ResourceAccess{
+					{
+						ID:   "64a6cdd6-aab1-4aaf-94b8-3cc8405e90d0",
+						Type: "Scope",
+					},
+					{
+						ID:   "7427e0e9-2fba-42fe-b0c0-848c9e6a8182",
+						Type: "Scope",
+					},
+					{
+						ID:   "37f7f235-527c-4136-accd-4a02d197296e",
+						Type: "Scope",
+					},
+					{
+						ID:   "14dad69e-099b-42c9-810b-d002981feec1",
+						Type: "Scope",
+					},
+				},
+			},
+		},
+	}
 	appPatch.Web = &models.WebSection{
 		ImplicitGrantSettings: &models.Grant{
 			EnableIDTokenIssuance:     true,
@@ -240,13 +264,14 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application) (newApp *mod
 		return app, sp, "", err
 	}
 
-	// Configure claims
+	// Configure claims (5th parameter is to add default claims)ß
+	err = c.AddClaimToApplication(app.ID, "", "", "", true, opts)
 
 	// Customize application
 	spPatch := &models.ServicePrincipal{}
-	sp.Homepage = "https://www.epfl.ch"
-	// spPatch.ReplyUrls = []string{OptRedirectURI}
-	spPatch.Tags = []string{"WindowsAzureActiveDirectoryIntegratedApp"}
+	// setting Homepage default "Visible to all users" to true and is used for IdP initiated flows
+	// sp.Homepage = "https://www.epfl.ch"
+	spPatch.Tags = []string{"HideApp"} // If missing "Visible to all users" is true
 	spPatch.AppRoleAssignmentRequired = true
 
 	err = c.PatchServicePrincipal(sp.ID, spPatch, opts)
