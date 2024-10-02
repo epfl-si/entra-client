@@ -129,7 +129,7 @@ func (c *HTTPClient) AddCertificateToServicePrincipal(id string, certBase64 stri
 
 // AddKeyToServicePrincipal adds certificates to a serviceprincipal and returns an error
 //
-// Required permissions: ServicePrincipal.ReadWrite.All
+// Required permissions: Application.ReadWrite.All
 // Required permissions: Directory.ReadWrite.All
 //
 // Parameters:
@@ -201,7 +201,7 @@ func (c *HTTPClient) AddKeyToServicePrincipal(id string, key saml.KeyDescriptor,
 	u = []byte(out.String())
 
 	h := c.buildHeaders(opts)
-	h["Content-Type"] = "ServicePrincipal/json"
+	h["Content-Type"] = "application/json"
 	h["ConsistencyLevel"] = "eventual"
 
 	c.Log.Sugar().Debugf("AddKeyToServicePrincipal() - u: %s\n", u)
@@ -219,7 +219,7 @@ func (c *HTTPClient) AddKeyToServicePrincipal(id string, key saml.KeyDescriptor,
 
 // AddGroupToServicePrincipal adds a group to a serviceprincipal and returns an error
 //
-// Required permissions: ServicePrincipal.ReadWrite.All
+// Required permissions: Application.ReadWrite.All
 // Required permissions: Directory.ReadWrite.All
 //
 // Parameters:
@@ -331,8 +331,8 @@ func (c *HTTPClient) GetClaimsMappingPoliciesForServicePrincipal(servicePrincipa
 
 // AssignAppRoleToServicePrincipal associates a serviceprincipal to a group and returns an error
 //
-// Required permissions: ServicePrincipal.Read.All
-// Required permissions: ServicePrincipal.ReadWrite.All
+// Required permissions: Application.Read.All
+// Required permissions: Application.ReadWrite.All
 //
 // Parameters:
 //
@@ -344,7 +344,7 @@ func (c *HTTPClient) GetClaimsMappingPoliciesForServicePrincipal(servicePrincipa
 //
 //	opts: The client options
 func (c *HTTPClient) AssignAppRoleToServicePrincipal(assignment *models.AppRoleAssignment, opts models.ClientOptions) error {
-	// TODO: see https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/assign-user-or-group-access-portal?pivots=ms-graph#assign-users-and-groups-to-an-ServicePrincipal-using-microsoft-graph-api to simplify appRole selection and using default one
+	// TODO: see https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/assign-user-or-group-access-portal?pivots=ms-graph#assign-users-and-groups-to-an-application-using-microsoft-graph-api to simplify appRole selection and using default one
 
 	// c.Log.Sugar().Debugf("AssignAppRoleToServicePrincipal() - called\n")
 	u, err := json.Marshal(assignment)
@@ -354,7 +354,7 @@ func (c *HTTPClient) AssignAppRoleToServicePrincipal(assignment *models.AppRoleA
 	}
 
 	h := c.buildHeaders(opts)
-	h["Content-Type"] = "ServicePrincipal/json"
+	h["Content-Type"] = "application/json"
 
 	response, err := c.RestClient.Post("/servicePrincipals/"+assignment.ResourceID+"/appRoleAssignments", u, h)
 	if err != nil {
@@ -376,7 +376,7 @@ func (c *HTTPClient) AssignAppRoleToServicePrincipal(assignment *models.AppRoleA
 // AssignClaimsPolicyToServicePrincipal associates a Claims Policy to a serviceprincipal and returns an error
 //
 // Required permissions: Policy.Read.All
-// Required permissions: ServicePrincipal.ReadWrite.All
+// Required permissions: Application.ReadWrite.All
 //
 // Parameters:
 //
@@ -386,7 +386,7 @@ func (c *HTTPClient) AssignClaimsPolicyToServicePrincipal(claimsPolicyID, servic
 	body := []byte(`{"@odata.id":"https://graph.microsoft.com/v1.0/policies/claimsMappingPolicies/` + claimsPolicyID + `"}`)
 
 	h := c.buildHeaders(models.ClientOptions{})
-	h["Content-Type"] = "ServicePrincipal/json"
+	h["Content-Type"] = "application/json"
 
 	response, err := c.RestClient.Post("/servicePrincipals/"+servicePrincipalID+"/claimsMappingPolicies/$ref", body, h)
 	defer response.Body.Close()
@@ -404,7 +404,7 @@ func (c *HTTPClient) AssignClaimsPolicyToServicePrincipal(claimsPolicyID, servic
 
 // CreateServicePrincipal creates an serviceprincipal and returns an error
 //
-// Required permissions: ServicePrincipal.ReadWrite.All
+// Required permissions: Application.ReadWrite.All
 // Required permissions: Directory.ReadWrite.All
 //
 // Parameters:
@@ -422,7 +422,7 @@ func (c *HTTPClient) CreateServicePrincipal(app *models.ServicePrincipal, opts m
 	}
 
 	h := c.buildHeaders(opts)
-	h["Content-Type"] = "ServicePrincipal/json"
+	h["Content-Type"] = "application/json"
 
 	response, err := c.RestClient.Post("/serviceprincipals", u, h)
 	defer response.Body.Close()
@@ -449,7 +449,7 @@ func (c *HTTPClient) CreateServicePrincipal(app *models.ServicePrincipal, opts m
 
 // DeleteServicePrincipal deletes an serviceprincipal and returns an error
 //
-// Required permissions: ServicePrincipal.ReadWrite.All
+// Required permissions: Application.ReadWrite.All
 // Required permissions: Directory.ReadWrite.All
 //
 // Parameters:
@@ -482,8 +482,8 @@ func (c *HTTPClient) DeleteServicePrincipal(id string, opts models.ClientOptions
 // GetServicePrincipalByAppID gets an ServicePrincipal by its Id and returns an error
 // If performance matters, note that using object ID is faster than using app ID
 //
-// Required permissions: ServicePrincipal.Read.All
-// Required permissions: ServicePrincipal.ReadWrite.All
+// Required permissions: Application.Read.All
+// Required permissions: Application.ReadWrite.All
 //
 // Parameters:
 //
@@ -565,8 +565,8 @@ func (c *HTTPClient) GetServicePrincipal(id string, opts models.ClientOptions) (
 
 // GetAssignedAppRoles gets a list of serviceprincipals and returns a slice of serviceprincipals, a pagination link and an error
 //
-// Required permissions: ServicePrincipal.Read.All
-// Required permissions: ServicePrincipal.ReadWrite.All
+// Required permissions: Application.Read.All
+// Required permissions: Application.ReadWrite.All
 //
 // Parameters:
 //
@@ -607,8 +607,8 @@ func (c *HTTPClient) GetAssignedAppRoles(id string, opts models.ClientOptions) (
 
 // GetServicePrincipals gets a list of serviceprincipals and returns a slice of serviceprincipals, a pagination link and an error
 //
-// Required permissions: ServicePrincipal.Read.All
-// Required permissions: ServicePrincipal.ReadWrite.All
+// Required permissions: Application.Read.All
+// Required permissions: Application.ReadWrite.All
 //
 // Parameters:
 //
@@ -677,7 +677,7 @@ func (c *HTTPClient) GetServicePrincipals(opts models.ClientOptions) ([]*models.
 
 // PatchServicePrincipal patches an serviceprincipal and returns an error
 //
-// Required permissions: ServicePrincipal.ReadWrite.All
+// Required permissions: Application.ReadWrite.All
 // Required permissions: Directory.ReadWrite.All
 //
 // Parameters:
@@ -692,7 +692,7 @@ func (c *HTTPClient) PatchServicePrincipal(id string, app *models.ServicePrincip
 	}
 
 	h := c.buildHeaders(opts)
-	h["Content-Type"] = "ServicePrincipal/json"
+	h["Content-Type"] = "application/json"
 
 	response, err := c.RestClient.Patch("/servicePrincipals/"+id, u, h)
 	// c.Log.Sugar().Debugf("PatchServicePrincipal() - Body: %s\n", u)
@@ -718,7 +718,7 @@ func (c *HTTPClient) PatchServicePrincipal(id string, app *models.ServicePrincip
 // UnassignClaimsPolicyFromServicePrincipal unassigns a claims policy from a serviceprincipal and returns an error
 //
 // Required permissions: Policy.Read.All
-// Required permissions: ServicePrincipal.ReadWrite.All
+// Required permissions: Application.ReadWrite.All
 //
 // Parameters:
 //
@@ -745,8 +745,8 @@ func (c *HTTPClient) UnassignClaimsPolicyFromServicePrincipal(claimsPolicyID, se
 
 // WaitServicePrincipal waits for an serviceprincipal to be created and returns an error
 //
-// Required permissions: ServicePrincipal.Read.All
-// Required permissions: ServicePrincipal.ReadWrite.All
+// Required permissions: Application.Read.All
+// Required permissions: Application.ReadWrite.All
 //
 // Parameters:
 //
