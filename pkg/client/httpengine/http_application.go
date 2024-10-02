@@ -33,12 +33,12 @@ func (c *HTTPClient) AddClaimToApplication(id, name, source, location string, ba
 	if basicPreset {
 		claims := []models.OptionalClaim{
 			{
-				Name:   "uniqueid",
-				Source: "user.employeeid",
+				Name:   "employeeId",
+				Source: "user",
 			},
 			{
-				Name:   "gaspar",
-				Source: "user.onpremisessamaccountname",
+				Name:   "onpremisessamaccountname",
+				Source: "user",
 			},
 			{
 				Name: "family_name",
@@ -197,6 +197,50 @@ func (c *HTTPClient) CreateApplication(app *models.Application, opts models.Clie
 	return &resultApp, nil
 }
 
+// GetApplicationByAppID gets an application by its Id and returns an error
+//
+// Required permissions: Application.Read.All
+// Required permissions: Application.ReadWrite
+//
+// Parameters:
+//
+//	id: The application (App / Client) ID
+//	opts: The client options
+func (c *HTTPClient) GetApplicationByAppID(id string, opts models.ClientOptions) (*models.Application, error) {
+	if id == "" {
+		return nil, errors.New("ID missing")
+	}
+
+	opts.Filter = "appId eq '" + id + "'"
+	h := c.buildHeaders(opts)
+	response, err := c.RestClient.Get("/applications"+buildQueryString(opts), h)
+	if err != nil {
+		return nil, err
+	}
+	if response.StatusCode != 200 {
+		return nil, errors.New(response.Status)
+	}
+
+	body, err := io.ReadAll(io.Reader(response.Body))
+	if err != nil {
+		return nil, err
+	}
+
+	response.Body.Close()
+
+	var applicationResponse models.ApplicationResponse
+	err = json.Unmarshal(body, &applicationResponse)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(applicationResponse.Value) != 1 {
+		return nil, errors.New("application not found")
+	}
+
+	return applicationResponse.Value[0], nil
+}
+
 // DeleteApplication deletes an application and returns an error
 //
 // Required permissions: Application.ReadWrite
@@ -227,14 +271,15 @@ func (c *HTTPClient) DeleteApplication(id string, opts models.ClientOptions) err
 	return nil
 }
 
-// GetApplication gets an application by its Id and returns an error
+// GetApplication gets an application by one of its Id and returns an error
+// If perfomance matters, note that an object ID is faster than an App ID
 //
 // Required permissions: Application.Read.All
 // Required permissions: Application.ReadWrite
 //
 // Parameters:
 //
-//	id: The application ID
+//	id: The application (object or App) ID
 //	opts: The client options
 func (c *HTTPClient) GetApplication(id string, opts models.ClientOptions) (*models.Application, error) {
 	if id == "" {
@@ -246,6 +291,9 @@ func (c *HTTPClient) GetApplication(id string, opts models.ClientOptions) (*mode
 		return nil, err
 	}
 	if response.StatusCode != 200 {
+		if response.StatusCode == 404 {
+			return c.GetApplicationByAppID(id, opts)
+		}
 		return nil, errors.New(response.Status)
 	}
 

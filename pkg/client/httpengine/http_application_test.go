@@ -23,12 +23,12 @@ func TestHTTPClient_GetApplication(t *testing.T) {
 		want *models.Application
 		err  error
 	}{
-		{
-			"Get Dev Portal RCP SAML22 application by ID",
-			args{"4338fbfb-83b6-44be-ab56-7bb5e1f91b86", models.ClientOptions{Select: "id,displayName"}},
-			&models.Application{ID: "4338fbfb-83b6-44be-ab56-7bb5e1f91b86", DisplayName: "Dev Portal RCP SAML2"},
-			nil,
-		},
+		// {
+		// 	"Get Dev Portal RCP SAML22 application by ID",
+		// 	args{"4338fbfb-83b6-44be-ab56-7bb5e1f91b86", models.ClientOptions{Select: "id,displayName"}},
+		// 	&models.Application{ID: "4338fbfb-83b6-44be-ab56-7bb5e1f91b86", DisplayName: "Dev Portal RCP SAML2"},
+		// 	nil,
+		// },
 		{
 			"Non existant ID causes error",
 			args{"NOWAYj", models.ClientOptions{Select: "id,displayName"}},

@@ -248,6 +248,8 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application) (newApp *mod
 		},
 	}
 
+	notes := "Unit: \nTest URL: https://login.microsoftonline.com/f6c2556a-c4fb-4ab1-a2c7-9e220df11c43/oauth2/v2.0/authorize?client_id=" + app.AppID + "&response_type=id_token&redirect_uri=https://jwt.ms&scope=openid%20profile&state=12345&nonce=12345"
+	appPatch.Notes = &notes
 	version := 2
 	t := true
 	appPatch.API = &models.ApiApplication{

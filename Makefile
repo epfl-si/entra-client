@@ -43,12 +43,7 @@ audit:
 ## clean: clean go artefacts (binary included)
 clean:
 	go clean
-	rm ${WINDOWS} ${LINUX} ${DARWIN}	
-
-## doc: make documentation
-.PHONY: doc
-doc:
-	swag init -g cmd/api/main.go
+	rm ${WINDOWS} ${LINUX} ${DARWIN}
 
 ## release: test build and audit current code
 release: test build audit security
