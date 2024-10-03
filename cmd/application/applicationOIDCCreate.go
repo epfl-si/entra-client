@@ -43,7 +43,12 @@ Example:
 			DisplayName: rootcmd.OptDisplayName,
 		}
 
-		if OptTypeWeb == true {
+		if OptTypeSpa == true {
+			bootstrApp.Spa = &models.SpaApplication{
+				RedirectURIs: OptRedirectURI,
+			}
+		} else {
+			// Web is default
 			URIList := []models.URI{}
 			for i, uri := range OptRedirectURI {
 				URIList = append(URIList, models.URI{URI: uri, Index: i})
@@ -51,11 +56,6 @@ Example:
 			bootstrApp.Web = &models.WebSection{
 				RedirectURIs:        OptRedirectURI,
 				RedirectURISettings: URIList,
-			}
-		} else {
-			// is default
-			bootstrApp.Spa = &models.SpaApplication{
-				RedirectURIs: OptRedirectURI,
 			}
 		}
 
@@ -74,8 +74,8 @@ Example:
 func init() {
 	applicationOIDCCmd.AddCommand(applicationOIDCCreateCmd)
 
-	applicationOIDCCreateCmd.Flags().BoolVar(&OptTypeWeb, "web", false, "The application type is web")
-	applicationOIDCCreateCmd.Flags().BoolVar(&OptTypeSpa, "spa", true, "The application type is spa (default)")
+	applicationOIDCCreateCmd.Flags().BoolVar(&OptTypeWeb, "web", false, "The application type is web (default)")
+	applicationOIDCCreateCmd.Flags().BoolVar(&OptTypeSpa, "spa", false, "The application type is spa")
 
 	applicationOIDCCreateCmd.MarkFlagsMutuallyExclusive("web", "spa")
 
