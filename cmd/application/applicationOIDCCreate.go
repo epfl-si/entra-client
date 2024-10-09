@@ -27,7 +27,7 @@ Usage:
   ./ecli application oidc create --displayname "<Application name>" --redirect_uri "<Redirect URI> --spa"
 
 Example:
-  ./ecli application oidc create --displayname "AA OIDC provisioning 1" --redirect_uri "https://aaoidcprovisioning1/redirect"
+  ./ecli application oidc create --displayname "AA OIDC provisioning 1" --authorized "AAD_All Staff Users" --redirect_uri "https://aaoidcprovisioning1/redirect"
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if rootcmd.OptDisplayName == "" {
@@ -59,7 +59,13 @@ Example:
 			}
 		}
 
-		app, _, secret, err := rootcmd.Client.CreateOIDCApplication(bootstrApp)
+		options := &models.AppOptions{}
+
+		if OptAuthorized != nil {
+			options.AuthorizedUsers = OptAuthorized
+		}
+
+		app, _, secret, err := rootcmd.Client.CreateOIDCApplication(bootstrApp, options)
 		if err != nil {
 			rootcmd.PrintErr(err)
 			return
