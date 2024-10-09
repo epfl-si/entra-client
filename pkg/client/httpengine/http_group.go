@@ -76,8 +76,6 @@ func (c *HTTPClient) GetGroup(id string, opts models.ClientOptions) (*models.Gro
 		return nil, err
 	}
 	if response.StatusCode != 200 {
-		c.Log.Sugar().Debugf("GetGroup() - QueryString: %s\n", buildQueryString(opts))
-		c.Log.Sugar().Debugf("GetGroup() - Response body: %s\n", getBody(response))
 		return nil, errors.New(response.Status)
 	}
 

@@ -182,8 +182,8 @@ func (c *HTTPClient) CreatePortalApplication(app *models.Application, clientOpti
 //
 //	either in Web.RedirectURIs
 //	or     in Spa.RedirectURIs
-func (c *HTTPClient) CreateOIDCApplication(app *models.Application) (newApp *models.Application, newSP *models.ServicePrincipal, secret string, err error) {
-
+func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *models.AppOptions) (newApp *models.Application, newSP *models.ServicePrincipal, secret string, err error) {
+	var errs = ""
 	// URIList := []models.URI{}
 
 	bootstrApp := &models.Application{
@@ -213,7 +213,7 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application) (newApp *mod
 
 	scrt, err := c.AddPasswordToApplication(app.ID, app.DisplayName+" secret", opts)
 	if err != nil {
-		return app, sp, "", err
+		errs += fmt.Sprintf("AddPasswordToApplication: %s\n", err.Error())
 	}
 
 	appPatch := &models.Application{
@@ -235,6 +235,10 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application) (newApp *mod
 					},
 					{
 						ID:   "14dad69e-099b-42c9-810b-d002981feec1",
+						Type: "Scope",
+					},
+					{
+						ID:   "e1fe6dd8-ba31-4d61-89e7-88639da4683d",
 						Type: "Scope",
 					},
 				},
@@ -263,10 +267,24 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application) (newApp *mod
 
 	err = c.PatchApplication(app.ID, appPatch, opts)
 	if err != nil {
-		return app, sp, "", err
+		errs += fmt.Sprintf("PatchApplication: %s\n", err.Error())
 	}
 
-	// Configure claims (5th parameter is to add default claims)ß
+	/* Waiting for the consent on DelegatedPermissionGrant.ReadWrite.All
+	// Give consent to the application
+	err = c.GrantPermissionsToApplication("f6c2556a-c4fb-4ab1-a2c7-9e220df11c43", app.ID, []string{
+		"User.Read",
+		"openid",
+		"profile",
+		"email",
+		"offline_access",
+	}, opts)
+	if err != nil {
+		errs += fmt.Sprintf("GrantPermissionsToApplication: %s\n", err.Error())
+	}
+	*/
+
+	// Configure claims (5th parameter is to add default claims)
 	err = c.AddClaimToApplication(app.ID, "", "", "", true, opts)
 
 	// Customize application
@@ -278,19 +296,25 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application) (newApp *mod
 
 	err = c.PatchServicePrincipal(sp.ID, spPatch, opts)
 	if err != nil {
-		return app, sp, "", err
+		errs += fmt.Sprintf("PatchServicePrincipal: %s\n", err.Error())
 	}
 
-	for _, groupID := range []string{
-		"AAD_All Hosts Users",
-		"AAD_All Outside EPFL Users",
-		"AAD_All Staff Users",
-		"AAD_All Student Users",
-	} {
+	authorized := []string{}
+	if appOptions == nil || appOptions.AuthorizedUsers == nil || len(appOptions.AuthorizedUsers) == 0 {
+		authorized = []string{
+			"AAD_All Hosts Users",
+			"AAD_All Outside EPFL Users",
+			"AAD_All Staff Users",
+			"AAD_All Student Users",
+		}
+	} else {
+		authorized = appOptions.AuthorizedUsers
+	}
 
+	for _, groupID := range authorized {
 		err = c.AddGroupToServicePrincipal(sp.ID, groupID, opts)
 		if err != nil {
-			return app, sp, "", err
+			errs += fmt.Sprintf("AddGroupToServicePrincipal: %s\n", err.Error())
 		}
 	}
 
@@ -300,6 +324,10 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application) (newApp *mod
 	// 	rootcmd.PrintErr(fmt.Errorf("Assign ClaimsPolicy %s to ServicePrincipal %s: %w", "b0a98d4a-221f-4d76-b6fb-7f6f0089175", sp.ID, err))
 	// 	return
 	// }
+
+	if errs != "" {
+		return app, sp, *scrt.SecretText, errors.New(errs)
+	}
 
 	return app, sp, *scrt.SecretText, nil
 

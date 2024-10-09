@@ -3,6 +3,8 @@ package rest
 
 import (
 	"bytes"
+	"fmt"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -58,7 +60,8 @@ func (c *Client) Post(path string, body []byte, headers Headers) (*http.Response
 	// send the request
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("error making POST request: %w - %s", err, string(body))
 	}
 
 	return resp, nil

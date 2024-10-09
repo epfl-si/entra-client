@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/epfl-si/entra-client/pkg/client/models"
@@ -34,11 +35,10 @@ func (c *HTTPClient) AddClaimToApplication(id, name, source, location string, ba
 		claims := []models.OptionalClaim{
 			{
 				Name:   "employeeId",
-				Source: "user",
+				Source: "user.extension_7f3a3b77684c447c8a26b18917abfed2_employeeID",
 			},
 			{
-				Name:   "onpremisessamaccountname",
-				Source: "user",
+				Name: "extension_7f3a3b77684c447c8a26b18917abfed2_employeeID",
 			},
 			{
 				Name: "family_name",
@@ -445,3 +445,69 @@ func (c *HTTPClient) WaitApplication(id string, timeout int, options models.Clie
 // func (c *HTTPClient) UpdateApplication(app *models.Application, options models.ClientOptions) (err error) {
 // 	return errors.New("not implemented")
 // }
+
+// GrantPermissionsToApplication grants permissions to an application and returns an error
+//
+// Required permissions: Application.ReadWrite.All
+//
+// Parameters:
+//
+//	id: The application ID
+//	permission: The permission to grant
+//	opts: The client options
+func (c *HTTPClient) GrantPermissionsToApplication(clientObjectID, resourceID string, scopes []string, opts models.ClientOptions) error {
+
+	type OAuth2PermissionGrant struct {
+		ClientID    string `json:"clientId"`
+		ConsentType string `json:"consentType"`
+		PrincipalID string `json:"principalId,omitempty"`
+		ResourceID  string `json:"resourceId"`
+		Scope       string `json:"scope"`
+	}
+
+	if clientObjectID == "" {
+		return errors.New("Client ObjectID missing")
+	}
+
+	if resourceID == "" {
+		return errors.New("ResourceID empty")
+	}
+
+	if len(scopes) == 0 {
+		return errors.New("Scopes empty")
+	}
+
+	errs := ""
+	grant := &OAuth2PermissionGrant{
+		ClientID:    clientObjectID,
+		ConsentType: "AllPrincipals",
+		PrincipalID: "",
+		ResourceID:  resourceID,
+		Scope:       strings.Join(scopes, " "),
+	}
+	u, err := json.Marshal(grant)
+	if err != nil {
+		errs = errs + err.Error()
+	}
+
+	h := c.buildHeaders(opts)
+	h["Content-Type"] = "application/json"
+
+	response, err := c.RestClient.Post("/oAuth2PermissionGrants", u, h)
+
+	if err != nil {
+		errs = errs + err.Error()
+		c.Log.Sugar().Error("GrantApplicationPermission - REST Error: %#v - %s ", err, getBody(response))
+	}
+	if response.StatusCode != 200 {
+		c.Log.Sugar().Errorf("GrantPermissionsToApplication - Unexpected result: %s ", getBody(response))
+		errs = errs + "Unexpected status code:" + response.Status + "\n"
+	}
+
+	if errs != "" {
+		return errors.New(errs)
+	}
+
+	return nil
+
+}
