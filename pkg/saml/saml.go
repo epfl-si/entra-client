@@ -1,3 +1,4 @@
+// Package saml provides the SAML functionality for the application
 package saml
 
 import (

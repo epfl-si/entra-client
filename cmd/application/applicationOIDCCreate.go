@@ -43,7 +43,7 @@ Example:
 			DisplayName: rootcmd.OptDisplayName,
 		}
 
-		if OptTypeSpa == true {
+		if OptTypeSpa {
 			bootstrApp.Spa = &models.SpaApplication{
 				RedirectURIs: OptRedirectURI,
 			}

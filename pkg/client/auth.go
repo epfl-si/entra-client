@@ -6,7 +6,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	azidentity "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	msgraphsdk "github.com/microsoftgraph/msgraph-sdk-go"
 )
 
 func GetToken(clientID, clientSecret, tenantID string) (string, error) {
@@ -66,22 +65,22 @@ func GetToken(clientID, clientSecret, tenantID string) (string, error) {
 	return result.Token, nil
 }
 
-func GetClient(clientID, clientSecret, tenantID string) (*msgraphsdk.GraphServiceClient, error) {
+// func GetClient(clientID, clientSecret, tenantID string) (*msgraphsdk.GraphServiceClient, error) {
 
-	cred, _ := azidentity.NewClientSecretCredential(
-		tenantID,
-		clientID,
-		clientSecret,
-		nil,
-	)
-	fmt.Println("got cred")
+// 	cred, _ := azidentity.NewClientSecretCredential(
+// 		tenantID,
+// 		clientID,
+// 		clientSecret,
+// 		nil,
+// 	)
+// 	fmt.Println("got cred")
 
-	client, err := msgraphsdk.NewGraphServiceClientWithCredentials(cred, []string{"https://graph.microsoft.com/.default"})
-	if err != nil {
-		fmt.Printf("getClient Error: %s\n", err.Error())
-		return nil, err
-	}
-	fmt.Println("got client")
+// 	client, err := msgraphsdk.NewGraphServiceClientWithCredentials(cred, []string{"https://graph.microsoft.com/.default"})
+// 	if err != nil {
+// 		fmt.Printf("getClient Error: %s\n", err.Error())
+// 		return nil, err
+// 	}
+// 	fmt.Println("got client")
 
-	return client, nil
-}
+// 	return client, nil
+// }

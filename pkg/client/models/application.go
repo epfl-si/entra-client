@@ -28,7 +28,7 @@ type WebSection struct {
 // Resources: https://learn.microsoft.com/en-us/graph/api/resources/applications-api-overview
 type Application struct {
 	ID                            string                   `json:"id,omitempty"`
-	API                           *ApiApplication          `json:"api,omitempty"`
+	API                           *APIApplication          `json:"api,omitempty"`
 	AppID                         string                   `json:"appId,omitempty"`
 	AccessTokenAcceptedVersion    *int                     `json:"accessTokenAcceptedVersion,omitempty"`
 	AllowPublicClient             bool                     `json:"allowPublicClient,omitempty"`

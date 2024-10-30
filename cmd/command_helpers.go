@@ -66,7 +66,7 @@ func OutputJSON(data interface{}) string {
 func AddCertificate(spID string, certUsage, certType, certBase64 string, clientOptions models.ClientOptions) error {
 
 	if certUsage != "Verify" && certUsage != "Sign" {
-		return fmt.Errorf("Invalid certificate usage: %s", certUsage)
+		return fmt.Errorf("invalid certificate usage: %s", certUsage)
 	}
 
 	sp, err := Client.GetServicePrincipal(spID, clientOptions)

@@ -35,7 +35,7 @@ func (c *HTTPClient) InstantiateApplicationTemplate(id, name string, opts models
 		return nil, nil, errors.New("ID missing")
 	}
 	if name == "" {
-		return nil, nil, errors.New("Name missing")
+		return nil, nil, errors.New("name missing")
 	}
 	u, err := json.Marshal(applicationTemplatePost{ID: id, DisplayName: name})
 	if err != nil {

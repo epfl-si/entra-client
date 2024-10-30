@@ -1,6 +1,6 @@
 package models
 
-type ApiApplication struct {
+type APIApplication struct {
 	AcceptMappedClaims          *bool                      `json:"acceptMappedClaims,omitempty"`
 	KnownClientApplications     []string                   `json:"knownClientApplications,omitempty"`
 	OAuth2PermissionScopes      []OAuth2PermissionScope    `json:"oauth2PermissionScopes,omitempty"`

@@ -1,7 +1,7 @@
 // Package models provides the models for the application
 package models
 
-// ExtensionProperty represents an extension property
+// ExtensionPropertyResponse represents an extension property reponse
 type ExtensionPropertyResponse struct {
 	Context  string               `json:"@odata.context"`
 	NextLink string               `json:"@odata.nextLink"`
