@@ -182,13 +182,13 @@ var applicationSAMLCreateCmd = &cobra.Command{
 
 		claimsID, err := rootcmd.Client.CreateClaimsMappingPolicy(claims, opts)
 		if err != nil {
-			rootcmd.PrintErr(fmt.Errorf("Creating ClaimsPolicy %s: %w", claimsID, err))
+			rootcmd.PrintErr(fmt.Errorf("creating ClaimsPolicy %s: %w", claimsID, err))
 			return
 		}
 
 		err = rootcmd.Client.AssignClaimsPolicyToServicePrincipal(claimsID, sp.ID)
 		if err != nil {
-			rootcmd.PrintErr(fmt.Errorf("Assign ClaimsPolicy %s to ServicePrincipal %s: %w", claimsID, sp.ID, err))
+			rootcmd.PrintErr(fmt.Errorf("assign ClaimsPolicy %s to ServicePrincipal %s: %w", claimsID, sp.ID, err))
 			return
 		}
 

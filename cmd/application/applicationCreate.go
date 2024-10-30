@@ -21,7 +21,7 @@ Example:
 	Run: func(cmd *cobra.Command, args []string) {
 		var app models.Application
 		if rootcmd.OptDisplayName == "" {
-			rootcmd.PrintErr(errors.New("Name is required (use --displayname)"))
+			rootcmd.PrintErr(errors.New("name is required (use --displayname)"))
 			return
 		}
 

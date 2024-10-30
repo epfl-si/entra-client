@@ -49,6 +49,7 @@ func New() (*HTTPClient, error) {
 		accessToken, err := client.GetToken(c.ClientID, c.Secret, c.Tenant)
 		if err != nil {
 			c.Log.Sugar().Debugf("New() - 0 - Error: %s\n", err.Error())
+			return nil, err
 		}
 		c.AccessToken = accessToken
 	}
@@ -256,7 +257,7 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *
 	appPatch.Notes = &notes
 	version := 2
 	t := true
-	appPatch.API = &models.ApiApplication{
+	appPatch.API = &models.APIApplication{
 		AcceptMappedClaims:          &t,
 		RequestedAccessTokenVersion: &version,
 	}

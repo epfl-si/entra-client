@@ -198,7 +198,7 @@ func (c *HTTPClient) AddKeyToServicePrincipal(id string, key saml.KeyDescriptor,
 	if err != nil {
 		return err
 	}
-	u = []byte(out.String())
+	u = out.Bytes()
 
 	h := c.buildHeaders(opts)
 	h["Content-Type"] = "application/json"
@@ -389,11 +389,11 @@ func (c *HTTPClient) AssignClaimsPolicyToServicePrincipal(claimsPolicyID, servic
 	h["Content-Type"] = "application/json"
 
 	response, err := c.RestClient.Post("/servicePrincipals/"+servicePrincipalID+"/claimsMappingPolicies/$ref", body, h)
-	defer response.Body.Close()
 	if err != nil {
 		c.Log.Sugar().Debugf("AssignClaimsPolicyToServicePrincipal() - Error: %+v\n", response)
 		return err
 	}
+	defer response.Body.Close()
 	if response.StatusCode != 204 {
 		c.Log.Sugar().Debugf("AssignClaimsPolicyToServicePrincipal() - Body: %s\n", getBody(response))
 		return errors.New(response.Status)
@@ -425,10 +425,11 @@ func (c *HTTPClient) CreateServicePrincipal(app *models.ServicePrincipal, opts m
 	h["Content-Type"] = "application/json"
 
 	response, err := c.RestClient.Post("/serviceprincipals", u, h)
-	defer response.Body.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer response.Body.Close()
+
 	if response.StatusCode != 201 {
 		c.Log.Sugar().Debugf("CreateServicePrincipal() - Body: %#v\n", getBody(response))
 		return nil, errors.New(response.Status)
@@ -730,11 +731,12 @@ func (c *HTTPClient) UnassignClaimsPolicyFromServicePrincipal(claimsPolicyID, se
 	h := c.buildHeaders(options)
 
 	response, err := c.RestClient.Delete("/servicePrincipals/"+servicePrincipalID+"/claimsMappingPolicies/"+claimsPolicyID+"/$ref", h)
-	defer response.Body.Close()
 	if err != nil {
 		c.Log.Sugar().Debugf("UnassignClaimsPolicyToServicePrincipal() - Error: %+v\n", response)
 		return err
 	}
+	defer response.Body.Close()
+
 	if response.StatusCode != 204 {
 		c.Log.Sugar().Debugf("UnassignClaimsPolicyToServicePrincipal() - Body: %s\n", getBody(response))
 		return errors.New(response.Status)

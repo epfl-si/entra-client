@@ -399,13 +399,13 @@ func (c *HTTPClient) PatchApplication(id string, app *models.Application, opts m
 
 	response, err := c.RestClient.Patch("/applications/"+id, u, h)
 	if err != nil {
-		return fmt.Errorf("Rest Patch %s: %w", id, err)
+		return fmt.Errorf("rest Patch %s: %w", id, err)
 	}
 
 	if response.StatusCode != 204 {
 		fmt.Printf("PatchApplication() - Body: %#v\n", getBody(response))
 		fmt.Printf("PatchApplication() - Payload: %s\n", u)
-		return errors.New("Rest Patch " + id + " unexpected status code " + response.Status)
+		return errors.New("rest Patch " + id + " unexpected status code " + response.Status)
 	}
 
 	return nil
@@ -466,15 +466,15 @@ func (c *HTTPClient) GrantPermissionsToApplication(clientObjectID, resourceID st
 	}
 
 	if clientObjectID == "" {
-		return errors.New("Client ObjectID missing")
+		return errors.New("client ObjectID missing")
 	}
 
 	if resourceID == "" {
-		return errors.New("ResourceID empty")
+		return errors.New("resourceID empty")
 	}
 
 	if len(scopes) == 0 {
-		return errors.New("Scopes empty")
+		return errors.New("scopes empty")
 	}
 
 	errs := ""

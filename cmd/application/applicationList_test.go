@@ -22,7 +22,7 @@ func Test_applicationList(t *testing.T) {
 		stdout, stderr := rootcmd.ReleaseOutput(rout, wout, oldout, rerr, werr, olderr)
 
 		fmt.Println("AAAAAA", string(stdout))
-		fmt.Println("AAAAAA", string(stderr))
+		fmt.Println("AAAAAE", string(stderr))
 
 		outs := strings.Split(string(stdout), "\n")
 
