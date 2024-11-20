@@ -212,7 +212,7 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *
 		return app, sp, "", err
 	}
 
-	scrt, err := c.AddPasswordToApplication(app.ID, app.DisplayName+" secret", opts)
+	scrt, err := c.AddPasswordToApplication(app.ID, app.DisplayName+"_secret", opts)
 	if err != nil {
 		errs += fmt.Sprintf("AddPasswordToApplication: %s\n", err.Error())
 	}
