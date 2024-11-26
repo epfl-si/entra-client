@@ -481,7 +481,7 @@ func (c *HTTPClient) GiveConsentToApplication(spObjectID string, scopes []string
 		ClientID:    spObjectID,
 		ConsentType: "AllPrincipals",
 		PrincipalID: "",
-		ResourceID:  c.EntraConfig.Get("MICROSOFT_GRAPH_API_ID"),
+		ResourceID:  c.EntraConfig.Get("MSGRAPH_API_ID"),
 		Scope:       strings.Join(scopes, " "),
 	}
 	u, err := json.Marshal(grant)
@@ -497,7 +497,7 @@ func (c *HTTPClient) GiveConsentToApplication(spObjectID string, scopes []string
 		errs = errs + err.Error()
 		c.Log.Sugar().Error("GrantApplicationPermission - REST Error: %#v - %s ", err, getBody(response))
 	}
-	if response.StatusCode != 200 {
+	if response.StatusCode != 201 {
 		c.Log.Sugar().Errorf("GrantPermissionsToApplication - Unexpected result: %s ", getBody(response))
 		errs = errs + "Unexpected status code:" + response.Status + "\n"
 	}

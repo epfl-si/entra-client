@@ -230,26 +230,26 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *
 	appPatch := &models.Application{
 		RequiredResourceAccess: []models.RequiredResource{
 			{
-				ResourceAppID: "00000003-0000-0000-c000-000000000000",
+				ResourceAppID: c.EntraConfig.Get("MSGRAPH_API_RESOURCE_APP_ID"),
 				ResourceAccess: []models.ResourceAccess{
 					{
-						ID:   "64a6cdd6-aab1-4aaf-94b8-3cc8405e90d0",
+						ID:   c.EntraConfig.Get("MSGRAPH_EMAIL_RESOURCE_ID"),
 						Type: "Scope",
 					},
 					{
-						ID:   "7427e0e9-2fba-42fe-b0c0-848c9e6a8182",
+						ID:   c.EntraConfig.Get("MSGRAPH_OFFLINE_ACCESS_RESOURCE_ID"),
 						Type: "Scope",
 					},
 					{
-						ID:   "37f7f235-527c-4136-accd-4a02d197296e",
+						ID:   c.EntraConfig.Get("MSGRAPH_OPENID_RESOURCE_ID"),
 						Type: "Scope",
 					},
 					{
-						ID:   "14dad69e-099b-42c9-810b-d002981feec1",
+						ID:   c.EntraConfig.Get("MSGRAPH_PROFILE_RESOURCE_ID"),
 						Type: "Scope",
 					},
 					{
-						ID:   "e1fe6dd8-ba31-4d61-89e7-88639da4683d",
+						ID:   c.EntraConfig.Get("MSGRAPH_USER_READ_RESOURCE_ID"),
 						Type: "Scope",
 					},
 				},
@@ -281,9 +281,10 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *
 		errs += fmt.Sprintf("PatchApplication: %s\n", err.Error())
 	}
 
-	/* Waiting for the consent on DelegatedPermissionGrant.ReadWrite.All
+	//Waiting for the consent on DelegatedPermissionGrant.ReadWrite.All
 	// Give consent to the application
-	err = c.GrantPermissionsToApplication("f6c2556a-c4fb-4ab1-a2c7-9e220df11c43", app.ID, []string{
+
+	err = c.GiveConsentToApplication(sp.ID, []string{
 		"User.Read",
 		"openid",
 		"profile",
@@ -291,9 +292,8 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *
 		"offline_access",
 	}, opts)
 	if err != nil {
-		errs += fmt.Sprintf("GrantPermissionsToApplication: %s\n", err.Error())
+		errs += fmt.Sprintf("GiveConsentToApplication: %s\n", err.Error())
 	}
-	*/
 
 	// Configure claims (5th parameter is to add default claims)
 	err = c.AddClaimToApplication(app.ID, "", "", "", true, opts)
