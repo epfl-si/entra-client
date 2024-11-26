@@ -12,6 +12,7 @@ type Service interface {
 	CreateOIDCApplication(app *models.Application, appOptions *models.AppOptions) (newApp *models.Application, newSP *models.ServicePrincipal, secret string, err error)
 	CreatePortalApplication(app *models.Application, options models.ClientOptions) (newApp *models.Application, newSP *models.ServicePrincipal, err error)
 	GetToken() (token string)
+	GetTenant() (tenant string)
 
 	// Application Template
 	GetApplicationTemplate(id string, options models.ClientOptions) (apps *models.ApplicationTemplate, err error)
@@ -27,9 +28,11 @@ type Service interface {
 	GetApplication(id string, options models.ClientOptions) (apps *models.Application, err error)
 	GetApplicationByAppID(id string, options models.ClientOptions) (apps *models.Application, err error)
 	GetApplications(options models.ClientOptions) (apps []*models.Application, nextURL string, err error)
-	GrantPermissionsToApplication(clientID, resourceIDs string, scopes []string, options models.ClientOptions) (err error)
+	GiveConsentToApplication(spObjectID string, scopes []string, options models.ClientOptions) (err error)
 	PatchApplication(id string, app *models.Application, options models.ClientOptions) (err error)
 	WaitApplication(id string, timeout int, options models.ClientOptions) (err error)
+	//GiveConsentToApplication(id string, options models.ClientOptions) (err error)
+	GetApplicationConsents(options models.ClientOptions) (body string, err error)
 
 	// Claims Mapping Policy
 	CreateClaimsMappingPolicy(app *models.ClaimsMappingPolicy, options models.ClientOptions) (id string, err error)

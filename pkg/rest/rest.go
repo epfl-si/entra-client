@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 // Client is a REST client that can make requests to a REST API
@@ -33,6 +34,8 @@ func (c *Client) Get(path string, headers Headers) (*http.Response, error) {
 	} else {
 		url = c.BaseURL + path
 	}
+
+	url = strings.ReplaceAll(url, " ", "%20")
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err

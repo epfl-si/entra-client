@@ -446,7 +446,10 @@ func (c *HTTPClient) WaitApplication(id string, timeout int, options models.Clie
 // 	return errors.New("not implemented")
 // }
 
-// GrantPermissionsToApplication grants permissions to an application and returns an error
+// GiveConsentToApplication grants permissions to an application and returns an error
+//
+// The scopes should be given all at once
+// (until we implement the way to add/give them one by one)
 //
 // Required permissions: Application.ReadWrite.All
 //
@@ -455,7 +458,7 @@ func (c *HTTPClient) WaitApplication(id string, timeout int, options models.Clie
 //	id: The application ID
 //	permission: The permission to grant
 //	opts: The client options
-func (c *HTTPClient) GrantPermissionsToApplication(clientObjectID, resourceID string, scopes []string, opts models.ClientOptions) error {
+func (c *HTTPClient) GiveConsentToApplication(spObjectID string, scopes []string, opts models.ClientOptions) error {
 
 	type OAuth2PermissionGrant struct {
 		ClientID    string `json:"clientId"`
@@ -465,12 +468,8 @@ func (c *HTTPClient) GrantPermissionsToApplication(clientObjectID, resourceID st
 		Scope       string `json:"scope"`
 	}
 
-	if clientObjectID == "" {
+	if spObjectID == "" {
 		return errors.New("client ObjectID missing")
-	}
-
-	if resourceID == "" {
-		return errors.New("resourceID empty")
 	}
 
 	if len(scopes) == 0 {
@@ -479,10 +478,10 @@ func (c *HTTPClient) GrantPermissionsToApplication(clientObjectID, resourceID st
 
 	errs := ""
 	grant := &OAuth2PermissionGrant{
-		ClientID:    clientObjectID,
+		ClientID:    spObjectID,
 		ConsentType: "AllPrincipals",
 		PrincipalID: "",
-		ResourceID:  resourceID,
+		ResourceID:  c.EntraConfig.Get("MICROSOFT_GRAPH_API_ID"),
 		Scope:       strings.Join(scopes, " "),
 	}
 	u, err := json.Marshal(grant)
@@ -494,7 +493,6 @@ func (c *HTTPClient) GrantPermissionsToApplication(clientObjectID, resourceID st
 	h["Content-Type"] = "application/json"
 
 	response, err := c.RestClient.Post("/oAuth2PermissionGrants", u, h)
-
 	if err != nil {
 		errs = errs + err.Error()
 		c.Log.Sugar().Error("GrantApplicationPermission - REST Error: %#v - %s ", err, getBody(response))
@@ -510,4 +508,31 @@ func (c *HTTPClient) GrantPermissionsToApplication(clientObjectID, resourceID st
 
 	return nil
 
+}
+
+// GetApplicationPermissions gets an application permissions and returns an error
+//
+// Required permissions: Application.ReadWrite.All
+//
+// Parameters:
+//
+//	appID: The application ID
+//	opts: The client options
+func (c *HTTPClient) GetApplicationConsents(opts models.ClientOptions) (string, error) {
+	h := c.buildHeaders(opts)
+	h["Content-Type"] = "application/json"
+
+	response, err := c.RestClient.Get("/oAuth2PermissionGrants"+buildQueryString(opts), h)
+	if err != nil {
+		c.Log.Sugar().Error("GetApplicationPermissions - REST Error: %#v - %s ", err, getBody(response))
+		return "", err
+	}
+
+	body := getBody(response)
+	if response.StatusCode != 200 {
+		c.Log.Sugar().Errorf("GetApplicationPermissions - Unexpected result: %s ", body)
+		return "", fmt.Errorf("GetApplicationPermissions - Unexpected status code: %s", response.Status)
+	}
+
+	return body, nil
 }

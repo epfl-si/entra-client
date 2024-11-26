@@ -42,6 +42,9 @@ var OptPrettyJSON bool
 // OptSearch is associated with the --search flag
 var OptSearch string
 
+// OptFilter is associated with the --filter flag
+var OptFilter string
+
 // OptSelect is associated with the --select flag
 var OptSelect string
 
@@ -124,6 +127,11 @@ var RootCmd = &cobra.Command{
 			ClientOptions.Top = OptBatch
 			ClientOptions.Paging = false
 		}
+
+		if OptFilter != "" && OptTop == "" {
+			ClientOptions.Filter = OptFilter
+			ClientOptions.Paging = false
+		}
 	},
 }
 
@@ -153,6 +161,7 @@ func init() {
 	RootCmd.PersistentFlags().StringVar(&OptPostData, "post", "", "Post body data")
 	RootCmd.PersistentFlags().BoolVar(&OptPrettyJSON, "pretty_json", false, "JSON pretty output")
 	RootCmd.PersistentFlags().StringVar(&OptSearch, "search", "", "Search filter in the form of 'propery:value'")
+	RootCmd.PersistentFlags().StringVar(&OptFilter, "filter", "", "Selection filter, ex \" clientId eq 'objectidvalue'\"")
 	RootCmd.PersistentFlags().StringVar(&OptSelect, "select", "", "Comma separated list of properties to be returnded for each object")
 	RootCmd.PersistentFlags().StringVar(&OptSkip, "skip", "", "Number of results to skip")
 	RootCmd.PersistentFlags().StringVar(&OptSkipToken, "skiptoken", "", "Paging token")

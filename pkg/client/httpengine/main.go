@@ -12,6 +12,7 @@ import (
 
 	client "github.com/epfl-si/entra-client/pkg/client"
 	"github.com/epfl-si/entra-client/pkg/client/models"
+	entraconfig "github.com/epfl-si/entra-client/pkg/entra_config"
 	"github.com/epfl-si/entra-client/pkg/rest"
 
 	"github.com/joho/godotenv"
@@ -28,6 +29,7 @@ type HTTPClient struct {
 	Tenant      string
 	RestClient  *rest.Client
 	Log         *zap.Logger
+	EntraConfig *entraconfig.EntraConfig
 }
 
 // New creates a new HTTPClient
@@ -53,6 +55,8 @@ func New() (*HTTPClient, error) {
 		}
 		c.AccessToken = accessToken
 	}
+
+	c.EntraConfig = entraconfig.New(c.GetTenant())
 
 	return &c, nil
 }
@@ -145,6 +149,12 @@ func getBody(response *http.Response) string {
 func (c *HTTPClient) GetToken() string {
 
 	return c.AccessToken
+}
+
+// GetTenant returns the tenant
+func (c *HTTPClient) GetTenant() string {
+
+	return c.Tenant
 }
 
 func normalizeThumbprint(thumbprint string) string {
