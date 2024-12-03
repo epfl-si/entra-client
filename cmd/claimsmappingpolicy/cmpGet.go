@@ -2,6 +2,7 @@ package cmdclaimsmappingpolicy
 
 import (
 	rootcmd "github.com/epfl-si/entra-client/cmd"
+	"github.com/epfl-si/entra-client/pkg/client/models"
 
 	"github.com/spf13/cobra"
 )
@@ -11,19 +12,42 @@ var claimGetCmd = &cobra.Command{
 	Use:   "get",
 	Short: "Get a claims mapping policy",
 	Long: `This command enables you to get a claims mapping policy.
+You can also use the alias "cmp" instead of "claimsmappingpolicy".
 
 	Example:
-		./ecli claim Get --spid 52c47ba8-f2d2-4c9b-9395-3654fc7d2b51 --cmpid 52c47ba8-f2d2-4c9b-9395-3654fc7d2b51
+		./ecli claimsmappingpolicy get --cmpid 52c47ba8-f2d2-4c9b-9395-3654fc7d2b51
+		./ecli cmp get --default
 	
-}
-	`,
+`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if OptCmpID == "" {
-			rootcmd.PrintErrString("ID is required (use --cmpid)")
+		if OptCmpID == "" && !OptDefault {
+			rootcmd.PrintErrString("Either ID or default is required (use --cmpid or --default)")
 			return
 		}
 
-		cmp, err := rootcmd.Client.GetClaimsMappingPolicy(OptCmpID, rootcmd.ClientOptions)
+		if OptDefault {
+			rootcmd.ClientOptions.Default = true
+		}
+
+		var cmp *models.ClaimsMappingPolicy
+		var err error
+
+		if OptDefault {
+			cmps, _, err := rootcmd.Client.GetClaimsMappingPolicies(rootcmd.ClientOptions)
+			if err != nil {
+				rootcmd.PrintErr(err)
+				return
+			}
+
+			if len(cmps) != 1 {
+				rootcmd.PrintErrString("Default claims mapping policy not found")
+				return
+			}
+
+			OptCmpID = cmps[0].ID
+		}
+
+		cmp, err = rootcmd.Client.GetClaimsMappingPolicy(OptCmpID, rootcmd.ClientOptions)
 		if err != nil {
 			rootcmd.PrintErr(err)
 			return
@@ -36,6 +60,7 @@ var claimGetCmd = &cobra.Command{
 
 func init() {
 	claimCmd.AddCommand(claimGetCmd)
+	claimGetCmd.MarkFlagsMutuallyExclusive("default", "cmpid")
 
 	claimGetCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
 		// Hide flags for this command

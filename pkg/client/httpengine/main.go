@@ -296,7 +296,7 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *
 	}
 
 	// Configure claims (5th parameter is to add default claims)
-	err = c.AddClaimToApplication(app.ID, "", "", "", true, opts)
+	//err = c.AddClaimToApplication(app.ID, "", "", "", true, opts)
 
 	// Customize application
 	spPatch := &models.ServicePrincipal{}
@@ -329,12 +329,22 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *
 		}
 	}
 
-	// Works but can't be edited by portal
-	// err = rootcmd.Client.AssignClaimsPolicyToServicePrincipal("b0a98d4a-221f-4d76-b6fb-7f6f0089175f", sp.ID)
-	// if err != nil {
-	// 	rootcmd.PrintErr(fmt.Errorf("Assign ClaimsPolicy %s to ServicePrincipal %s: %w", "b0a98d4a-221f-4d76-b6fb-7f6f0089175", sp.ID, err))
-	// 	return
-	// }
+	// get default claims mapping policy
+	cmps, _, err := c.GetClaimsMappingPolicies(models.ClientOptions{Filter: "isOrganizationDefault eq true"})
+	if err != nil {
+		errs += fmt.Sprintf("GetClaimsMappingPolicy: %s", err)
+		c.Log.Sugar().Debugf("CreateOIDCApplication() - 0 - Error: %s\n", err.Error())
+	}
+
+	// If default claims mapping policy is found, assign it to the service principal
+	if err == nil && len(cmps) == 1 {
+		// assign default claims mapping policy to service principal
+		err = c.AssignClaimsMappingPolicy(cmps[0].ID, sp.ID, opts)
+		if err != nil {
+			errs += fmt.Sprintf("AssignClaimsMappingPolicy: %s", err)
+			c.Log.Sugar().Debugf("CreateOIDCApplication() - 1 - Error: %s\n", err.Error())
+		}
+	}
 
 	if errs != "" {
 		return app, sp, *scrt.SecretText, errors.New(errs)

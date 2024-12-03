@@ -9,9 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// OptDefault is associated with the --default flag
-var OptDefault = false
-
 // claimCreateCmd represents the claimCreate command
 var claimCreateCmd = &cobra.Command{
 	Use:   "create",
@@ -53,10 +50,9 @@ var claimCreateCmd = &cobra.Command{
 		}
 
 		var claim models.ClaimsMappingPolicy
-		var options models.ClientOptions
 
 		if OptDefault {
-			options.Default = true
+			rootcmd.ClientOptions.Default = true
 		}
 
 		if rootcmd.OptPostData != "" {
@@ -80,8 +76,6 @@ var claimCreateCmd = &cobra.Command{
 
 func init() {
 	claimCmd.AddCommand(claimCreateCmd)
-
-	claimCreateCmd.Flags().BoolVar(&OptDefault, "default", false, "Create a default claims mapping policy")
 
 	claimCreateCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
 		// Hide flags for this command
