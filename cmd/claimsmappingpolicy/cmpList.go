@@ -1,4 +1,4 @@
-package cmdclaim
+package cmdclaimsmappingpolicy
 
 import (
 	rootcmd "github.com/epfl-si/entra-client/cmd"

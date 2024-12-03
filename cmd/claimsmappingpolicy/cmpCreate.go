@@ -1,4 +1,4 @@
-package cmdclaim
+package cmdclaimsmappingpolicy
 
 import (
 	"encoding/json"
@@ -53,13 +53,10 @@ var claimCreateCmd = &cobra.Command{
 		}
 
 		var claim models.ClaimsMappingPolicy
+		var options models.ClientOptions
 
 		if OptDefault {
-			claim = models.ClaimsMappingPolicy{
-				Definition:            []string{"{\"ClaimsMappingPolicy\":{\"Version\":1,\"IncludeBasicClaimSet\":\"false\",\"ClaimsSchema\": [{\"Source\":\"user\",\"ID\":\"user.employeeid\",\"JwtClaimType\": \"uniqueid\"}]}}"},
-				DisplayName:           "EPFL Default Claims Policy",
-				IsOrganizationDefault: false,
-			}
+			options.Default = true
 		}
 
 		if rootcmd.OptPostData != "" {

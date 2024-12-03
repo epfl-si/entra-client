@@ -30,6 +30,9 @@ var OptEngine string
 // OptID is associated with the --id flag
 var OptID string
 
+// OptSpID is associated with the --spid flag
+var OptSpID string
+
 // OptPaging is associated with the --paging flag
 var OptPaging bool
 
@@ -158,6 +161,7 @@ func init() {
 	RootCmd.PersistentFlags().StringVar(&OptDisplayName, "displayname", "", "Display name")
 	// RootCmd.PersistentFlags().StringVar(&OptEngine, "engine", "rest", "Engine to use ('sdk' or 'rest')")
 	RootCmd.PersistentFlags().StringVar(&OptID, "id", "", "Id to use")
+	RootCmd.PersistentFlags().StringVar(&OptSpID, "spid", "", "Service principal Id to use")
 	RootCmd.PersistentFlags().StringVar(&OptPostData, "post", "", "Post body data")
 	RootCmd.PersistentFlags().BoolVar(&OptPrettyJSON, "pretty_json", false, "JSON pretty output")
 	RootCmd.PersistentFlags().StringVar(&OptSearch, "search", "", "Search filter in the form of 'propery:value'")
