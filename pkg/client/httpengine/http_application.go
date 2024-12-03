@@ -38,7 +38,7 @@ func (c *HTTPClient) AddClaimToApplication(id, name, source, location string, ba
 				Source: "user.extension_7f3a3b77684c447c8a26b18917abfed2_employeeID",
 			},
 			{
-				Name: "extension_7f3a3b77684c447c8a26b18917abfed2_employeeID",
+				Name: "extension_7f3a3b77684c447c8a26b18917abfed2.employeeID",
 			},
 			{
 				Name: "family_name",
@@ -48,6 +48,12 @@ func (c *HTTPClient) AddClaimToApplication(id, name, source, location string, ba
 			},
 			{
 				Name: "email",
+			},
+			{
+				Name: "user.employeeid",
+			},
+			{
+				Name: "onprem_sid",
 			},
 		}
 		// application.OptionalClaims = &models.OptionalClaims{AccessToken: claims, SAML2Token: claims}
@@ -510,7 +516,7 @@ func (c *HTTPClient) GiveConsentToApplication(spObjectID string, scopes []string
 
 }
 
-// GetApplicationPermissions gets an application permissions and returns an error
+// GetApplicationConsents gets an application consents and returns an error
 //
 // Required permissions: Application.ReadWrite.All
 //
