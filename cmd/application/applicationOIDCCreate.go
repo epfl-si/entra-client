@@ -1,7 +1,5 @@
 package cmdapplication
 
-// @task write a test file applicationOIDCCreate_test.go that test the command applicationOIDCCreate @run
-
 import (
 	rootcmd "github.com/epfl-si/entra-client/cmd"
 	"github.com/epfl-si/entra-client/pkg/client/models"
