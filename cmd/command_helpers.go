@@ -15,6 +15,38 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// NormalizeName normalizes a name by adding prefixing with EPFL and suffixing with environment when it's not PROD, if it's not already the case
+// Note: " - " is replaced by "-" in the name.
+//   - name: the name to normalize
+//   - env: the environment (1: DEV, 2: TEST, 3: PROD)
+//
+// Returns the normalized name
+func NormalizeName(name string, env int) (string, error) {
+	var re = regexp.MustCompile(`^(?:EPFL - )?(.*?)(?: - (?:TEST|DEV))*$`)
+	n := re.FindString(name)
+
+	// If no match consider the name to be a bare one (to be normalized)
+	if n == "" {
+		n = name
+	}
+
+	// Ensure bare name contains no " - " => replace with "-"
+	re = regexp.MustCompile(` - `)
+	n = re.ReplaceAllString(n, "-")
+
+	switch env {
+	case 1:
+		return fmt.Sprintf("EPFL - %s - DEV", n), nil
+	case 2:
+		return fmt.Sprintf("EPFL - %s - TEST", n), nil
+	case 3:
+		return fmt.Sprintf("EPFL - %s", n), nil
+	default:
+		return "", fmt.Errorf("invalid environment: %d, must be 1, 2 or 3", env)
+
+	}
+}
+
 // NormalizeURI performs some modification (required by Microsoft QPI) on URI
 //   - removes the trailing slash from a string
 //   - replace http with api

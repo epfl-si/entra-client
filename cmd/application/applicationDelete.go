@@ -6,8 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// @task: Create a test file for every file in cmd/ that contains a command using applicationCreate_test.go as a template @all @run
-
 // applicationDeleteCmd represents the applicationDelete command
 var applicationDeleteCmd = &cobra.Command{
 	Use:   "delete",

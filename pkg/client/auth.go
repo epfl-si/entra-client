@@ -19,7 +19,8 @@ func GetToken(clientID, clientSecret, tenantID string) (string, error) {
 
 	result, err := cred.GetToken(context.Background(), policy.TokenRequestOptions{
 		Scopes: []string{
-			"https://graph.microsoft.com/.default",
+			".default",
+			// "https://graph.microsoft.com/.default",
 		},
 	})
 	if err != nil {
