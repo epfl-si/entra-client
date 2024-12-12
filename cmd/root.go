@@ -8,7 +8,6 @@ import (
 	httpengine "github.com/epfl-si/entra-client/pkg/client/httpengine"
 	"github.com/epfl-si/entra-client/pkg/client/models"
 
-	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
 )
 
@@ -175,26 +174,4 @@ func init() {
 	// when this action is called directly.
 	RootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	// UGLY!! Find the proper way to do this..
-	err := godotenv.Load(".env")
-	if err != nil {
-		err := godotenv.Load("../.env")
-		if err != nil {
-			_ = godotenv.Load("../../.env")
-		}
-	}
-
-	tenant := os.Getenv("ENTRA_TENANT")
-	if tenant == "" {
-		PrintErrString("ENTRA_TENANT is not set")
-		return
-	}
-
-	clientID := os.Getenv("ENTRA_CLIENTID")
-	if clientID == "" {
-		PrintErrString("ENTRA_CLIENTID is not set")
-		return
-	}
-
-	// Accept empty token (will be retrived by credentials)
 }

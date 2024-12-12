@@ -48,7 +48,8 @@ func New() (*HTTPClient, error) {
 	}
 
 	if c.AccessToken == "" {
-		accessToken, err := client.GetToken(c.ClientID, c.Secret, c.Tenant)
+		// Get unrestricted token
+		accessToken, err := client.GetToken(c.ClientID, c.Secret, c.Tenant, false)
 		if err != nil {
 			c.Log.Sugar().Debugf("New() - 0 - Error: %s\n", err.Error())
 			return nil, err
@@ -155,6 +156,18 @@ func (c *HTTPClient) GetToken() string {
 func (c *HTTPClient) GetTenant() string {
 
 	return c.Tenant
+}
+
+// GetSecret returns the client secret
+func (c *HTTPClient) GetSecret() string {
+
+	return c.Secret
+}
+
+// GetClientID returns the client ID
+func (c *HTTPClient) GetClientID() string {
+
+	return c.ClientID
 }
 
 func normalizeThumbprint(thumbprint string) string {

@@ -13,6 +13,8 @@ type Service interface {
 	CreatePortalApplication(app *models.Application, options models.ClientOptions) (newApp *models.Application, newSP *models.ServicePrincipal, err error)
 	GetToken() (token string)
 	GetTenant() (tenant string)
+	GetSecret() (tenant string)
+	GetClientID() (tenant string)
 
 	// Application Template
 	GetApplicationTemplate(id string, options models.ClientOptions) (apps *models.ApplicationTemplate, err error)
