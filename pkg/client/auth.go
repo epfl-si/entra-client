@@ -8,6 +8,7 @@ import (
 	azidentity "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 )
 
+// GetToken get a token from Entra
 func GetToken(clientID, clientSecret, tenantID string, restricted bool) (string, error) {
 
 	var scope string

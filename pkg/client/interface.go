@@ -7,14 +7,15 @@ import (
 	"github.com/crewjam/saml"
 )
 
+// Service is the interface for the client
 type Service interface {
 	// Utility
 	CreateOIDCApplication(app *models.Application, appOptions *models.AppOptions) (newApp *models.Application, newSP *models.ServicePrincipal, secret string, err error)
 	CreatePortalApplication(app *models.Application, options models.ClientOptions) (newApp *models.Application, newSP *models.ServicePrincipal, err error)
-	GetToken() (token string)
-	GetTenant() (tenant string)
-	GetSecret() (tenant string)
 	GetClientID() (tenant string)
+	GetSecret() (tenant string)
+	GetTenant() (tenant string)
+	GetToken(restricted bool) (token string, err error)
 
 	// Application Template
 	GetApplicationTemplate(id string, options models.ClientOptions) (apps *models.ApplicationTemplate, err error)

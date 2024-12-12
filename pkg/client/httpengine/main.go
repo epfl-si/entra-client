@@ -147,7 +147,12 @@ func getBody(response *http.Response) string {
 }
 
 // GetToken returns the access token
-func (c *HTTPClient) GetToken() string {
+func (c *HTTPClient) GetToken(restricted bool) (string, error) {
+	return client.GetToken(c.ClientID, c.Secret, c.Tenant, restricted)
+}
+
+// GetCurrentToken returns the currently used access token
+func (c *HTTPClient) GetCurrentToken() string {
 
 	return c.AccessToken
 }
