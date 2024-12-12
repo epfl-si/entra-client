@@ -8,19 +8,29 @@ import (
 	azidentity "github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 )
 
-func GetToken(clientID, clientSecret, tenantID string) (string, error) {
+func GetToken(clientID, clientSecret, tenantID string, restricted bool) (string, error) {
 
-	cred, _ := azidentity.NewClientSecretCredential(
+	var scope string
+	if restricted {
+		scope = "api://" + clientID + "/.default"
+	} else {
+		scope = "https://graph.microsoft.com/.default"
+	}
+
+	cred, err := azidentity.NewClientSecretCredential(
 		tenantID,
 		clientID,
 		clientSecret,
 		nil,
 	)
+	if err != nil {
+		fmt.Printf("New Client Secret Credential Error: %s\n", err.Error())
+		return "", err
+	}
 
 	result, err := cred.GetToken(context.Background(), policy.TokenRequestOptions{
 		Scopes: []string{
-			".default",
-			// "https://graph.microsoft.com/.default",
+			scope,
 		},
 	})
 	if err != nil {
@@ -28,41 +38,6 @@ func GetToken(clientID, clientSecret, tenantID string) (string, error) {
 		return "", err
 	}
 
-	// client, err := graph.NewGraphServiceClientWithCredentials(
-	// 	cred, []string{"https://graph.microsoft.com/.default"})
-	// if err != nil {
-	// 	fmt.Printf("GetClient Error: %s\n", err.Error())
-	// 	return "", err
-
-	// }
-
-	/// confidential clients have a credential, such as a secret or a certificate
-	/*
-		cred, err := confidential.NewCredFromSecret(secret)
-		if err != nil {
-			fmt.Printf("GetToken Error: %s\n", err.Error())
-			return "", err
-		}
-
-		scopes := []string{"https://graph.microsoft.com/.default"}
-
-		client, err := confidential.New("https://login.microsoftonline.com/"+tenant, clientID, cred)
-		if err != nil {
-			fmt.Printf("GetToken Error: %s\n", err.Error())
-			return "", err
-
-		}
-	*/
-
-	// cache miss, authenticate with another AcquireToken... method
-	// fmt.Println("Cache miss")
-	// result, err := client.AcquireTokenByCredential(context.TODO(), scopes)
-	// if err != nil {
-	// 	fmt.Printf("GetToken Error: %s\n", err.Error())
-	// 	return "", err
-	// }
-
-	// fmt.Printf("GetToken: %+v\n", result)
 	return result.Token, nil
 }
 
