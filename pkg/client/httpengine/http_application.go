@@ -457,7 +457,7 @@ func (c *HTTPClient) WaitApplication(id string, timeout int, options models.Clie
 // The scopes should be given all at once
 // (until we implement the way to add/give them one by one)
 //
-// Required permissions: Application.ReadWrite.All
+// Required permissions: Directory.ReadWrite.All
 //
 // Parameters:
 //
@@ -494,6 +494,7 @@ func (c *HTTPClient) GiveConsentToApplication(spObjectID string, scopes []string
 	if err != nil {
 		errs = errs + err.Error()
 	}
+	c.Log.Sugar().Debugf("GiveConsentToApplication() - Payload: %s\n", u)
 
 	h := c.buildHeaders(opts)
 	h["Content-Type"] = "application/json"

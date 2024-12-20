@@ -60,7 +60,7 @@ You can also use the alias "cmp" instead of "claimsmappingpolicy".
 
 func init() {
 	claimCmd.AddCommand(claimGetCmd)
-	claimGetCmd.MarkFlagsMutuallyExclusive("default", "cmpid")
+	// claimGetCmd.MarkFlagsMutuallyExclusive("default", "cmpid")
 
 	claimGetCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
 		// Hide flags for this command

@@ -131,6 +131,7 @@ func (c *HTTPClient) GetGroups(opts models.ClientOptions) ([]*models.Group, stri
 		err = json.Unmarshal(body, &groupResponse)
 		if err != nil {
 			c.Log.Sugar().Debugf("GetGroups() - 3 - Error: %s\n", err.Error())
+			c.Log.Sugar().Debugf("GetGroups() - 3.5 - Body: %s\n", body)
 			return nil, "", err
 		}
 
