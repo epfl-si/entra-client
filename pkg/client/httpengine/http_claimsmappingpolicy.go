@@ -11,6 +11,22 @@ import (
 	"io"
 )
 
+// DefaultClaimsMappingPolicy is the default claims mapping policy for EPFL
+//
+//	uniqueid -> employeeId (Sciper)
+//	gaspar -> onPremisesSamAccountName (Gaspar username)
+//	given_name -> givenName (First name)
+//	family_name -> surname (Last name)
+//	email -> mail (Email)
+var DefaultClaimsMappingPolicy = []string{
+	`{	"ClaimsMappingPolicy": { "Version":1, "IncludeBasicClaimSet":"false", "ClaimsSchema":[ 
+{"Source":"user", "ID": "employeeId", "JwtClaimType": "uniqueid"},
+{"Source":"user", "ID": "onPremisesSamAccountName", "JwtClaimType": "gaspar"},
+{"Source":"user", "ID": "givenName", "JwtClaimType": "given_name"},
+{"Source":"user", "ID": "surname", "JwtClaimType": "family_name"},
+{"Source":"user", "ID": "mail", "JwtClaimType": "mail"}
+]}}`}
+
 // AssignClaimsMappingPolicy assigns a claims mapping policy and returns an error
 //
 // Required permissions: Policy.Read.ApplicationConfiguration
@@ -61,21 +77,7 @@ func (c *HTTPClient) AssignClaimsMappingPolicy(cmpID, spID string, opts models.C
 //	opts: The client options
 func (c *HTTPClient) CreateClaimsMappingPolicy(claimspolicy *models.ClaimsMappingPolicy, opts models.ClientOptions) (string, error) {
 	if opts.Default {
-		claimspolicy.Definition = []string{
-			`{	
-"ClaimsMappingPolicy":
-	{
-		"Version":1,
-		"IncludeBasicClaimSet":"false",
-		"ClaimsSchema": 
-			[
-				{"Source":"user", "ID": "employeeId", "JwtClaimType": "uniqueid"},
-				{"Source":"user", "ID": "onPremisesSamAccountName", "JwtClaimType": "gaspar"},
-				{"Source":"user", "ID": "givenName", "JwtClaimType": "given_name"},
-				{"Source":"user", "ID": "surname", "JwtClaimType": "family_name"}
-			]
-	}
-}`}
+		claimspolicy.Definition = DefaultClaimsMappingPolicy
 		claimspolicy.DisplayName = "EPFL Default Claims Policy"
 		claimspolicy.IsOrganizationDefault = true
 	}
@@ -268,22 +270,31 @@ func (c *HTTPClient) GetClaimsMappingPolicies(opts models.ClientOptions) ([]*mod
 //
 // Parameters:
 //
-//	id: The claims mapping policy ID
+//	cmid: The claims mapping policy ID
 //	app: The claims mapping policy modification
 //	opts: The client options
-func (c *HTTPClient) PatchClaimsMappingPolicy(id string, app *models.ClaimsMappingPolicy, opts models.ClientOptions) error {
-	u, err := json.Marshal(app)
+func (c *HTTPClient) PatchClaimsMappingPolicy(cmpid string, cmp *models.ClaimsMappingPolicy, opts models.ClientOptions) error {
+	if opts.Default {
+		cmp.Definition = DefaultClaimsMappingPolicy
+		cmp.DisplayName = "EPFL Default Claims Policy"
+		cmp.IsOrganizationDefault = true
+	}
+
+	// c.Log.Sugar().Debugf("PatchClaimsMappingPolicy() - cmp: %#v\n", cmp)
+
+	u, err := json.Marshal(cmp)
 	if err != nil {
 		return err
 	}
+	// c.Log.Sugar().Debugf("PatchClaimsMappingPolicy() - Payload: %s\n", string(u))
 
 	h := c.buildHeaders(opts)
 	h["Content-Type"] = "application/json"
 
-	response, err := c.RestClient.Patch("/claimsmappingpolicies/"+id, u, h)
+	response, err := c.RestClient.Patch("/policies/claimsmappingpolicies/"+cmpid, u, h)
 	c.Log.Sugar().Debugf("PatchClaimsMappingPolicy() - Response: %#v\n", response)
 	body, err := io.ReadAll(io.Reader(response.Body))
-	c.Log.Sugar().Debugf("PatchClaimsMappingPolicy() - Response: %s\n", string(body))
+	c.Log.Sugar().Debugf("PatchClaimsMappingPolicy() - Body: %s\n", string(body))
 	if err != nil {
 		return err
 	}
