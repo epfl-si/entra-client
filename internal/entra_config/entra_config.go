@@ -16,7 +16,7 @@ var config = map[string]map[string]string{
 		"AAD_All Outside EPFL Users":         "43c1e1df-2a86-44c4-abba-9656aeeac56d",
 	},
 	"f6c2556a-c4fb-4ab1-a2c7-9e220df11c43": { // Prod tenant
-		"MSGRAPH_API_ID":                     "ab3b94f2-841b-4ca3-8f3e-7e63b5a5e233",
+		"MSGRAPH_API_ID":                     "0b24c62a-4a9d-4b87-aeeb-ad5343e4d7ca",
 		"MSGRAPH_API_RESOURCE_APP_ID":        "00000003-0000-0000-c000-000000000000",
 		"MSGRAPH_EMAIL_RESOURCE_ID":          "64a6cdd6-aab1-4aaf-94b8-3cc8405e90d0",
 		"MSGRAPH_OFFLINE_ACCESS_RESOURCE_ID": "7427e0e9-2fba-42fe-b0c0-848c9e6a8182",
