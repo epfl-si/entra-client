@@ -10,9 +10,9 @@ import (
 	"regexp"
 	"strings"
 
+	entraconfig "github.com/epfl-si/entra-client/internal/entra_config"
 	client "github.com/epfl-si/entra-client/pkg/client"
 	"github.com/epfl-si/entra-client/pkg/client/models"
-	entraconfig "github.com/epfl-si/entra-client/pkg/entra_config"
 	"github.com/epfl-si/entra-client/pkg/rest"
 
 	"github.com/joho/godotenv"
