@@ -249,7 +249,7 @@ func (c *HTTPClient) GetClaimsMappingPolicies(opts models.ClientOptions) ([]*mod
 			break
 		}
 
-		c.Log.Sugar().Debugf("GetGroups() - 4 - Calling Next: %s\n", cmpResponse.NextLink)
+		c.Log.Sugar().Debugf("GetClaimsMappingPolicys() - 4 - Calling Next: %s\n", cmpResponse.NextLink)
 		response, err = c.RestClient.Get(cmpResponse.NextLink, h)
 		if response.StatusCode != 200 {
 			return nil, "", errors.New(response.Status)

@@ -119,6 +119,10 @@ func (c *HTTPClient) GetGroups(opts models.ClientOptions) ([]*models.Group, stri
 			return nil, "", err
 		}
 
+		if response.StatusCode != 200 {
+			c.Log.Sugar().Debugf("GetGroups() - 1.5 - Status: %s\n", response.Status)
+		}
+
 		body, err := io.ReadAll(io.Reader(response.Body))
 		if err != nil {
 			c.Log.Sugar().Debugf("GetGroups() - 2 - Error: %s\n", err.Error())
