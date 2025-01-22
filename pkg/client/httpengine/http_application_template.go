@@ -157,7 +157,7 @@ func (c *HTTPClient) GetApplicationTemplates(opts models.ClientOptions) ([]*mode
 			break
 		}
 
-		c.Log.Sugar().Debugf("GetGroups() - 4 - Calling Next: %s\n", applicationResponse.NextLink)
+		c.Log.Sugar().Debugf("GetApplicationTemplates() - 4 - Calling Next: %s\n", applicationResponse.NextLink)
 		response, err = c.RestClient.Get(applicationResponse.NextLink, h)
 
 		if opts.Paging {
