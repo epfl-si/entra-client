@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	rootcmd "github.com/epfl-si/entra-client/cmd"
+	"github.com/joho/godotenv"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -25,8 +26,10 @@ func Test_applicationCreate(t *testing.T) {
 		},
 	}
 
+	godotenv.Load("../../.env")
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
 			rout, wout, oldout, rerr, werr, olderr := rootcmd.CaptureOutput()
 
 			rootcmd.RootCmd.SetArgs(tt.args)

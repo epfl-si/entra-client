@@ -3,6 +3,7 @@ WINDOWS=$(BINARY_NAME).exe
 LINUX=$(BINARAY_NAME)
 DARWIN=$(BINARY_NAME) 
 VERSION=$(shell git describe --tags --always --long --dirty)
+SHELL=/bin/bash
 
 # ==================================================================================== #
 # QUALITY CONTROL
@@ -54,7 +55,7 @@ securilty:
 
 ## test: launch quick tests
 test: 
-	go test -v ./...
+	./run_tests.sh
 
 ## tidy: format code and tidy modfile
 .PHONY: tidy

@@ -9,14 +9,41 @@ import (
 // applicationUserList.goCmd represents the applicationUserList.go command
 var applicationUserListCmd = &cobra.Command{
 	Use:   "list",
-	Short: "List users for a SAML application given its service principal ID",
+	Short: "List users/groups authorized for an application given its service principal ID or application ID",
+	Long: `List users/groups authorized for an application
+
+	Syntax:
+	  ./ecli application user list [--spid <service_principal_id>|--appid <application_id>]
+
+	Example:
+	  ./ecli application user list --spid a8ff0bc1-3046-43d8-a4b1-d8c42fd6623d
+	  ./ecli application user list --spid 806b30e8-1e91-4410-80c8-265ddfc03748
+`,
 	Run: func(cmd *cobra.Command, args []string) {
-		sp, err := rootcmd.Client.GetAssignedAppRoles(rootcmd.OptID, rootcmd.ClientOptions)
+		if rootcmd.OptSpID == "" && rootcmd.OptAppID == "" {
+			rootcmd.PrintErrString("Service Principal or application ID is required (use --spid or --appid)")
+			return
+		}
+
+		var id string
+		if rootcmd.OptAppID != "" {
+			id = rootcmd.OptAppID
+			sp, err := rootcmd.Client.GetServicePrincipalByAppID(rootcmd.OptAppID, rootcmd.ClientOptions)
+			if err != nil {
+				rootcmd.PrintErrString("No service principal found for this appID: " + err.Error())
+				return
+			}
+			id = sp.ID
+		} else {
+			id = rootcmd.OptSpID
+		}
+
+		gps, err := rootcmd.Client.GetGroupsFromServicePrincipal(id, rootcmd.ClientOptions)
 		if err != nil {
 			rootcmd.PrintErr(err)
 			return
 		}
-		for _, user := range sp {
+		for _, user := range gps {
 			cmd.Println(rootcmd.OutputJSON(user))
 		}
 	},
@@ -24,4 +51,5 @@ var applicationUserListCmd = &cobra.Command{
 
 func init() {
 	applicationUserCmd.AddCommand(applicationUserListCmd)
+	applicationUserListCmd.MarkFlagsMutuallyExclusive("spid", "appid")
 }

@@ -59,13 +59,19 @@ type Service interface {
 
 	// Service Principal
 	AddCertificateToServicePrincipal(servicePrincipalID string, base64 string, options models.ClientOptions) (err error)
+	//   Service Principal user/group management
 	AddGroupToServicePrincipal(servicePrincipalID, groupID string, options models.ClientOptions) (err error)
-	AddKeyToServicePrincipal(servicePrincipalID string, keyCredential saml.KeyDescriptor, options models.ClientOptions) (err error)
+	RemoveGroupFromServicePrincipal(servicePrincipalID, groupID string, options models.ClientOptions) (err error)
+	GetGroupsFromServicePrincipal(servicePrincipalID string, options models.ClientOptions) (groups []*models.Group, err error)
+	GetAssignmentsFromServicePrincipal(servicePrincipalI string, options models.ClientOptions) (assignment []*models.AppRoleAssignment, err error)
 	AssignAppRoleToServicePrincipal(assignment *models.AppRoleAssignment, options models.ClientOptions) (err error)
+
+	AddKeyToServicePrincipal(servicePrincipalID string, keyCredential saml.KeyDescriptor, options models.ClientOptions) (err error)
+
 	AssignClaimsPolicyToServicePrincipal(claimsPolicyID, servicePrincipalID string) (err error)
 	CreateServicePrincipal(app *models.ServicePrincipal, options models.ClientOptions) (newServicePrincipal *models.ServicePrincipal, err error)
 	DeleteServicePrincipal(id string, options models.ClientOptions) (err error)
-	GetAssignedAppRoles(id string, options models.ClientOptions) (assignment []*models.AppRoleAssignment, err error)
+
 	GetClaimsMappingPoliciesForServicePrincipal(id string, options models.ClientOptions) (claimsMappingPolicies []*models.ClaimsMappingPolicy, nextURL string, err error)
 	GetServicePrincipal(id string, options models.ClientOptions) (serviceprincipal *models.ServicePrincipal, err error)
 	GetServicePrincipalByAppID(id string, options models.ClientOptions) (serviceprincipal *models.ServicePrincipal, err error)

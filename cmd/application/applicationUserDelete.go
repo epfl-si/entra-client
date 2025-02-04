@@ -1,20 +1,70 @@
 package cmdapplication
 
 import (
+	rootcmd "github.com/epfl-si/entra-client/cmd"
 	"github.com/spf13/cobra"
 )
+
+var OptUserAll bool
 
 // applicationUserDelete.goCmd represents the applicationUserDelete.go command
 var applicationUserDeleteCmd = &cobra.Command{
 	Use:   "delete",
-	Short: "Delete a user from a SAML application",
+	Short: "Delete a user/group from the authorized list for an application",
+	Long: `Delete a user/group from the authorized list for an application
+	
+	Syntax:
+	  ./ecli application user delete [--spid <service_principal_id>|--appid <application_id>] [--userid <user_id>|--all]
+
+	Example:
+	  ./ecli application user delete --spid a8ff0bc1-3046-43d8-a4b1-d8c42fd6623d --userid 0f2a8e2d-9c45-4c55-acd9-49c8e278f706
+	  ./ecli application user delete --appid 17c28601-f637-405a-88c0-591322fd5437 --userid "AAD_All Hosts Users"
+	  ./ecli application user delete --appid 17c28601-f637-405a-88c0-591322fd5437 --all
+`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Println("applicationUserDelete called")
+		if rootcmd.OptSpID == "" && rootcmd.OptAppID == "" {
+			rootcmd.PrintErrString("Service Principal or application ID is required (use --spid or --appid)")
+			return
+		}
+
+		if OptUserID == "" && !OptUserAll {
+			rootcmd.PrintErrString("UserID (use --userid) OR --all required")
+			return
+		}
+
+		var userID string
+		if OptUserAll {
+			userID = ""
+		} else {
+			userID = OptUserID
+		}
+
+		var id string
+		if rootcmd.OptAppID != "" {
+			id = rootcmd.OptAppID
+			sp, err := rootcmd.Client.GetServicePrincipalByAppID(rootcmd.OptAppID, rootcmd.ClientOptions)
+			if err != nil {
+				rootcmd.PrintErrString("No service principal found for this appID: " + err.Error())
+				return
+			}
+			id = sp.ID
+		} else {
+			id = rootcmd.OptSpID
+		}
+
+		err := rootcmd.Client.RemoveGroupFromServicePrincipal(id, userID, rootcmd.ClientOptions)
+		if err != nil {
+			rootcmd.PrintErr(err)
+			return
+		}
 	},
 }
 
 func init() {
 	applicationUserCmd.AddCommand(applicationUserDeleteCmd)
+	applicationUserDeleteCmd.Flags().BoolVar(&OptUserAll, "all", false, "Select all users")
+
+	applicationUserDeleteCmd.MarkFlagsMutuallyExclusive("spid", "appid")
 
 	applicationUserDeleteCmd.SetHelpFunc(func(command *cobra.Command, strings []string) {
 		// Hide flags for this command

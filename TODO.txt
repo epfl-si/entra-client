@@ -1,10 +1,8 @@
 * handle microsoft specific headers (retry-after, request-id, Location)
 * use pageIterator instead of manual nextLink navigation (https://learn.microsoft.com/en-us/graph/sdks/paging?tabs=go). !!! take care of headers passing !!!
 * Add mocking for delete/create tests...
-* Assign group/user to application using another way (https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/assign-user-or-group-access-portal?pivots=ms-graph#assign-users-and-groups-to-an-application-using-microsoft-graph-api)
+* Fix cmd/tests which are just NOT working
+* Handles logging level dynamically avec zap.NewAtomicLevel()
 
 QUESTIONS TO SUPPORT
 * Can we creat a template app from from an app? How?
-* We don't have control over SP identifierID in SAML metadata file, how do we avoid "Values of identifierUris property must use a verified domain of the organization or its subdomain"
- in application configuration
-* How can we make claims created by API manageable through portal (This configuration was overwritten by a claim mapping policy created via Graph/Powershell)
