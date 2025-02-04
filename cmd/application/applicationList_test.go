@@ -2,18 +2,19 @@ package cmdapplication
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 	"testing"
 
 	rootcmd "github.com/epfl-si/entra-client/cmd"
 	"github.com/epfl-si/entra-client/pkg/client/models"
+	"github.com/joho/godotenv"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_applicationList(t *testing.T) {
 	t.Run("List returns multiple application", func(t *testing.T) {
+		godotenv.Load("../../.env")
 		rout, wout, oldout, rerr, werr, olderr := rootcmd.CaptureOutput()
 
 		rootcmd.RootCmd.SetArgs([]string{"application", "list"})
@@ -21,12 +22,9 @@ func Test_applicationList(t *testing.T) {
 
 		stdout, stderr := rootcmd.ReleaseOutput(rout, wout, oldout, rerr, werr, olderr)
 
-		fmt.Println("AAAAAA", string(stdout))
-		fmt.Println("AAAAAE", string(stderr))
-
 		outs := strings.Split(string(stdout), "\n")
 
-		assert.True(t, len(outs) > 1, "More thant one application returned")
+		assert.True(t, len(outs) > 1, "More than one application returned")
 		assert.Equal(t, "", string(stderr))
 
 		// unmarshal out[0] to check if it is a valid JSON

@@ -257,6 +257,47 @@ func (c *HTTPClient) AddGroupToServicePrincipal(spID, groupID string, opts model
 	return nil
 }
 
+// RemoveGroupFromServicePrincipal removes a group assigned to a serviceprincipal and returns an error
+//
+// Required permissions: Application.ReadWrite.All
+// Required permissions: Directory.ReadWrite.All
+//
+// Parameters:
+//
+//	spID: The service principal ID
+//	groupID: The group ID (if the groupID is set to "" ALL the assigned groups will be removed)
+//	options: The client options
+func (c *HTTPClient) RemoveGroupFromServicePrincipal(spID, groupID string, opts models.ClientOptions) (err error) {
+
+	// when --all is used, groupID is set to ""
+	if groupID == "" {
+
+		g, err := c.GetGroup(groupID, opts)
+		if err != nil {
+			opts := opts // local redeclaration
+			opts.Filter = "displayName%20eq%20'" + groupID + "'"
+			glist, _, err := c.GetGroups(opts)
+			if err != nil {
+				return fmt.Errorf("could'nt get group: %w", err)
+			}
+			if len(glist) != 1 {
+				return fmt.Errorf("could'nt get group: ambiguous name")
+			}
+			groupID = glist[0].ID
+		} else {
+			groupID = g.ID
+		}
+
+	}
+
+	err = c.UnassignAppRoleToServicePrincipal(spID, groupID, opts)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // GetClaimsMappingPoliciesForServicePrincipal gets a list of claims policies for a serviceprincipal and returns a slice of claims policies, a pagination link and an error
 //
 // Required permissions:
@@ -329,7 +370,7 @@ func (c *HTTPClient) GetClaimsMappingPoliciesForServicePrincipal(servicePrincipa
 	return results, claimsPoliciesResponse.NextLink, nil
 }
 
-// AssignAppRoleToServicePrincipal associates a serviceprincipal to a group and returns an error
+// AssignAppRoleToServicePrincipal associates a group (Approle) to a serviceprincipal and returns an error
 //
 // Required permissions: Application.Read.All
 // Required permissions: Application.ReadWrite.All
@@ -340,7 +381,7 @@ func (c *HTTPClient) GetClaimsMappingPoliciesForServicePrincipal(servicePrincipa
 //
 //	     ResourceID: The service principal ID
 //	     AppRoleID: The app role ID
-//	     PrincipalID: The principal ID
+//	     PrincipalID: The principal (group) ID
 //
 //	opts: The client options
 func (c *HTTPClient) AssignAppRoleToServicePrincipal(assignment *models.AppRoleAssignment, opts models.ClientOptions) error {
@@ -368,6 +409,55 @@ func (c *HTTPClient) AssignAppRoleToServicePrincipal(assignment *models.AppRoleA
 		c.Log.Sugar().Debugf("AssignAppRoleToServicePrincipal() - Body: %s\n", getBody(response))
 		c.Log.Sugar().Debugf("AssignAppRoleToServicePrincipal() - Submited: %s\n", u)
 		return errors.New(response.Status)
+	}
+
+	return nil
+}
+
+// UnassignAppRoleToServicePrincipal remove a group (Approle) from a serviceprincipal and returns an error
+//
+// Required permissions: Application.Read.All
+// Required permissions: Application.ReadWrite.All
+//
+// Parameters:
+//
+//	     appRoleID: The app role ID
+//	     spID: The principal ID
+//
+//	opts: The client options
+func (c *HTTPClient) UnassignAppRoleToServicePrincipal(spID, appRoleID string, opts models.ClientOptions) error {
+	// TODO: see https://learn.microsoft.com/en-us/entra/identity/enterprise-apps/assign-user-or-group-access-portal?pivots=ms-graph#assign-users-and-groups-to-an-application-using-microsoft-graph-api to simplify appRole selection and using default one
+
+	// Get appRoleAssignments associated to the service principal
+	assignments, err := c.GetAssignmentsFromServicePrincipal(spID, opts)
+	if err != nil {
+		c.Log.Sugar().Debugf("UnassignAppRoleToServicePrincipal() - Error: %+v\n", err)
+		return err
+	}
+
+	// Find the appRoleAssignment to delete
+	var assignment *models.AppRoleAssignment
+	for _, a := range assignments {
+		if a.PrincipalID == appRoleID || appRoleID == "" {
+			assignment = a
+
+			h := c.buildHeaders(opts)
+			h["Content-Type"] = "application/json"
+
+			response, err := c.RestClient.Delete("/servicePrincipals/"+spID+"/appRoleAssignedTo/"+assignment.ID, h)
+			if err != nil {
+				c.Log.Sugar().Debugf("UnassignAppRoleToServicePrincipal() - Error: %+v\n", response)
+				return err
+			}
+			defer response.Body.Close()
+
+			if response.StatusCode != 204 {
+				c.Log.Sugar().Debugf("UnassignAppRoleToServicePrincipal() - Unexpected response code: %+v\n", response)
+				c.Log.Sugar().Debugf("UnassignAppRoleToServicePrincipal() - Body: %s\n", getBody(response))
+				return errors.New(response.Status)
+			}
+
+		}
 	}
 
 	return nil
@@ -564,7 +654,7 @@ func (c *HTTPClient) GetServicePrincipal(id string, opts models.ClientOptions) (
 	return &serviceprincipal, nil
 }
 
-// GetAssignedAppRoles gets a list of serviceprincipals and returns a slice of serviceprincipals, a pagination link and an error
+// GetAssignmentsFromServicePrincipal from a ServicePrincipal ID returns a slice of AppRolesAssignment and an error
 //
 // Required permissions: Application.Read.All
 // Required permissions: Application.ReadWrite.All
@@ -572,20 +662,20 @@ func (c *HTTPClient) GetServicePrincipal(id string, opts models.ClientOptions) (
 // Parameters:
 //
 //	opts: The client options
-func (c *HTTPClient) GetAssignedAppRoles(id string, opts models.ClientOptions) ([]*models.AppRoleAssignment, error) {
+func (c *HTTPClient) GetAssignmentsFromServicePrincipal(id string, opts models.ClientOptions) ([]*models.AppRoleAssignment, error) {
 	var err error
 
 	h := c.buildHeaders(opts)
 
 	if opts.Debug {
-		c.Log.Sugar().Debugf("GetAssignedAppRoles() - 1 - Calling: /serviceprincipals%s\n", buildQueryString(opts))
+		c.Log.Sugar().Debugf("GetAssignmentsFromServicePrincipal() - 1 - Calling: /serviceprincipals%s\n", buildQueryString(opts))
 	}
 
 	response, err := c.RestClient.Get("/serviceprincipals/"+id+"/appRoleAssignedTo"+buildQueryString(opts), h)
 
 	body, err := io.ReadAll(io.Reader(response.Body))
 	if err != nil {
-		c.Log.Sugar().Debugf("GetAssignedAppRoles() - 2 - Error: %s\n", err.Error())
+		c.Log.Sugar().Debugf("GetAssignmentsFromServicePrincipal() - 2 - Error: %s\n", err.Error())
 		return nil, err
 	}
 
@@ -598,12 +688,43 @@ func (c *HTTPClient) GetAssignedAppRoles(id string, opts models.ClientOptions) (
 
 	err = json.Unmarshal(body, &results)
 	if err != nil {
-		c.Log.Sugar().Debugf("GetAssignedAppRoles() - 3 - body: %s\n", body)
-		c.Log.Sugar().Debugf("GetAssignedAppRoles() - 3 - Error: %s\n", err.Error())
+		c.Log.Sugar().Debugf("GetAssignmentsFromServicePrincipal() - 3 - body: %s\n", body)
+		c.Log.Sugar().Debugf("GetAssignmentsFromServicePrincipal() - 3 - Error: %s\n", err.Error())
 		return nil, err
 	}
 
 	return results.Value, nil
+}
+
+// GetGroupsFromServicePrincipal from a ServicePrincipal ID returns a slice of AppRolesAssignment and an error
+//
+// Required permissions: Application.Read.All
+// Required permissions: Application.ReadWrite.All
+//
+// Parameters:
+//
+//	 spid: The service principal ID
+//		opts: The client options
+func (c *HTTPClient) GetGroupsFromServicePrincipal(spid string, opts models.ClientOptions) ([]*models.Group, error) {
+	var err error
+	var results []*models.Group
+
+	// Get appRoleAssignments associated to the service principal
+	assignments, err := c.GetAssignmentsFromServicePrincipal(spid, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	for a := range assignments {
+		// Get group
+		group, err := c.GetGroup(assignments[a].PrincipalID, opts)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, group)
+	}
+
+	return results, nil
 }
 
 // GetServicePrincipals gets a list of serviceprincipals and returns a slice of serviceprincipals, a pagination link and an error

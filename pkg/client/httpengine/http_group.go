@@ -3,6 +3,7 @@ package httpengine
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/epfl-si/entra-client/pkg/client/models"
@@ -60,21 +61,31 @@ func (c *HTTPClient) DeleteGroup(id string, opts models.ClientOptions) error {
 	return nil
 }
 
-// GetGroup returns a group (by its Id) and an error
+// GetGroup returns a group (by its Id or its displayName) and an error
 //
 // Required permissions: Directory.Read.All
 // Required permissions: GroupMember.Read.All
 //
 // Parameters:
 //
-//	id: The group ID
+//	id: The group ID or displayName
 //	opts: The client options
 func (c *HTTPClient) GetGroup(id string, opts models.ClientOptions) (*models.Group, error) {
 	h := c.buildHeaders(opts)
 	response, err := c.RestClient.Get("/groups/"+id+buildQueryString(opts), h)
+
 	if err != nil {
-		return nil, err
+		opts.Filter = "displayName%20eq%20'" + id + "'"
+		glist, _, err := c.GetGroups(opts)
+		if err != nil {
+			return nil, fmt.Errorf("could'nt get group: %w", err)
+		}
+		if len(glist) != 1 {
+			return nil, fmt.Errorf("could'nt get group: ambiguous name")
+		}
+		return glist[0], nil
 	}
+
 	if response.StatusCode != 200 {
 		return nil, errors.New(response.Status)
 	}
