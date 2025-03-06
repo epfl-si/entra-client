@@ -350,8 +350,7 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *
 	// get default claims mapping policy
 	cmps, _, err := c.GetClaimsMappingPolicies(models.ClientOptions{Filter: "isOrganizationDefault eq true"})
 	if err != nil {
-		errs += fmt.Sprintf("GetClaimsMappingPolicy: %s", err)
-		c.Log.Sugar().Debugf("CreateOIDCApplication() - 0 - Error: %s\n", err.Error())
+		errs += fmt.Sprintf("GetClaimsMappingPolicy: %s\n", err)
 	}
 
 	// If default claims mapping policy is found, assign it to the service principal
@@ -359,9 +358,31 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *
 		// assign default claims mapping policy to service principal
 		err = c.AssignClaimsMappingPolicy(cmps[0].ID, sp.ID, opts)
 		if err != nil {
-			errs += fmt.Sprintf("AssignClaimsMappingPolicy: %s", err)
-			c.Log.Sugar().Debugf("CreateOIDCApplication() - 1 - Error: %s\n", err.Error())
+			errs += fmt.Sprintf("AssignClaimsMappingPolicy: %s\n", err)
 		}
+	}
+
+	groupClaimsConfig := &models.Application{
+		GroupMembershipClaims: "ApplicationGroup",
+		OptionalClaims: &models.OptionalClaims{
+			AccessToken: []models.OptionalClaim{
+				{
+					Name:                 "groups",
+					AdditionalProperties: []string{"sam_account_name"},
+				},
+			},
+			IDToken: []models.OptionalClaim{
+				{
+					Name:                 "groups",
+					AdditionalProperties: []string{"sam_account_name"},
+				},
+			},
+		},
+	}
+
+	err = c.PatchApplication(app.ID, groupClaimsConfig, opts)
+	if err != nil {
+		errs += fmt.Sprintf("Patch Application for Application groups in claims: %s\n", err)
 	}
 
 	if errs != "" {

@@ -39,6 +39,7 @@ type Application struct {
 	Description                   *string                  `json:"description,omitempty"`
 	DisplayName                   string                   `json:"displayName,omitempty"`
 	ExpirationDateTime            *time.Time               `json:"expirationDateTime,omitempty"`
+	GroupMembershipClaims         string                   `json:"groupMembershipClaims,omitempty"`
 	GroupTypes                    []string                 `json:"groupTypes,omitempty"`
 	IdentifierUris                []string                 `json:"identifierUris,omitempty"`
 	IsAssignableToRole            *bool                    `json:"isAssignableToRole,omitempty"`
