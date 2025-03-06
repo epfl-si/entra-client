@@ -11,6 +11,10 @@ import (
 	"io"
 )
 
+// Ressources:
+// https://learn.microsoft.com/en-us/entra/identity-platform/reference-claims-customization
+// https://learn.microsoft.com/en-us/graph/api/resources/claimsmappingpolicyschema?view=graph-rest-1.0
+
 // DefaultClaimsMappingPolicy is the default claims mapping policy for EPFL
 //
 //	uniqueid -> employeeId (Sciper)
@@ -26,6 +30,8 @@ var DefaultClaimsMappingPolicy = []string{
 {"Source":"user", "ID": "surname", "JwtClaimType": "family_name"},
 {"Source":"user", "ID": "mail", "JwtClaimType": "mail"}
 ]}}`}
+
+//{"Source":"user", "ID": "groups", "JwtClaimType": "groups"}
 
 // AssignClaimsMappingPolicy assigns a claims mapping policy and returns an error
 //
