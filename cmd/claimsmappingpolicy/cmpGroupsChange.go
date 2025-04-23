@@ -34,7 +34,7 @@ var claimGroupsAddCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		if rootcmd.OptAppID == "" {
-			rootcmd.PrintErrString("ID is required (use --appid)")
+			cmd.PrintErr("ID is required (use --appid)")
 			return
 		}
 
@@ -49,7 +49,7 @@ var claimGroupsAddCmd = &cobra.Command{
 		} else if OptGroupApplication {
 			applicationModification.GroupMembershipClaims = "ApplicationGroup"
 		} else {
-			rootcmd.PrintErrString("One of the following flags is required: --all, --null, --security, --application")
+			cmd.PrintErr("One of the following flags is required: --all, --null, --security, --application")
 			return
 		}
 
@@ -59,7 +59,7 @@ var claimGroupsAddCmd = &cobra.Command{
 			if err.Error() == "application not found" {
 				ID = rootcmd.OptAppID
 			} else {
-				rootcmd.PrintErr(err)
+				cmd.PrintErr(err)
 				return
 			}
 		} else {
@@ -68,8 +68,8 @@ var claimGroupsAddCmd = &cobra.Command{
 
 		err = rootcmd.Client.PatchApplication(ID, &applicationModification, rootcmd.ClientOptions)
 		if err != nil {
-			rootcmd.PrintErrString("Application not found by Object ID: " + app.ID)
-			rootcmd.PrintErr(err)
+			cmd.PrintErr("Application not found by Object ID: " + app.ID)
+			cmd.PrintErr(err)
 			return
 		}
 

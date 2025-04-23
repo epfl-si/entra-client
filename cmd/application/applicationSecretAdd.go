@@ -5,10 +5,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// OptType is associated with the --type flag
+// OptSecretDuration is associated with the --duration flag
 var OptSecretDuration string
 
-// OptName is associated with the --name flag
+// OptSecretName is associated with the --name flag
 var OptSecretName string
 
 // applicationOIDCCmd represents the applicationOIDC command
@@ -17,7 +17,7 @@ var applicationSecretAddCmd = &cobra.Command{
 	Short: "Add a secret to an OIDC application",
 	Run: func(cmd *cobra.Command, args []string) {
 		if rootcmd.OptID == "" {
-			rootcmd.PrintErrString("Service Principal ID is required (use --id)")
+			cmd.PrintErr("Service Principal ID is required (use --id)\n")
 			return
 		}
 
@@ -27,7 +27,7 @@ var applicationSecretAddCmd = &cobra.Command{
 		// }
 
 		if OptSecretName == "" {
-			rootcmd.PrintErrString("Name is required (use --name)")
+			cmd.PrintErr("Name is required (use --name)\n")
 			return
 		}
 

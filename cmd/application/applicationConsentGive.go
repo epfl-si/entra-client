@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// OptScope is the scope to give consent to (--scope)
 var OptScope []string
 
 // applicationOIDCCmd represents the applicationOIDC command
@@ -21,17 +22,17 @@ var applicationConsentGiveCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// TODO: add a ressource_id flag to consent to non Microsoft Graph API permisisons
 		if rootcmd.OptID == "" {
-			rootcmd.PrintErrString("Service Principal ObjectID is required (use --id)")
+			cmd.PrintErr("Service Principal ObjectID is required (use --id)\n")
 			return
 		}
 		if len(OptScope) == 0 {
-			rootcmd.PrintErrString("Scopes are required (use --scope)")
+			cmd.PrintErr("Scopes are required (use --scope)\n")
 			return
 		}
 
 		err := rootcmd.Client.GiveConsentToApplication(rootcmd.OptID, OptScope, rootcmd.ClientOptions)
 		if err != nil {
-			rootcmd.PrintErr(err)
+			cmd.PrintErr(err)
 			return
 		}
 		cmd.Println("Consent given to application")

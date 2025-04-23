@@ -21,7 +21,7 @@ You can also use the alias "cmp" instead of "claimsmappingpolicy".
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if OptCmpID == "" && !OptDefault {
-			rootcmd.PrintErrString("Either ID or default is required (use --cmpid or --default)")
+			cmd.PrintErr("Either ID or default is required (use --cmpid or --default)")
 			return
 		}
 
@@ -40,7 +40,7 @@ You can also use the alias "cmp" instead of "claimsmappingpolicy".
 			}
 
 			if len(cmps) != 1 {
-				rootcmd.PrintErrString("Default claims mapping policy not found")
+				cmd.PrintErr("Default claims mapping policy not found")
 				return
 			}
 

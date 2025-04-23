@@ -20,7 +20,7 @@ var claimPatchCmd = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if OptCmpID == "" {
-			rootcmd.PrintErrString("ID is required (use --cmpid)")
+			cmd.PrintErr("ID is required (use --cmpid)")
 			return
 		}
 		var cmp models.ClaimsMappingPolicy
@@ -39,7 +39,7 @@ var claimPatchCmd = &cobra.Command{
 
 		err := rootcmd.Client.PatchClaimsMappingPolicy(OptCmpID, &cmp, rootcmd.ClientOptions)
 		if err != nil {
-			rootcmd.PrintErr(err)
+			cmd.PrintErr(err)
 			return
 		}
 

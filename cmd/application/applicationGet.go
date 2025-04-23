@@ -12,12 +12,12 @@ var applicationGetCmd = &cobra.Command{
 	Short: "Get an application by ID",
 	Run: func(cmd *cobra.Command, args []string) {
 		if rootcmd.OptID == "" {
-			rootcmd.PrintErrString("ID is required (use --id)")
+			cmd.PrintErr("ID is required (use --id)\n")
 			return
 		}
 		application, err := rootcmd.Client.GetApplication(rootcmd.OptID, rootcmd.ClientOptions)
 		if err != nil {
-			rootcmd.PrintErr(err)
+			cmd.PrintErr(err)
 			return
 		}
 

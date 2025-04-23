@@ -9,7 +9,7 @@ var applicationSecretCmd = &cobra.Command{
 	Use:   "secret",
 	Short: "Handles secrets for applications",
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Println("secret called")
+		cmd.Println("applicationSecret called")
 	},
 }
 

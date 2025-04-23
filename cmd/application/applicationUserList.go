@@ -21,7 +21,7 @@ var applicationUserListCmd = &cobra.Command{
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if rootcmd.OptSpID == "" && rootcmd.OptAppID == "" {
-			rootcmd.PrintErrString("Service Principal or application ID is required (use --spid or --appid)")
+			cmd.PrintErr("Service Principal or application ID is required (use --spid or --appid)\n")
 			return
 		}
 
@@ -30,7 +30,7 @@ var applicationUserListCmd = &cobra.Command{
 			id = rootcmd.OptAppID
 			sp, err := rootcmd.Client.GetServicePrincipalByAppID(rootcmd.OptAppID, rootcmd.ClientOptions)
 			if err != nil {
-				rootcmd.PrintErrString("No service principal found for this appID: " + err.Error())
+				cmd.PrintErr("No service principal found for this appID: " + err.Error() + "\n")
 				return
 			}
 			id = sp.ID

@@ -25,20 +25,19 @@ Example:
 `,
 
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Println("applicationSAMLCertificateAdd called")
 
 		if rootcmd.OptID == "" {
-			rootcmd.PrintErrString("Service Principal ID is required (use --id)")
+			cmd.PrintErr("Service Principal ID is required (use --id)\n")
 			return
 		}
 		if OptKeyName == "" {
-			rootcmd.PrintErrString("Service key name is required (use --keyname)")
+			cmd.PrintErr("Service key name is required (use --keyname)\n")
 			return
 		}
 
 		sp, err := rootcmd.Client.GetServicePrincipal(rootcmd.OptID, rootcmd.ClientOptions)
 		if err != nil {
-			rootcmd.PrintErr(err)
+			cmd.PrintErr(err)
 			return
 		}
 
@@ -77,14 +76,14 @@ Example:
 
 		err = rootcmd.Client.PatchServicePrincipal(rootcmd.OptID, &patchedServicePrincipal, rootcmd.ClientOptions)
 		if err != nil {
-			rootcmd.PrintErr(err)
+			cmd.PrintErr(err)
 			return
 		}
 
 		// Get the updated Service Principal
 		sp, err = rootcmd.Client.GetServicePrincipal(rootcmd.OptID, rootcmd.ClientOptions)
 		if err != nil {
-			rootcmd.PrintErr(err)
+			cmd.PrintErr(err)
 			return
 		}
 
@@ -93,7 +92,7 @@ Example:
 		// Activate the certificate by its keyId
 		err = rootcmd.Client.PatchServicePrincipal(rootcmd.OptID, &models.ServicePrincipal{PreferredTokenSigningKeyThumbprint: OptKeyName}, rootcmd.ClientOptions)
 		if err != nil {
-			rootcmd.PrintErr(err)
+			cmd.PrintErr(err)
 			return
 		}
 	},

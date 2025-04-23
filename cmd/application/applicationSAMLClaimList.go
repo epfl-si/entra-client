@@ -18,13 +18,13 @@ Example:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if rootcmd.OptID == "" {
-			rootcmd.PrintErrString("Service Principal ID is required (use --id)")
+			cmd.PrintErr("Service Principal ID is required (use --id)\n")
 			return
 		}
 
 		cmps, _, err := rootcmd.Client.GetClaimsMappingPoliciesForServicePrincipal(rootcmd.OptID, rootcmd.ClientOptions)
 		if err != nil {
-			rootcmd.PrintErr(err)
+			cmd.PrintErr(err)
 			return
 		}
 

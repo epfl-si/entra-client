@@ -1,8 +1,6 @@
 package cmdapplication
 
 import (
-	"errors"
-
 	rootcmd "github.com/epfl-si/entra-client/cmd"
 	"github.com/epfl-si/entra-client/pkg/client/models"
 
@@ -21,7 +19,7 @@ Example:
 	Run: func(cmd *cobra.Command, args []string) {
 		var app models.Application
 		if rootcmd.OptDisplayName == "" {
-			rootcmd.PrintErr(errors.New("name is required (use --displayname)"))
+			cmd.PrintErr("Name is required (use --displayname)\n")
 			return
 		}
 
@@ -33,13 +31,13 @@ Example:
 
 		newApp, err := rootcmd.Client.CreateApplication(&app, rootcmd.ClientOptions)
 		if err != nil {
-			rootcmd.PrintErr(err)
+			cmd.PrintErr(err)
 			return
 		}
 
 		err = rootcmd.Client.WaitApplication(newApp.ID, 60, rootcmd.ClientOptions)
 		if err != nil {
-			rootcmd.PrintErr(err)
+			cmd.PrintErr(err)
 			return
 		}
 
@@ -51,7 +49,7 @@ Example:
 			},
 			ServicePrincipalType: "Application"}, rootcmd.ClientOptions)
 		if err != nil {
-			rootcmd.PrintErr(err)
+			cmd.PrintErr(err)
 			return
 		}
 		cmd.Printf("Application created: %+v\n", sp)

@@ -37,7 +37,7 @@ var applicationSAMLCreateCmd = &cobra.Command{
 		var err error
 
 		if rootcmd.OptDisplayName == "" {
-			rootcmd.PrintErrString("Name is required (use --displayname)")
+			cmd.PrintErr("Name is required (use --displayname)\n")
 			return
 		}
 
@@ -49,7 +49,7 @@ var applicationSAMLCreateCmd = &cobra.Command{
 		if OptMetadataFile != "" {
 			m, err = saml.GetMetadata(OptMetadataFile)
 			if err != nil {
-				rootcmd.PrintErr(fmt.Errorf("getting metadata: %w", err))
+				cmd.PrintErr(fmt.Errorf("getting metadata: %w", err))
 				return
 			}
 
@@ -70,11 +70,11 @@ var applicationSAMLCreateCmd = &cobra.Command{
 		}
 
 		if OptSAMLID == "" && OptMetadataFile == "" {
-			rootcmd.PrintErrString("SAML identifier is required (use --identifier or --metadata_file)")
+			cmd.PrintErr("SAML identifier is required (use --identifier or --metadata_file)\n")
 			return
 		}
 		if len(OptRedirectURI) == 0 && OptMetadataFile == "" {
-			rootcmd.PrintErrString("SAML redirect URI is required (use --redirect_uri or --metadata_file)")
+			cmd.PrintErr("SAML redirect URI is required (use --redirect_uri or --metadata_file)\n")
 			return
 		}
 

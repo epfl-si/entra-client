@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	rootcmd "github.com/epfl-si/entra-client/cmd"
-	"github.com/joho/godotenv"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -22,23 +21,26 @@ func Test_applicationDelete(t *testing.T) {
 			name:        "ID is required",
 			args:        []string{"application", "delete"},
 			expectedOut: "",
-			expectedErr: "Name is required (use --displayname)\n",
+			expectedErr: "ID missing",
 		},
 	}
 
-	godotenv.Load("../../.env")
+	// Load environment variables
+	err := rootcmd.LoadEnv("env_test")
+	if err != nil {
+		t.Fatalf("Error loading env_test file: %v", err)
+	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			rout, wout, oldout, rerr, werr, olderr := rootcmd.CaptureOutput()
+			out, err := rootcmd.CaptureStdOutputs(rootcmd.RootCmd)
 
 			rootcmd.RootCmd.SetArgs(tt.args)
 			rootcmd.RootCmd.Execute()
 
-			out, err := rootcmd.ReleaseOutput(rout, wout, oldout, rerr, werr, olderr)
-
-			assert.Equal(t, tt.expectedOut, string(out))
-			assert.Equal(t, tt.expectedErr, string(err))
+			assert.Equal(t, tt.expectedOut, out.String())
+			assert.Equal(t, tt.expectedErr, err.String())
 		})
 	}
 
