@@ -19,27 +19,27 @@ Example:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if rootcmd.OptID == "" {
-			rootcmd.PrintErrString("Service Principal ID is required (use --id)")
+			cmd.PrintErr("Service Principal ID is required (use --id)\n")
 			return
 		}
 
 		if rootcmd.OptDisplayName == "" {
-			rootcmd.PrintErrString("New display name is required (use --displayname)")
+			cmd.PrintErr("New display name is required (use --displayname)\n")
 			return
 		}
 
 		rootcmd.ClientOptions.Filter = "appId%20eq%20'" + rootcmd.OptID + "'"
 		apps, _, err := rootcmd.Client.GetApplications(rootcmd.ClientOptions)
 		if err != nil {
-			rootcmd.PrintErr(err)
+			cmd.PrintErr(err)
 			return
 		}
 		if len(apps) == 0 {
-			rootcmd.PrintErrString("Application not found")
+			cmd.PrintErr("Application not found\n")
 			return
 		}
 		if len(apps) != 1 {
-			rootcmd.PrintErrString("Ambigouous application ID")
+			cmd.PrintErr("Ambigouous application ID\n")
 			return
 		}
 

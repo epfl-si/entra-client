@@ -1,10 +1,10 @@
 #!/bin/bash
 
-if ! [ -f .env ]; then
-  echo "No .env, no tests."
+if ! [ -f env_test ]; then
+  echo "No env_test, no tests."
   exit 0
 fi
 
 source .env
-go test -v ./...
+go test  -coverprofile=./coverage.out ./...
 

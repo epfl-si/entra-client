@@ -29,11 +29,11 @@ Example:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if rootcmd.OptDisplayName == "" {
-			rootcmd.PrintErrString("Name is required (use --displayname)")
+			cmd.PrintErr("Name is required (use --displayname)\n")
 			return
 		}
 		if len(OptRedirectURI) == 0 {
-			rootcmd.PrintErrString("Callback URL is required (use --redirect_uri)")
+			cmd.PrintErr("Callback URL is required (use --redirect_uri)\n")
 			return
 		}
 

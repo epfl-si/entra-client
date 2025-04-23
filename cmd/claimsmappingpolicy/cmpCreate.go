@@ -35,17 +35,17 @@ var claimCreateCmd = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if rootcmd.OptDisplayName == "" && !OptDefault {
-			rootcmd.PrintErrString("DisplayName is required (use --displayName, or use --default)")
+			rootcmd.PrintErr("DisplayName is required (use --displayName, or use --default)")
 			return
 		}
 
 		if rootcmd.OptPostData == "" && !OptDefault {
-			rootcmd.PrintErrString("Data or default flag is required (use --data or --default)")
+			cmd.PrintErr("Data or default flag is required (use --data or --default)")
 			return
 		}
 
 		if rootcmd.OptPostData != "" && OptDefault {
-			rootcmd.PrintErrString("Data OR default flag are mutually exclusive (use --data OR --default)")
+			cmd.PrintErr("Data OR default flag are mutually exclusive (use --data OR --default)")
 			return
 		}
 

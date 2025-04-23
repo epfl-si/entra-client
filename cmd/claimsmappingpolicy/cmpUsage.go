@@ -18,7 +18,7 @@ var claimUsageCmd = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if OptCmpID == "" {
-			rootcmd.PrintErrString("ID is required (use --cmpid)")
+			cmd.PrintErr("ID is required (use --cmpid)")
 			return
 		}
 

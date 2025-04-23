@@ -69,14 +69,14 @@ var ClientOptions models.ClientOptions
 var RootCmd = &cobra.Command{
 	Use:   "ecli",
 	Short: "Entra API command line client",
-	Long:  `ecli is a command line tool that enables you to interact with Entra API`,
+	//Long:  `ecli is a command line tool that enables you to interact with Entra API`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		var err error
 		if OptEngine == "sdk" {
-			PrintErrString("SDK engine is not implemented")
+			PrintErr("SDK engine is not implemented\n")
 			return
 			// Client, err = sdkengine.New()
 			// if err != nil {
@@ -85,7 +85,7 @@ var RootCmd = &cobra.Command{
 			// }
 		}
 		if OptDebug {
-			PrintErrString("ENGINE: " + OptEngine + "\n")
+			PrintErr("ENGINE: " + OptEngine + "\n")
 		}
 
 		Client, err = httpengine.New()
@@ -98,10 +98,10 @@ var RootCmd = &cobra.Command{
 
 		if OptDebug {
 			ClientOptions.Debug = true
-			PrintErrString("Search: " + OptSearch + "\n")
-			PrintErrString("Skip: " + OptSkip + "\n")
-			PrintErrString("Top: " + OptTop + "\n")
-			PrintErrString("Select: " + OptSelect + "\n")
+			PrintErr("Search: " + OptSearch + "\n")
+			PrintErr("Skip: " + OptSkip + "\n")
+			PrintErr("Top: " + OptTop + "\n")
+			PrintErr("Select: " + OptSelect + "\n")
 		}
 
 		if OptSearch != "" {

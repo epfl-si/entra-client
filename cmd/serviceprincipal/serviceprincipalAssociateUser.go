@@ -20,15 +20,15 @@ Example:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if OptPrincipalID == "" {
-			rootcmd.PrintErrString("PrincipalID is required (use --principalid)")
+			cmd.PrintErr("PrincipalID is required (use --principalid)")
 			return
 		}
 		if OptAppRoleID == "" {
-			rootcmd.PrintErrString("AppRoleID is required (use --approleid)")
+			cmd.PrintErr("AppRoleID is required (use --approleid)")
 			return
 		}
 		if rootcmd.OptID == "" {
-			rootcmd.PrintErrString("ID is required (use --id)")
+			cmd.PrintErr("ID is required (use --id)")
 			return
 		}
 

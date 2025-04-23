@@ -37,6 +37,8 @@ go build -o ecli
 
 ## Tests
 
+Les tests necessitent leur propre fichier env_test (pointant vers l'Entra de test uniquement)
+
 ```
 make test
 ```

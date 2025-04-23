@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// OptUserAll is a global variable to store the --all flag
 var OptUserAll bool
 
 // applicationUserDelete.goCmd represents the applicationUserDelete.go command
@@ -23,12 +24,12 @@ var applicationUserDeleteCmd = &cobra.Command{
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if rootcmd.OptSpID == "" && rootcmd.OptAppID == "" {
-			rootcmd.PrintErrString("Service Principal or application ID is required (use --spid or --appid)")
+			cmd.PrintErr("Service Principal or application ID is required (use --spid or --appid)\n")
 			return
 		}
 
 		if OptUserID == "" && !OptUserAll {
-			rootcmd.PrintErrString("UserID (use --userid) OR --all required")
+			cmd.PrintErr("UserID (use --userid) OR --all required\n")
 			return
 		}
 
@@ -44,7 +45,7 @@ var applicationUserDeleteCmd = &cobra.Command{
 			id = rootcmd.OptAppID
 			sp, err := rootcmd.Client.GetServicePrincipalByAppID(rootcmd.OptAppID, rootcmd.ClientOptions)
 			if err != nil {
-				rootcmd.PrintErrString("No service principal found for this appID: " + err.Error())
+				rootcmd.PrintErr("No service principal found for this appID: " + err.Error() + "\n")
 				return
 			}
 			id = sp.ID

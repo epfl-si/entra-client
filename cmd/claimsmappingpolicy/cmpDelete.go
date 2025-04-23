@@ -17,13 +17,13 @@ var claimDeleteCmd = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if OptCmpID == "" {
-			rootcmd.PrintErrString("ID is required (use --cmpid)")
+			cmd.PrintErr("ID is required (use --cmpid)")
 			return
 		}
 
 		err := rootcmd.Client.DeleteClaimsMappingPolicy(OptCmpID, rootcmd.ClientOptions)
 		if err != nil {
-			rootcmd.PrintErr(err)
+			cmd.PrintErr(err)
 			return
 		}
 

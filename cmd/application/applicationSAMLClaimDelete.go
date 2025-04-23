@@ -18,7 +18,7 @@ Exqample:
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		if OptClaimPolicyID == "" {
-			rootcmd.PrintErrString("Claim Policy ID is required (use --claimpolicyid)")
+			cmd.PrintErr("Claim Policy ID is required (use --claimpolicyid)")
 			return
 		}
 

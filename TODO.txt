@@ -1,7 +1,7 @@
 * handle microsoft specific headers (retry-after, request-id, Location)
 * use pageIterator instead of manual nextLink navigation (https://learn.microsoft.com/en-us/graph/sdks/paging?tabs=go). !!! take care of headers passing !!!
 * Add mocking for delete/create tests...
-* Fix cmd/tests which are just NOT working
+* Fix cmd/tests which are working in VsCode but NOT through make tests (!?!)
 * Handles logging level dynamically avec zap.NewAtomicLevel()
 
 QUESTIONS TO SUPPORT

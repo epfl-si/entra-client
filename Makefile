@@ -50,12 +50,16 @@ clean:
 release: test build audit security
 
 ## security: perform security check
-securilty:
+security:
 	go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 
 ## test: launch quick tests
 test: 
 	./run_tests.sh
+
+## cover: launch coverage
+cover:
+	go tool cover -html=./coverage.out
 
 ## tidy: format code and tidy modfile
 .PHONY: tidy

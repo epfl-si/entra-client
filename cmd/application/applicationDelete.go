@@ -13,7 +13,7 @@ var applicationDeleteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		err := rootcmd.Client.DeleteApplication(rootcmd.OptID, rootcmd.ClientOptions)
 		if err != nil {
-			rootcmd.PrintErr(err)
+			cmd.PrintErr(err)
 			return
 		}
 	},

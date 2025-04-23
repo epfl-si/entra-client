@@ -14,7 +14,7 @@ var manifestGetCmd = &cobra.Command{
 		// originalSelect := clientOptions.Select
 
 		if rootcmd.OptID == "" {
-			rootcmd.PrintErrString("Application AppID is required (use --id)")
+			cmd.PrintErr("Application AppID is required (use --id)")
 			return
 		}
 		// if originalSelect == "" {
@@ -25,21 +25,21 @@ var manifestGetCmd = &cobra.Command{
 		rootcmd.ClientOptions.Filter = "appId%20eq%20'" + rootcmd.OptID + "'"
 		apps, _, err := rootcmd.Client.GetApplications(rootcmd.ClientOptions)
 		if err != nil {
-			rootcmd.PrintErr(err)
+			cmd.PrintErr(err)
 			return
 		}
 
 		sps, _, err := rootcmd.Client.GetServicePrincipals(rootcmd.ClientOptions)
 		if err != nil {
-			rootcmd.PrintErr(err)
+			cmd.PrintErr(err)
 			return
 		}
 
 		if len(apps) != 1 {
 			if len(apps) == 0 {
-				rootcmd.PrintErrString("No applications found")
+				cmd.PrintErr("No applications found")
 			} else {
-				rootcmd.PrintErrString("Ambiguous application ID")
+				cmd.PrintErr("Ambiguous application ID")
 			}
 			return
 		}

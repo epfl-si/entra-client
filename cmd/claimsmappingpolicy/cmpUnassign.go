@@ -19,18 +19,18 @@ var claimUnassignCmd = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if OptCmpID == "" {
-			rootcmd.PrintErrString("ID is required (use --cmpid)")
+			cmd.PrintErr("ID is required (use --cmpid)")
 			return
 		}
 
 		if rootcmd.OptSpID == "" {
-			rootcmd.PrintErrString("ID is required (use --spid)")
+			cmd.PrintErr("ID is required (use --spid)")
 			return
 		}
 
 		err := rootcmd.Client.UnassignClaimsMappingPolicy(rootcmd.OptSpID, OptCmpID, rootcmd.ClientOptions)
 		if err != nil {
-			rootcmd.PrintErr(err)
+			cmd.PrintErr(err)
 			return
 		}
 

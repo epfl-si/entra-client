@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"os"
+	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/epfl-si/entra-client/pkg/client/models"
+	"github.com/joho/godotenv"
 
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
@@ -22,12 +24,14 @@ import (
 //
 // Returns the normalized name
 func NormalizeName(name string, env int) (string, error) {
-	var re = regexp.MustCompile(`^(?:EPFL - )?(.*?)(?: - (?:TEST|DEV))*$`)
-	n := re.FindString(name)
+	// First remove any existing prefix/suffix
+	re := regexp.MustCompile(`^(?:EPFL - )?(.*?)(?:\s*-\s*(?i:TEST|DEV))?$`)
+	matches := re.FindStringSubmatch(name)
 
-	// If no match consider the name to be a bare one (to be normalized)
-	if n == "" {
-		n = name
+	// Use the captured group if there's a match, otherwise use the original name
+	n := name
+	if len(matches) > 1 {
+		n = matches[1]
 	}
 
 	// Ensure bare name contains no " - " => replace with "-"
@@ -43,7 +47,6 @@ func NormalizeName(name string, env int) (string, error) {
 		return fmt.Sprintf("EPFL - %s", n), nil
 	default:
 		return "", fmt.Errorf("invalid environment: %d, must be 1, 2 or 3", env)
-
 	}
 }
 
@@ -132,32 +135,9 @@ func AddCertificate(spID string, certUsage, certType, certBase64 string, clientO
 
 	keyCredentials = append(keyCredentials, newKeyCredential)
 
-	// Build new PasswordCredential
-	// newPasswordCredential := models.PasswordCredential{
-	// 	CustomKeyIdentifier: keyID,
-	// 	// EndDateTime: endDateTime,
-	// 	KeyID: keyID,
-	// 	// StartDateTime: startDateTime,
-	// 	DisplayName: sp.DisplayName + " " + certUsage + "ing certificate",
-	// 	// Secret text is null for signing certificates
-	// }
-
-	// if sp.KeyCredentials != nil {
-	// 	keyCredentials = sp.KeyCredentials
-
-	// } else {
-	// 	keyCredentials = []models.KeyCredential{}
-	// }
-
 	spPatch := models.ServicePrincipal{
 		KeyCredentials: keyCredentials,
-		// PasswordCredentials: sp.PasswordCredentials,
 	}
-
-	// if certUsage == "Verify" {
-	// 	sp.PasswordCredentials = append(sp.PasswordCredentials, newPasswordCredential)
-	// 	spPatch.PasswordCredentials = sp.PasswordCredentials
-	// }
 
 	err = Client.PatchServicePrincipal(spID, &spPatch, clientOptions)
 	if err != nil {
@@ -169,12 +149,6 @@ func AddCertificate(spID string, certUsage, certType, certBase64 string, clientO
 	if err != nil {
 		return fmt.Errorf("could'nt get updated sp: %w", err)
 	}
-
-	// Activate the certificate by its keyId
-	// err = Client.PatchServicePrincipal(spID, &models.ServicePrincipal{PreferredTokenSigningKeyThumbprint: normalizeThumbprint(sp.KeyCredentials[0].CustomKeyIdentifier)}, clientOptions)
-	// if err != nil {
-	// 	return fmt.Errorf("could'nt patch sp to activate certificate: %w", err)
-	// }
 
 	return nil
 }
@@ -190,17 +164,21 @@ func HideInCommand(c *cobra.Command, flags ...string) {
 		// Call parent help func
 		c.Parent().HelpFunc()(command, strings)
 	})
-
 }
 
-// PrintErr prints an error to stderr
-func PrintErr(err error) {
-	fmt.Fprintln(os.Stderr, err)
-}
-
-// PrintErrString prints an error string to stderr
-func PrintErrString(str string) {
-	fmt.Fprintln(os.Stderr, str)
+// PrintErr prints an error or string to stderr
+func PrintErr(v interface{}) {
+	switch val := v.(type) {
+	case error:
+		fmt.Fprintln(os.Stderr, val)
+	case string:
+		if !strings.HasSuffix(val, "\n") {
+			val += "\n"
+		}
+		fmt.Fprint(os.Stderr, val)
+	default:
+		fmt.Fprintln(os.Stderr, val)
+	}
 }
 
 // NormalizeThumbprint removes spaces and dashes from a thumbprint
@@ -211,34 +189,50 @@ func NormalizeThumbprint(thumbprint string) string {
 	return thumbprint
 }
 
-// CaptureOutput redirect stdout/stderr to pipes and keep the old values
-// rout out reader, wout out writer, oldout old out writer
-// rerr err reader, werr err writer, olderr old err writer
-func CaptureOutput() (rout, wout, oldout, rerr, werr, olderr *os.File) {
-	oldout = os.Stdout
-	rout, wout, _ = os.Pipe()
-	os.Stdout = wout
+func findGoModDir() (string, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
 
-	olderr = os.Stderr
-	rerr, werr, _ = os.Pipe()
-	os.Stderr = werr
+	for {
+		if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
+			return dir, nil
+		}
 
-	return rout, wout, oldout, rerr, werr, olderr
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return "", fmt.Errorf("go.mod not found in any parent directory")
+		}
+		dir = parent
+	}
 }
 
-// ReleaseOutput read the ghoutput from the pipes and restore the old values
-func ReleaseOutput(rout, wout, oldout, rerr, werr, olderr *os.File) (out, err []byte) {
-	// read output
-	wout.Close()
-	out, _ = io.ReadAll(rout)
-	rout.Close()
-	os.Stdout = oldout
+// LoadEnv loads environment variables from a .env file located in the same directory as the go.mod file
+func LoadEnv(envFile string) error {
+	modDir, err := findGoModDir()
+	if err != nil {
+		fmt.Printf("Error finding go.mod directory: %s\n", err)
+		return err
+	}
 
-	// read err
-	werr.Close()
-	err, _ = io.ReadAll(rerr)
-	rerr.Close()
-	os.Stderr = olderr
+	// Load environment variables from .env file in the go.mod directory
+	err = godotenv.Load(filepath.Join(modDir, envFile))
+	if err != nil {
+		fmt.Printf("Error loading %s file: %s", envFile, err)
+		return err
+	}
+	return nil
+}
 
-	return out, err
+// CaptureStdOutputs create 2 bytes buffers to capture the output and error of a command
+func CaptureStdOutputs(cmd *cobra.Command) (newOut, newErr *bytes.Buffer) {
+
+	// Capture output
+	stdOut := new(bytes.Buffer)
+	stdErr := new(bytes.Buffer)
+	cmd.SetOut(stdOut)
+	cmd.SetErr(stdErr)
+
+	return stdOut, stdErr
 }
