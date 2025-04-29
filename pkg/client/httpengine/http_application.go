@@ -403,6 +403,27 @@ func (c *HTTPClient) PatchApplication(id string, app *models.Application, opts m
 	h := c.buildHeaders(opts)
 	h["Content-Type"] = "application/json"
 
+	groupClaimsConfig := &models.Application{
+		GroupMembershipClaims: "ApplicationGroup",
+		OptionalClaims: &models.OptionalClaims{
+			AccessToken: []models.OptionalClaim{
+				{
+					Name:                 "groups",
+					AdditionalProperties: []string{"sam_account_name"},
+				},
+			},
+			IDToken: []models.OptionalClaim{
+				{
+					Name:                 "groups",
+					AdditionalProperties: []string{"sam_account_name"},
+				},
+			},
+		},
+	}
+
+	app.GroupMembershipClaims = groupClaimsConfig.GroupMembershipClaims
+	app.OptionalClaims = groupClaimsConfig.OptionalClaims
+
 	response, err := c.RestClient.Patch("/applications/"+id, u, h)
 	if err != nil {
 		return fmt.Errorf("rest Patch %s: %w", id, err)
