@@ -417,6 +417,51 @@ func (c *HTTPClient) PatchApplication(id string, app *models.Application, opts m
 	return nil
 }
 
+// PatchApplicationTokenGroup patches an application's group token and returns an error
+//
+// Required permissions: Application.ReadWrite
+//
+// Parameters:
+//
+//	id: The application ID
+//	groupClaimName: Name of the groups' claim (default to groups if empty)
+//	opts: The client options
+func (c *HTTPClient) PatchApplicationTokenGroup(id string, groupClaimName string, opts models.ClientOptions) error {
+	if id == "" {
+		return errors.New("ID missing")
+	}
+
+	if groupClaimName == "" {
+		groupClaimName = "groups"
+	}
+
+	application := &models.Application{
+		ID:                    id,
+		GroupMembershipClaims: "ApplicationGroup",
+		OptionalClaims: &models.OptionalClaims{
+			AccessToken: []models.OptionalClaim{
+				{
+					Name:                 groupClaimName,
+					AdditionalProperties: []string{"sam_account_name"},
+				},
+			},
+			IDToken: []models.OptionalClaim{
+				{
+					Name:                 groupClaimName,
+					AdditionalProperties: []string{"sam_account_name"},
+				},
+			},
+		},
+	}
+
+	err := c.PatchApplication(application.ID, application, opts)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // WaitApplication waits for an application to be created and returns an error
 //
 // Required permissions: Application.Read.All
