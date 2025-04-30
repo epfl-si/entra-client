@@ -44,6 +44,7 @@ type Service interface {
 	DeleteClaimsMappingPolicy(id string, options models.ClientOptions) (err error)
 	GetClaimsMappingPolicies(options models.ClientOptions) (groups []*models.ClaimsMappingPolicy, nextURL string, err error)
 	GetClaimsMappingPolicy(cmpID string, options models.ClientOptions) (claimsMappingPolicy *models.ClaimsMappingPolicy, err error)
+	GetClaimsMappingPolicyByAppID(appID string, options models.ClientOptions) (claimsMappingPolicy *models.ClaimsMappingPolicy, err error)
 	ListUsageClaimsMappingPolicy(cmpID string, options models.ClientOptions) (groups []*models.ClaimsMappingPolicy, err error)
 	UnassignClaimsMappingPolicy(spID, cmpID string, options models.ClientOptions) (err error)
 	PatchClaimsMappingPolicy(cmpID string, app *models.ClaimsMappingPolicy, options models.ClientOptions) (err error)
