@@ -5,6 +5,6 @@ if ! [ -f env_test ]; then
   exit 0
 fi
 
-source .env
+source env_test
 go test  -coverprofile=./coverage.out ./...
 

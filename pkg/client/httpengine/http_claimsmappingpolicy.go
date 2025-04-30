@@ -176,7 +176,7 @@ func (c *HTTPClient) DeleteClaimsMappingPolicy(id string, opts models.ClientOpti
 //
 // Parameters:
 //
-//	id: The application ID
+//	cmpID: The Claims Mapping Policy ID
 //	opts: The client options
 func (c *HTTPClient) GetClaimsMappingPolicy(cmpID string, opts models.ClientOptions) (*models.ClaimsMappingPolicy, error) {
 	h := c.buildHeaders(opts)
@@ -213,7 +213,7 @@ func (c *HTTPClient) GetClaimsMappingPolicy(cmpID string, opts models.ClientOpti
 //
 //	opts: The client options
 func (c *HTTPClient) GetClaimsMappingPolicies(opts models.ClientOptions) ([]*models.ClaimsMappingPolicy, string, error) {
-	c.Log.Sugar().Debugf("GetClaimsMappingPolicies() - Started\n")
+	//	c.Log.Sugar().Debugf("GetClaimsMappingPolicies() - Started\n")
 	results := make([]*models.ClaimsMappingPolicy, 0)
 	var claimsMappingPolicyResponse models.ClaimsMappingPolicyResponse
 	var err error
@@ -433,4 +433,39 @@ func (c *HTTPClient) UnassignClaimsMappingPolicy(spID, cmpID string, opts models
 	}
 
 	return nil
+}
+
+// GetClaimsMappingPolicyByAppID gets a claims mapping policy by AppID and returns an error
+//
+// Required permissions: Policy.Read.ApplicationConfiguration
+// Required permissions: Policy.Read.All
+//
+// Parameters:
+//
+//	appID: The application ID
+//	opts: The client options
+func (c *HTTPClient) GetClaimsMappingPolicyByAppID(appID string, opts models.ClientOptions) (*models.ClaimsMappingPolicy, error) {
+	h := c.buildHeaders(opts)
+	response, err := c.RestClient.Get("/applications/"+appID+"/claimsMappingPolicies"+buildQueryString(opts), h)
+	if err != nil {
+		return nil, err
+	}
+	if response.StatusCode != 200 {
+		return nil, errors.New(response.Status)
+	}
+
+	body, err := io.ReadAll(io.Reader(response.Body))
+	if err != nil {
+		return nil, err
+	}
+
+	response.Body.Close()
+
+	var cmp models.ClaimsMappingPolicy
+	err = json.Unmarshal(body, &cmp)
+	if err != nil {
+		return nil, err
+	}
+
+	return &cmp, nil
 }
