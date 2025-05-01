@@ -354,10 +354,10 @@ func (c *HTTPClient) WaitClaimsMappingPolicy(id string, timeout int, options mod
 // Parameters:
 //
 //	opts: The client options
-func (c *HTTPClient) ListUsageClaimsMappingPolicy(cmpID string, opts models.ClientOptions) ([]*models.ClaimsMappingPolicy, error) {
+func (c *HTTPClient) ListUsageClaimsMappingPolicy(cmpID string, opts models.ClientOptions) ([]*models.DirectoryObject, error) {
 	c.Log.Sugar().Debugf("GetClaimsMappingPolicys() - Started\n")
-	results := make([]*models.ClaimsMappingPolicy, 0)
-	var claimsMappingPolicyResponse models.ClaimsMappingPolicyResponse
+	results := make([]*models.DirectoryObject, 0)
+	var claimsMappingPolicyResponse models.ClaimsMappingPolicyListUsageResponse
 	var err error
 
 	h := c.buildHeaders(opts)
@@ -376,29 +376,29 @@ func (c *HTTPClient) ListUsageClaimsMappingPolicy(cmpID string, opts models.Clie
 			return nil, err
 		}
 
+		// err = json.Unmarshal(body, &claimsMappingPolicyResponse)
+		// if err != nil {
+		// 	c.Log.Sugar().Debugf("ListUsageClaimsMappingPolicy() - 3 - Error: %s\n", err.Error())
+		// 	return nil, err
+		// }
+
+		// response.Body.Close()
+
+		// var cmpResponse models.DirectoryObject
 		err = json.Unmarshal(body, &claimsMappingPolicyResponse)
-		if err != nil {
-			c.Log.Sugar().Debugf("ListUsageClaimsMappingPolicy() - 3 - Error: %s\n", err.Error())
-			return nil, err
-		}
-
-		response.Body.Close()
-
-		var cmpResponse models.ClaimsMappingPolicyResponse
-		err = json.Unmarshal(body, &cmpResponse)
 		if err != nil {
 			c.Log.Sugar().Debugf("ListUSageClaimsMappingPolicy() - 3 - Error: %s\n", err.Error())
 			return nil, err
 		}
 
-		results = append(results, cmpResponse.Value...)
+		results = append(results, claimsMappingPolicyResponse.Value...)
 
-		if cmpResponse.NextLink == "" {
+		if claimsMappingPolicyResponse.NextLink == "" {
 			break
 		}
 
-		c.Log.Sugar().Debugf("ListUsageClaimsMappingPolicy() - 4 - Calling Next: %s\n", cmpResponse.NextLink)
-		response, err = c.RestClient.Get(cmpResponse.NextLink, h)
+		c.Log.Sugar().Debugf("ListUsageClaimsMappingPolicy() - 4 - Calling Next: %s\n", claimsMappingPolicyResponse.NextLink)
+		response, err = c.RestClient.Get(claimsMappingPolicyResponse.NextLink, h)
 		if response.StatusCode != 200 {
 			return nil, errors.New(response.Status)
 		}
