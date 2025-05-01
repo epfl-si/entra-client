@@ -33,7 +33,7 @@ type Service interface {
 	GetApplications(options models.ClientOptions) (apps []*models.Application, nextURL string, err error)
 	GiveConsentToApplication(spObjectID string, scopes []string, options models.ClientOptions) (err error)
 	PatchApplication(id string, app *models.Application, options models.ClientOptions) (err error)
-	PatchApplicationTokenGroup(id string, app *models.Application, options models.ClientOptions) (err error)
+	PatchApplicationTokenGroup(id string, groupClaimName string, opts models.ClientOptions) (err error)
 	WaitApplication(id string, timeout int, options models.ClientOptions) (err error)
 	//GiveConsentToApplication(id string, options models.ClientOptions) (err error)
 	GetApplicationConsents(options models.ClientOptions) (body string, err error)
@@ -87,4 +87,8 @@ type Service interface {
 	GetUser(id string, options models.ClientOptions) (app *models.User, err error)
 	GetUsers(options models.ClientOptions) (users []*models.User, nextURL string, err error)
 	UpdateUser(app *models.User, options models.ClientOptions) (err error)
+
+	// Identity
+	AddApplicationToAuthenticationEventListeners(AuthenticationEventListenersId string, IncludeApplications *models.IdentityAuthenticationEventListenersIncludeApplicationsBody, opts models.ClientOptions) (err error)
+	RemoveApplicationToAuthenticationEventListeners(AuthenticationEventListenersId string, appId string, opts models.ClientOptions) (err error)
 }
