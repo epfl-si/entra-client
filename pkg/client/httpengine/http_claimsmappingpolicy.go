@@ -446,11 +446,23 @@ func (c *HTTPClient) UnassignClaimsMappingPolicy(spID, cmpID string, opts models
 //	opts: The client options
 func (c *HTTPClient) GetClaimsMappingPolicyByAppID(appID string, opts models.ClientOptions) (*models.ClaimsMappingPolicy, error) {
 	h := c.buildHeaders(opts)
-	response, err := c.RestClient.Get("/applications/"+appID+"/claimsMappingPolicies"+buildQueryString(opts), h)
+
+	// Get service principal first
+	sp, err := c.GetServicePrincipalByAppID(appID, opts)
 	if err != nil {
+		c.Log.Sugar().Debugf("GetClaimsMappingPolicyByAppID() - Error getting service principal: %s", err.Error())
 		return nil, err
 	}
+
+	// Use service principal ID to get claims mapping policy
+	response, err := c.RestClient.Get("/servicePrincipals/"+sp.ID+"/claimsMappingPolicies", h)
+	if err != nil {
+		c.Log.Sugar().Debugf("GetClaimsMappingPolicyByAppID() - Request error: %s", err.Error())
+		return nil, err
+	}
+
 	if response.StatusCode != 200 {
+		c.Log.Sugar().Debugf("GetClaimsMappingPolicyByAppID() - Response status: %d %s", response.StatusCode, response.Status)
 		return nil, errors.New(response.Status)
 	}
 
@@ -461,11 +473,19 @@ func (c *HTTPClient) GetClaimsMappingPolicyByAppID(appID string, opts models.Cli
 
 	response.Body.Close()
 
-	var cmp models.ClaimsMappingPolicy
-	err = json.Unmarshal(body, &cmp)
+	var cmpResponse struct {
+		Value []models.ClaimsMappingPolicy `json:"value"`
+	}
+	err = json.Unmarshal(body, &cmpResponse)
 	if err != nil {
+		c.Log.Sugar().Debugf("GetClaimsMappingPolicyByAppID() - Error unmarshalling response: %s", err.Error())
 		return nil, err
 	}
 
+	if len(cmpResponse.Value) == 0 {
+		return nil, errors.New("no claims mapping policy found")
+	}
+
+	cmp := cmpResponse.Value[0]
 	return &cmp, nil
 }
