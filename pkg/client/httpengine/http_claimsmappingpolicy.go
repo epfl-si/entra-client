@@ -489,3 +489,41 @@ func (c *HTTPClient) GetClaimsMappingPolicyByAppID(appID string, opts models.Cli
 	cmp := cmpResponse.Value[0]
 	return &cmp, nil
 }
+
+func (c *HTTPClient) GetDefaultClaimMappingPolicy() (mappingPolicy *models.ClaimsMappingPolicyEpfl) {
+	return &models.ClaimsMappingPolicyEpfl{
+		ID:             c.EntraConfig.Get("CMP_BASE_ID"),
+		Base:           true,
+		Cfs:            false,
+		Authorizations: false,
+		Accreds:        false,
+	}
+}
+func (c *HTTPClient) GetClaimMappingPolicyByClaim(cfs bool, authorizations bool, accreds bool) (mappingPolicy *models.ClaimsMappingPolicyEpfl) {
+	policy := models.ClaimsMappingPolicyEpfl{
+		Base:           true,
+		Cfs:            cfs,
+		Authorizations: authorizations,
+		Accreds:        accreds,
+	}
+
+	if !cfs && !authorizations && !accreds {
+		policy.ID = c.EntraConfig.Get("CMP_BASE_ID")
+	} else if cfs && !authorizations && !accreds {
+		policy.ID = c.EntraConfig.Get("CMP_CFS_ID")
+	} else if !cfs && authorizations && !accreds {
+		policy.ID = c.EntraConfig.Get("CMP_AUTH_ID")
+	} else if !cfs && !authorizations && accreds {
+		policy.ID = c.EntraConfig.Get("CMP_ACCRED_ID")
+	} else if cfs && authorizations && !accreds {
+		policy.ID = c.EntraConfig.Get("CMP_CFS_AUTH_ID")
+	} else if cfs && !authorizations && accreds {
+		policy.ID = c.EntraConfig.Get("CMP_CFS_ACCRED_ID")
+	} else if !cfs && authorizations && accreds {
+		policy.ID = c.EntraConfig.Get("CMP_AUTH_ACCRED_ID")
+	} else if cfs && authorizations && accreds {
+		policy.ID = c.EntraConfig.Get("CMP_CFS_AUTH_ACCRED_ID")
+	}
+
+	return &policy
+}
