@@ -92,4 +92,8 @@ type Service interface {
 	// Identity
 	AddApplicationToAuthenticationEventListeners(AuthenticationEventListenersId string, IncludeApplications *models.IdentityAuthenticationEventListenersIncludeApplicationsBody, opts models.ClientOptions) (err error)
 	RemoveApplicationToAuthenticationEventListeners(AuthenticationEventListenersId string, appId string, opts models.ClientOptions) (err error)
+
+	// No-Http / Claim Mapping Policies
+	GetDefaultClaimMappingPolicy() (mappingPolicy *models.ClaimsMappingPolicyEpfl)
+	GetClaimMappingPolicyByClaim(cf bool, authorizations bool, accreds bool) (mappingPolicy *models.ClaimsMappingPolicyEpfl)
 }
