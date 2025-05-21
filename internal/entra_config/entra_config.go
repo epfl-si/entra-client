@@ -77,3 +77,8 @@ func (c *EntraConfig) Get(key string) string {
 	}
 	return val
 }
+
+func (c *EntraConfig) Has(key string) bool {
+	_, ok := c.Value[key]
+	return ok
+}
