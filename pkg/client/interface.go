@@ -94,6 +94,6 @@ type Service interface {
 	RemoveApplicationToAuthenticationEventListeners(AuthenticationEventListenersId string, appId string, opts models.ClientOptions) (err error)
 
 	// No-Http / Claim Mapping Policies
-	GetDefaultClaimMappingPolicy() (mappingPolicy *models.ClaimsMappingPolicyEpfl)
-	GetClaimMappingPolicyByClaim(cf bool, authorizations bool, accreds bool) (mappingPolicy *models.ClaimsMappingPolicyEpfl)
+	GetDefaultClaimMappingPolicy() (mappingPolicy *models.ClaimsMappingPolicyEpfl, err error)
+	GetClaimMappingPolicyByClaim(cf bool, authorizations bool, accreds bool) (mappingPolicy *models.ClaimsMappingPolicyEpfl, err error)
 }
