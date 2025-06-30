@@ -90,8 +90,7 @@ type Service interface {
 	UpdateUser(app *models.User, options models.ClientOptions) (err error)
 
 	// Identity
-	AddApplicationToAuthenticationEventListeners(AuthenticationEventListenersId string, IncludeApplications *models.IdentityAuthenticationEventListenersIncludeApplicationsBody, opts models.ClientOptions) (err error)
-	RemoveApplicationToAuthenticationEventListeners(AuthenticationEventListenersId string, appId string, opts models.ClientOptions) (err error)
+	CreateAuthenticationEventListeners(onTokenIssuanceStartListener *models.OnTokenIssuanceStartListener, opts models.ClientOptions) (err error)
 
 	// No-Http / Claim Mapping Policies
 	GetDefaultClaimMappingPolicy() (mappingPolicy *models.ClaimsMappingPolicyEpfl, err error)
