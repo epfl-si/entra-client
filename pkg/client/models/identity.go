@@ -30,6 +30,6 @@ type CustomExtension struct {
 }
 
 type AuthenticationEventListener struct {
-	Id                         string `json:"id"`
-	AuthenticationEventsFlowId string `json:"authenticationEventsFlowId"`
+	Id         string      `json:"id"`
+	Conditions *Conditions `json:"conditions"`
 }

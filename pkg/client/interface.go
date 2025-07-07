@@ -91,6 +91,8 @@ type Service interface {
 
 	// Identity
 	CreateAuthenticationEventListeners(onTokenIssuanceStartListener *models.OnTokenIssuanceStartListener, opts models.ClientOptions) (resp *models.AuthenticationEventListener, err error)
+	GetAuthenticationEventListener(listenerID string, opts models.ClientOptions) (resp *models.AuthenticationEventListener, err error)
+	AddApplicationToAuthenticationEventListener(listenerID string, appID string, opts models.ClientOptions) (err error)
 
 	// No-Http / Claim Mapping Policies
 	GetDefaultClaimMappingPolicy() (mappingPolicy *models.ClaimsMappingPolicyEpfl, err error)
