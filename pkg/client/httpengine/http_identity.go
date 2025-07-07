@@ -124,6 +124,7 @@ func (c *HTTPClient) AddApplicationToAuthenticationEventListener(listenerID stri
 	if err != nil {
 		return fmt.Errorf("failed to marshal request body: %w", err)
 	}
+	c.Log.Sugar().Debugf("AddApplicationToAuthenticationEventListener() - Request: %s", string(u))
 
 	h := c.buildHeaders(opts)
 	h["Content-Type"] = "application/json"
