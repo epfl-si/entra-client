@@ -28,3 +28,8 @@ type Handler struct {
 type CustomExtension struct {
 	Id string `json:"id"`
 }
+
+type AuthenticationEventListener struct {
+	Id                         string `json:"id"`
+	AuthenticationEventsFlowId string `json:"authenticationEventsFlowId"`
+}

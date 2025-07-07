@@ -90,7 +90,7 @@ type Service interface {
 	UpdateUser(app *models.User, options models.ClientOptions) (err error)
 
 	// Identity
-	CreateAuthenticationEventListeners(onTokenIssuanceStartListener *models.OnTokenIssuanceStartListener, opts models.ClientOptions) (err error)
+	CreateAuthenticationEventListeners(onTokenIssuanceStartListener *models.OnTokenIssuanceStartListener, opts models.ClientOptions) (resp *models.AuthenticationEventListener, err error)
 
 	// No-Http / Claim Mapping Policies
 	GetDefaultClaimMappingPolicy() (mappingPolicy *models.ClaimsMappingPolicyEpfl, err error)
