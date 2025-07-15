@@ -97,4 +97,14 @@ type Service interface {
 	// No-Http / Claim Mapping Policies
 	GetDefaultClaimMappingPolicy() (mappingPolicy *models.ClaimsMappingPolicyEpfl, err error)
 	GetClaimMappingPolicyByClaim(cf bool, authorizations bool, accreds bool) (mappingPolicy *models.ClaimsMappingPolicyEpfl, err error)
+
+	// Key Credentials
+	GetKeyCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.KeyCredentialEPFL, error)
+	GetKeyCredentialsByAppID(dateLimit string, appID string, opts models.ClientOptions) ([]models.KeyCredentialEPFL, error)
+	GetExpiredKeyCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.KeyCredentialEPFL, error)
+
+	// Password Credentials
+	GetPasswordCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.PasswordCredentialEPFL, error)
+	GetPasswordCredentialsByAppID(dateLimit string, appID string, opts models.ClientOptions) ([]models.PasswordCredentialEPFL, error)
+	GetExpiredPasswordCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.PasswordCredentialEPFL, error)
 }

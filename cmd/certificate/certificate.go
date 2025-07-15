@@ -9,11 +9,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var localEndDate string
+
 // certificateCmd represents the certificate command
 var certificateCmd = &cobra.Command{
 	Use:   "certificate",
 	Short: "Manage certificates",
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		fmt.Println("certificate called")
 	},
 }

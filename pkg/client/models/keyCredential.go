@@ -21,6 +21,14 @@ type KeyCredential struct {
 	DisplayName string `json:"displayName,omitempty"`
 }
 
+// KeyCredentialEPFL struct used to get key credentials for EPFL applications (with information added)
+type KeyCredentialEPFL struct {
+	AppID          string `json:"appId,omitempty"`
+	AppDisplayName string `json:"appDisplayName,omitempty"`
+	RemainingDays  int64  `json:"remainingDays,omitempty"`
+	KeyCredential
+}
+
 // CustomTime is a wrapper around time.Time
 type CustomTime time.Time
 

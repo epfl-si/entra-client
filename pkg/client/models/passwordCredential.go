@@ -13,3 +13,11 @@ type PasswordCredential struct {
 	StartDateTime       time.Time `json:"startDateTime,omitempty"`
 	SecretText          *string   `json:"secretText,omitempty"`
 }
+
+// PasswordCredentialEPFL struct used to get password credentials for EPFL applications (with information added)
+type PasswordCredentialEPFL struct {
+	AppID          string `json:"appId,omitempty"`
+	AppDisplayName string `json:"appDisplayName,omitempty"`
+	RemainingDays  int    `json:"remainingDays,omitempty"`
+	PasswordCredential
+}
