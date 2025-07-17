@@ -10,6 +10,8 @@ import (
 )
 
 func Test_AnyCommandThroughRootCmd(t *testing.T) {
+	// Reset global flags for proper test isolation
+	rootcmd.ResetGlobalFlags()
 
 	actual := new(bytes.Buffer)
 	rootcmd.RootCmd.SetOut(actual)

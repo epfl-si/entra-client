@@ -57,6 +57,11 @@ security:
 test: 
 	./run_tests.sh
 
+## bench_test: benchmark tests
+.PHONY: bench_test
+bench_test:
+	go test -json ./cmd/application/... | jq -r 'select(.Action == "pass" and .Elapsed != null) | "\(.Elapsed)s \(.Test)"' | sort -nr
+
 ## cover: launch coverage
 cover:
 	go tool cover -html=./coverage.out

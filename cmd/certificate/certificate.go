@@ -2,19 +2,19 @@
 package cmdcertificate
 
 import (
-	"fmt"
-
 	rootcmd "github.com/epfl-si/entra-client/cmd"
 
 	"github.com/spf13/cobra"
 )
 
+var localEndDate string
+
 // certificateCmd represents the certificate command
 var certificateCmd = &cobra.Command{
 	Use:   "certificate",
 	Short: "Manage certificates",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("certificate called")
+	Run: func(cmd *cobra.Command, _ []string) {
+		cmd.Println("certificate called")
 	},
 }
 

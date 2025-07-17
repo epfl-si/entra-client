@@ -1,75 +1,40 @@
 package cmdcertificate
 
 import (
-	"fmt"
 	"time"
-
-	"github.com/epfl-si/entra-client/pkg/client/models"
 
 	rootcmd "github.com/epfl-si/entra-client/cmd"
 
 	"github.com/spf13/cobra"
 )
 
-var localEndDate string
-
 // certificateListCmd represents the certificateList command
 var certificateListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List certificates",
-	Run: func(cmd *cobra.Command, args []string) {
-		rootcmd.ClientOptions.Select = "keyCredentials,displayName"
-		certs := make(map[string]models.KeyCredential, 0)
-		apps := make(map[string]string, 0)
-
-		applications, _, err := rootcmd.Client.GetApplications(rootcmd.ClientOptions)
+	Run: func(cmd *cobra.Command, _ []string) {
+		rootcmd.ClientOptions.Select = "keyCredentials,displayName,appId"
+		certs, err := rootcmd.Client.GetKeyCredentials("", rootcmd.ClientOptions)
 		if err != nil {
 			rootcmd.PrintErr(err)
 			return
 		}
 
-		for _, application := range applications {
-			if len(application.KeyCredentials) > 0 {
-				for _, cert := range application.KeyCredentials {
-					if _, ok := certs[cert.KeyID]; ok {
-						fmt.Println("Skipping duplicate certificate for application " + cert.KeyID)
+		for _, kcs := range certs {
+			for _, cert := range kcs {
+				if localEndDate != "" {
+					endDate, err := time.Parse("2006-01-02", localEndDate)
+					if err != nil {
+						rootcmd.PrintErr(err)
+						return
+					}
+					if cert.EndDateTime == nil || time.Time(*cert.EndDateTime).After(endDate) {
 						continue
 					}
-					certs[cert.KeyID] = cert
-					apps[cert.KeyID] = application.DisplayName
 				}
+				cmd.Printf("%s\n", rootcmd.OutputJSON(cert))
+				//fmt.Printf("%s (%s) ApplicationID: %s\n", cert.KeyID, time.Time(*cert.EndDateTime).String(), appID)
 			}
-		}
-		sps, _, err := rootcmd.Client.GetServicePrincipals(rootcmd.ClientOptions)
-		if err != nil {
-			rootcmd.PrintErr(err)
-			return
-		}
-
-		for _, sp := range sps {
-			if len(sp.KeyCredentials) > 0 {
-				for _, cert := range sp.KeyCredentials {
-					if _, ok := certs[cert.KeyID]; ok {
-						fmt.Println("Skipping duplicate certificate for service principal " + cert.KeyID)
-						continue
-					}
-					certs[cert.KeyID] = cert
-					apps[cert.KeyID] = sp.DisplayName
-				}
-			}
-		}
-		for _, cert := range certs {
-			if localEndDate != "" {
-				endDate, err := time.Parse("2006-01-02", localEndDate)
-				if err != nil {
-					rootcmd.PrintErr(err)
-					return
-				}
-				if cert.EndDateTime == nil || time.Time(*cert.EndDateTime).After(endDate) {
-					continue
-				}
-			}
-			fmt.Printf("%s (%s) %s\n", cert.KeyID, time.Time(*cert.EndDateTime).String(), apps[cert.KeyID])
 		}
 	},
 }
