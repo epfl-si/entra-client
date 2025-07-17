@@ -15,6 +15,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 // NormalizeName normalizes a name by adding prefixing with EPFL and suffixing with environment when it's not PROD, if it's not already the case
@@ -235,4 +236,63 @@ func CaptureStdOutputs(cmd *cobra.Command) (newOut, newErr *bytes.Buffer) {
 	cmd.SetErr(stdErr)
 
 	return stdOut, stdErr
+}
+
+// ResetGlobalFlags resets all global flags to their default values
+// This is needed for proper test isolation
+func ResetGlobalFlags() {
+	OptBatch = ""
+	OptDebug = false
+	OptDisplayName = ""
+	OptEngine = ""
+	OptID = ""
+	OptAppID = ""
+	OptSpID = ""
+	OptPaging = false
+	OptPostData = ""
+	OptPrettyJSON = false
+	OptSearch = ""
+	OptFilter = ""
+	OptSelect = ""
+	OptSkip = ""
+	OptSkipToken = ""
+	OptTop = ""
+	ClientOptions = models.ClientOptions{}
+	Client = nil
+
+	// Reset Cobra command state - critical for test isolation
+	RootCmd.SetArgs([]string{})
+
+	// Reset root command flags
+	RootCmd.Flags().VisitAll(func(f *pflag.Flag) {
+		f.Value.Set(f.DefValue)
+		f.Changed = false
+	})
+	RootCmd.PersistentFlags().VisitAll(func(f *pflag.Flag) {
+		f.Value.Set(f.DefValue)
+		f.Changed = false
+	})
+
+	// Reset all subcommand flags recursively
+	var resetCommandFlags func(*cobra.Command)
+	resetCommandFlags = func(cmd *cobra.Command) {
+		cmd.Flags().VisitAll(func(f *pflag.Flag) {
+			f.Value.Set(f.DefValue)
+			f.Changed = false
+		})
+		cmd.PersistentFlags().VisitAll(func(f *pflag.Flag) {
+			f.Value.Set(f.DefValue)
+			f.Changed = false
+		})
+
+		// Reset subcommands recursively
+		for _, subCmd := range cmd.Commands() {
+			resetCommandFlags(subCmd)
+		}
+	}
+
+	// Apply reset to all subcommands
+	for _, cmd := range RootCmd.Commands() {
+		resetCommandFlags(cmd)
+	}
 }

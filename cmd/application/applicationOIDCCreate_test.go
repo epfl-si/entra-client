@@ -40,6 +40,11 @@ func Test_applicationOIDCCreate(t *testing.T) {
 	// Run each test case
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// Reset global flags to ensure test isolation
+			rootcmd.ResetGlobalFlags()
+
+			// Reset OptRedirectURI specifically
+			OptRedirectURI = []string{}
 
 			// Capture output
 			out, err := rootcmd.CaptureStdOutputs(rootcmd.RootCmd)
