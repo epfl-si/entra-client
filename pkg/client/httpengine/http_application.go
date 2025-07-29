@@ -371,7 +371,7 @@ func (c *HTTPClient) GetApplications(opts models.ClientOptions) ([]*models.Appli
 			break
 		}
 
-		c.Log.Sugar().Debugf("GetApplications() - 4 - Calling Next: %s\n", applicationResponse.NextLink)
+		//c.Log.Sugar().Debugf("GetApplications() - 4 - Calling Next: %s\n", applicationResponse.NextLink)
 		response, err = c.RestClient.Get(applicationResponse.NextLink, h)
 		if response.StatusCode != 200 {
 			return nil, "", errors.New(response.Status)

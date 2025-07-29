@@ -783,7 +783,7 @@ func (c *HTTPClient) GetServicePrincipals(opts models.ClientOptions) ([]*models.
 			break
 		}
 
-		c.Log.Sugar().Debugf("GetServicePrincipals() - 4 - Calling Next: %s\n", serviceprincipalResponse.NextLink)
+		//c.Log.Sugar().Debugf("GetServicePrincipals() - 4 - Calling Next: %s\n", serviceprincipalResponse.NextLink)
 		response, err = c.RestClient.Get(serviceprincipalResponse.NextLink, h)
 		if response.StatusCode != 200 {
 			return nil, "", errors.New(response.Status)
