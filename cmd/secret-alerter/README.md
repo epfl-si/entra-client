@@ -18,13 +18,6 @@ The Secret Alerter helps organizations maintain security by:
 - **Expired Secret Detection**: Also alerts on recently expired secrets (up to 7 days past expiration)
 - **Detailed Reporting**: Includes application names, secret IDs, expiration dates, and remaining days
 
-## Alert Categories
-
-The tool categorizes secrets based on remaining days:
-- **EXPIRED**: Already expired (red, critical)
-- **CRITICAL**: Less than 7 days remaining (red)
-- **WARNING**: 7-14 days remaining (orange)
-- **NORMAL**: More than 14 days remaining (yellow)
 
 ## Environment Variables
 
@@ -72,7 +65,11 @@ The tool is configured for EPFL's internal mail server by default:
    ```bash
    ./secret-alerter
    ```
-
+or use the ```--fake``` flag to disable the email send (the content will be displayed)
+  ```bash
+   ./secret-alerter --fake
+   ```
+   
 3. **Example output**:
    ```
    Entra client initialized successfully
@@ -90,7 +87,7 @@ The generated email includes:
   - List of expiring secrets with:
     - Secret display name and key ID
     - Exact expiration date
-    - Days remaining (color-coded by urgency)
+    - Days remaining 
 
 ## Security Considerations
 
