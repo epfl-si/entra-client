@@ -1,13 +1,17 @@
+// Secret Alerter for Entra
 package main
 
 import (
 	"crypto/tls"
+	"flag"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
 	"text/template"
 	"time"
+
+	"github.com/joho/godotenv"
 
 	"github.com/epfl-si/entra-client/pkg/client/httpengine"
 	"github.com/epfl-si/entra-client/pkg/client/models"
@@ -22,6 +26,7 @@ type Config struct {
 	ToEmail             string
 	Subject             string
 	ExpiryThresholdDays int64
+	Fake                bool
 }
 
 // AlertData holds data for the email template
@@ -119,13 +124,17 @@ func main() {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
+	var fake *bool
+	fake = flag.Bool("fake", false, "fake mode")
+	flag.Parse()
+
+	config.Fake = *fake
+
 	// Initialize Entra client
 	client, err := httpengine.New()
 	if err != nil {
 		log.Fatalf("Failed to initialize Entra client: %v", err)
 	}
-
-	fmt.Println("Entra client initialized successfully")
 
 	// Calculate date 30 days from now
 	futureDate := time.Now().AddDate(0, 0, int(config.ExpiryThresholdDays))
@@ -157,7 +166,7 @@ func main() {
 	alertData := processCredentials(config.ExpiryThresholdDays, keyCredentialsMap, passwordCredentialsMap)
 
 	if alertData.TotalSecrets == 0 {
-		log.Println("No secrets expiring within %d days found", config.ExpiryThresholdDays)
+		log.Printf("No secrets expiring within %d days found\n", config.ExpiryThresholdDays)
 		return
 	}
 
@@ -169,10 +178,14 @@ func main() {
 		log.Fatalf("Failed to send email alert: %v", err)
 	}
 
-	log.Println("Email alert sent successfully")
 }
 
 func loadConfig() (*Config, error) {
+	// Load .env file
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found")
+	}
+
 	config := &Config{}
 
 	config.SMTPHost = getEnvOrDefault("SMTP_HOST", "mail.epfl.ch")
@@ -192,7 +205,6 @@ func loadConfig() (*Config, error) {
 }
 
 func getEnvOrDefault(key, defaultValue string) string {
-	fmt.Printf("Checking environment variable: %s\n", key)
 	if value := os.Getenv(key); value != "" {
 		return value
 	}
@@ -216,7 +228,7 @@ func processCredentials(expiryThresholdDays int64, keyCredentialsMap map[string]
 
 		for _, cred := range credentials {
 			// Calculate actual remaining days from today
-			actualRemainingDays := int64(time.Time(*cred.EndDateTime).Sub(time.Now()).Hours() / 24)
+			actualRemainingDays := int64(time.Until(time.Time(*cred.EndDateTime)).Hours() / 24)
 
 			// Only include secrets expiring within threshold (including recently expired ones up to 7 days)
 			if actualRemainingDays <= expiryThresholdDays && actualRemainingDays >= -7 {
@@ -248,7 +260,7 @@ func processCredentials(expiryThresholdDays int64, keyCredentialsMap map[string]
 
 		for _, cred := range credentials {
 			// Calculate actual remaining days from today
-			actualRemainingDays := int64(cred.EndDateTime.Sub(time.Now()).Hours() / 24)
+			actualRemainingDays := int64(time.Until(cred.EndDateTime).Hours() / 24)
 
 			// Only include secrets expiring within threshold (including recently expired ones up to 7 days)
 			if actualRemainingDays <= expiryThresholdDays && actualRemainingDays >= -7 {
@@ -304,7 +316,14 @@ func sendEmailAlert(config *Config, alertData *AlertData) error {
 	}
 
 	body := string(emailBuffer.Bytes())
-	fmt.Printf("Generated email body:\n%s\n", body) // Debug output
+
+	if config.Fake {
+		log.Println("Fake mode enabled, not sending email")
+		log.Printf("Generated email body:\n%s\n", body) // Debug output
+
+		return nil
+	}
+
 	// Create message using go-mail
 	m := mail_sender.NewMessage()
 	m.SetHeader("From", config.FromEmail)
@@ -322,6 +341,8 @@ func sendEmailAlert(config *Config, alertData *AlertData) error {
 		return fmt.Errorf("failed to send email: %v", err)
 	}
 
+	log.Println("Email alert sent successfully")
+
 	return nil
 }
 
@@ -335,6 +356,8 @@ func (b *EmailBuffer) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
+// Bytes returns the contents of the buffer
+// This is used to get the final email body as a string
 func (b *EmailBuffer) Bytes() []byte {
 	return b.data
 }
