@@ -140,3 +140,42 @@ func (c *HTTPClient) GetExpiredPasswordCredentials(dateLimit string, opts models
 	}
 	return results, nil
 }
+
+// GetLocalPasswordCredentials retrieves all the password credentials for local app and returns them in a map indexed by application ID
+// By Local app, we mean apps that have been created directly in the tenant and not provided by a third party
+//
+//	ie. app that have both an application and a service principal object
+//
+// Required permissions: Application.Read.All
+// Required permissions: ServicePrincipal.Read.All
+//
+// Parameters:
+//
+//	opts: The client options
+func (c *HTTPClient) GetLocalPasswordCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.PasswordCredentialEPFL, error) {
+	pcMap := make(map[string][]models.PasswordCredentialEPFL, 0)
+	processedPasswords := make(map[string]bool, 0)
+
+	applications, _, err := c.GetApplications(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, application := range applications {
+		if len(application.PasswordCredentials) > 0 {
+			for _, pwd := range application.PasswordCredentials {
+				if _, found := processedPasswords[pwd.KeyID]; !found {
+					pcMap[application.AppID] = append(pcMap[application.AppID], models.PasswordCredentialEPFL{
+						AppID:              application.AppID,
+						AppDisplayName:     application.DisplayName,
+						RemainingDays:      0, // Remaining days can be calculated if needed
+						PasswordCredential: pwd,
+					})
+					processedPasswords[pwd.KeyID] = true
+				}
+			}
+		}
+	}
+
+	return pcMap, nil
+}

@@ -147,7 +147,7 @@ func main() {
 		Select: "keyCredentials,displayName,appId",
 	}
 
-	keyCredentialsMap, err := client.GetKeyCredentials(dateLimit, clientOptions)
+	keyCredentialsMap, err := client.GetLocalKeyCredentials(dateLimit, clientOptions)
 	if err != nil {
 		log.Fatalf("Failed to get key credentials: %v", err)
 	}
@@ -157,7 +157,7 @@ func main() {
 		Select: "passwordCredentials,displayName,appId",
 	}
 
-	passwordCredentialsMap, err := client.GetPasswordCredentials(dateLimit, passwordClientOptions)
+	passwordCredentialsMap, err := client.GetLocalPasswordCredentials(dateLimit, passwordClientOptions)
 	if err != nil {
 		log.Fatalf("Failed to get password credentials: %v", err)
 	}

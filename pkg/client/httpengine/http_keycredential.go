@@ -184,3 +184,57 @@ func nbDaysBetweenDates(date1, date2 string) (int64, error) {
 
 	return int64(endDate.Sub(startDate).Hours() / 24), nil
 }
+
+// GetLocalKeyCredentials retrieves all the key credentials for local app and returns them in a map indexed by application ID
+// By Local app, we mean apps that have been created directly in the tenant and not provided by a third party
+//
+//	ie. app that have both an application and a service principal object
+//
+// Required permissions: Application.Read.All
+// Required permissions: ServicePrincipal.Read.All
+//
+// Parameters:
+//
+//	opts: The client options
+func (c *HTTPClient) GetLocalKeyCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.KeyCredentialEPFL, error) {
+	kcMap := make(map[string][]models.KeyCredentialEPFL, 0)
+	processedCerts := make(map[string]bool, 0)
+	var expirationDate time.Time
+
+	if dateLimit != "" {
+		var err error
+		expirationDate, err = time.Parse("2006-01-02", dateLimit)
+		if err != nil {
+			return nil, fmt.Errorf("invalid date format: %v", err)
+		}
+	} else {
+		expirationDate = time.Now()
+	}
+
+	applications, _, err := c.GetApplications(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, application := range applications {
+		if len(application.KeyCredentials) > 0 {
+			for _, cert := range application.KeyCredentials {
+				if _, found := processedCerts[cert.KeyID]; !found {
+					nbDaysRemaining, err := nbDaysBetweenDates(expirationDate.Format("2006-01-02"), time.Time(*cert.EndDateTime).Format("2006-01-02"))
+					if err != nil {
+						return nil, err
+					}
+					kcMap[application.AppID] = append(kcMap[application.AppID], models.KeyCredentialEPFL{
+						AppID:          application.AppID,
+						AppDisplayName: application.DisplayName,
+						RemainingDays:  nbDaysRemaining,
+						KeyCredential:  cert,
+					})
+					processedCerts[cert.KeyID] = true
+				}
+			}
+		}
+	}
+
+	return kcMap, nil
+}
