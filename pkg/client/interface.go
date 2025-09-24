@@ -99,11 +99,13 @@ type Service interface {
 	GetClaimMappingPolicyByClaim(cf bool, authorizations bool, accreds bool) (mappingPolicy *models.ClaimsMappingPolicyEpfl, err error)
 
 	// Key Credentials
+	GetLocalKeyCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.KeyCredentialEPFL, error)
 	GetKeyCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.KeyCredentialEPFL, error)
 	GetKeyCredentialsByAppID(dateLimit string, appID string, opts models.ClientOptions) ([]models.KeyCredentialEPFL, error)
 	GetExpiredKeyCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.KeyCredentialEPFL, error)
 
 	// Password Credentials
+	GetLocalPasswordCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.PasswordCredentialEPFL, error)
 	GetPasswordCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.PasswordCredentialEPFL, error)
 	GetPasswordCredentialsByAppID(dateLimit string, appID string, opts models.ClientOptions) ([]models.PasswordCredentialEPFL, error)
 	GetExpiredPasswordCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.PasswordCredentialEPFL, error)
