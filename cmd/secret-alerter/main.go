@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"text/template"
 	"time"
 
@@ -53,6 +54,16 @@ type SecretAlert struct {
 	ExpiryDate    time.Time
 	RemainingDays int64
 }
+
+// Options
+var keyClientOptions = models.ClientOptions{
+	Select: "keyCredentials,displayName,appId",
+}
+var passwordClientOptions = models.ClientOptions{
+	Select: "passwordCredentials,displayName,appId",
+}
+
+const sevenDays = -7
 
 const emailTemplate = `<!DOCTYPE html
 <html>
@@ -138,32 +149,22 @@ func main() {
 
 	// Calculate date 30 days from now
 	futureDate := time.Now().AddDate(0, 0, int(config.ExpiryThresholdDays))
-	dateLimit := futureDate.Format("2006-01-02")
+	LimitDate := futureDate.Format("2006-01-02")
 
-	log.Printf("Checking for secrets expiring before: %s", dateLimit)
+	log.Printf("Checking for secrets expiring before: %s", LimitDate)
 
-	// Query for key credentials expiring within 30 days
-	clientOptions := models.ClientOptions{
-		Select: "keyCredentials,displayName,appId",
-	}
-
-	keyCredentialsMap, err := client.GetLocalKeyCredentials(dateLimit, clientOptions)
+	keyCredentialsMap, err := client.GetLocalKeyCredentials(LimitDate, keyClientOptions)
 	if err != nil {
 		log.Fatalf("Failed to get key credentials: %v", err)
 	}
 
-	// Query for password credentials expiring within 30 days
-	passwordClientOptions := models.ClientOptions{
-		Select: "passwordCredentials,displayName,appId",
-	}
-
-	passwordCredentialsMap, err := client.GetLocalPasswordCredentials(dateLimit, passwordClientOptions)
+	passwordCredentialsMap, err := client.GetLocalPasswordCredentials(LimitDate, passwordClientOptions)
 	if err != nil {
 		log.Fatalf("Failed to get password credentials: %v", err)
 	}
 
 	// Filter secrets expiring within 30 days (RemainingDays <= Threshold and >= -1)
-	alertData := processCredentials(config.ExpiryThresholdDays, keyCredentialsMap, passwordCredentialsMap)
+	alertData := processCredentials(config.ExpiryThresholdDays, keyCredentialsMap, passwordCredentialsMap, client, LimitDate)
 
 	if alertData.TotalSecrets == 0 {
 		log.Printf("No secrets expiring within %d days found\n", config.ExpiryThresholdDays)
@@ -191,7 +192,7 @@ func loadConfig() (*Config, error) {
 	config.SMTPHost = getEnvOrDefault("SMTP_HOST", "mail.epfl.ch")
 	config.SMTPPort = 25 // Fixed port for EPFL mail server
 	config.FromEmail = getEnvOrDefault("FROM_EMAIL", "noreply@epfl.ch")
-	config.ToEmail = getEnvOrDefault("TO_EMAIL", "arnaud.assad@epfl.ch")
+	config.ToEmail = getEnvOrDefault("TO_EMAIL", "idev-md@groupes.epfl.ch")
 
 	var err error
 	config.ExpiryThresholdDays, err = strconv.ParseInt(getEnvOrDefault("EXPIRY_THRESHOLD_DAYS", "30"), 10, 64)
@@ -211,17 +212,10 @@ func getEnvOrDefault(key, defaultValue string) string {
 	return defaultValue
 }
 
-// processCredentials processes both key and password credentials and filters for expiring ones
-func processCredentials(expiryThresholdDays int64, keyCredentialsMap map[string][]models.KeyCredentialEPFL, passwordCredentialsMap map[string][]models.PasswordCredentialEPFL) *AlertData {
-	alertData := &AlertData{
-		Applications: make([]ApplicationAlert, 0),
-		GeneratedAt:  time.Now(),
-	}
-
-	// Create a map to merge results from both key and password credentials
+// processKeyCredentials extracts expiring key credentials from the provided map
+func processKeyCredentials(expiryThresholdDays int64, keyCredentialsMap map[string][]models.KeyCredentialEPFL) map[string]*ApplicationAlert {
 	allApplications := make(map[string]*ApplicationAlert)
 
-	// Process key credentials
 	for appID, credentials := range keyCredentialsMap {
 		var expiringSecrets []SecretAlert
 		var appDisplayName string
@@ -231,7 +225,7 @@ func processCredentials(expiryThresholdDays int64, keyCredentialsMap map[string]
 			actualRemainingDays := int64(time.Until(time.Time(*cred.EndDateTime)).Hours() / 24)
 
 			// Only include secrets expiring within threshold (including recently expired ones up to 7 days)
-			if actualRemainingDays <= expiryThresholdDays && actualRemainingDays >= -7 {
+			if actualRemainingDays <= expiryThresholdDays && actualRemainingDays >= sevenDays {
 				secret := SecretAlert{
 					Type:          cred.Type,
 					KeyID:         cred.KeyID,
@@ -253,7 +247,11 @@ func processCredentials(expiryThresholdDays int64, keyCredentialsMap map[string]
 		}
 	}
 
-	// Process password credentials
+	return allApplications
+}
+
+// processPasswordCredentials processes password credentials and merges with existing applications
+func processPasswordCredentials(expiryThresholdDays int64, passwordCredentialsMap map[string][]models.PasswordCredentialEPFL, allApplications map[string]*ApplicationAlert) {
 	for appID, credentials := range passwordCredentialsMap {
 		var expiringSecrets []SecretAlert
 		var appDisplayName string
@@ -263,7 +261,7 @@ func processCredentials(expiryThresholdDays int64, keyCredentialsMap map[string]
 			actualRemainingDays := int64(time.Until(cred.EndDateTime).Hours() / 24)
 
 			// Only include secrets expiring within threshold (including recently expired ones up to 7 days)
-			if actualRemainingDays <= expiryThresholdDays && actualRemainingDays >= -7 {
+			if actualRemainingDays <= expiryThresholdDays && actualRemainingDays >= sevenDays {
 				secret := SecretAlert{
 					Type:          "secret",
 					KeyID:         cred.KeyID,
@@ -290,6 +288,63 @@ func processCredentials(expiryThresholdDays int64, keyCredentialsMap map[string]
 			}
 		}
 	}
+}
+
+// filterApplicationsWithValidSecrets removes applications that have valid secrets beyond the limit date
+func filterApplicationsWithValidSecrets(allApplications map[string]*ApplicationAlert, client *httpengine.HTTPClient, limitDate string) {
+	futureDate := time.Date(2099, 12, 31, 23, 59, 59, 0, time.UTC)
+	limitDateTime, _ := time.Parse("2006-01-02", limitDate)
+
+	for appID, appAlert := range allApplications {
+		hasValidKey := false
+		hasValidPassword := false
+		alerts := make([]SecretAlert, 0)
+
+		for _, alert := range appAlert.Secrets {
+			if alert.Type == "AsymmetricX509Cert" || alert.Type == "Symmetric" {
+				allKeys, err := client.GetKeyCredentialsByAppID(futureDate.Format("2006-01-02"), appID, keyClientOptions)
+				if err == nil {
+					for _, key := range allKeys {
+						if time.Time(*key.EndDateTime).After(limitDateTime) {
+							hasValidKey = true
+							break
+						}
+					}
+					if !hasValidKey {
+						alerts = append(alerts, alert)
+					}
+				}
+			}
+			if alert.Type == "secret" {
+				allPasswords, err := client.GetPasswordCredentialsByAppID(futureDate.Format("2006-01-02"), appID, passwordClientOptions)
+				if err == nil {
+					for _, pwd := range allPasswords {
+						if pwd.EndDateTime.After(limitDateTime) {
+							hasValidPassword = true
+							break
+						}
+					}
+				}
+				if !hasValidPassword {
+					alerts = append(alerts, alert)
+				}
+			}
+		}
+
+		if len(alerts) == 0 {
+			delete(allApplications, appID) // Remove application if no expiring secrets remain
+		} else {
+			appAlert.Secrets = alerts // Update with filtered secrets
+		}
+	}
+}
+
+// buildAlertData converts the applications map to AlertData structure with totals
+func buildAlertData(allApplications map[string]*ApplicationAlert) *AlertData {
+	alertData := &AlertData{
+		Applications: make([]ApplicationAlert, 0),
+		GeneratedAt:  time.Now(),
+	}
 
 	// Convert map to slice and count totals
 	for _, appAlert := range allApplications {
@@ -301,6 +356,21 @@ func processCredentials(expiryThresholdDays int64, keyCredentialsMap map[string]
 	return alertData
 }
 
+// processCredentials processes both key and password credentials and filters for expiring ones
+func processCredentials(expiryThresholdDays int64, keyCredentialsMap map[string][]models.KeyCredentialEPFL, passwordCredentialsMap map[string][]models.PasswordCredentialEPFL, client *httpengine.HTTPClient, limitDate string) *AlertData {
+	// Process key credentials first
+	allApplications := processKeyCredentials(expiryThresholdDays, keyCredentialsMap)
+
+	// Process password credentials and merge with key credentials
+	processPasswordCredentials(expiryThresholdDays, passwordCredentialsMap, allApplications)
+
+	// Filter applications that have valid secrets beyond the limit date
+	filterApplicationsWithValidSecrets(allApplications, client, limitDate)
+
+	// Build and return alert data
+	return buildAlertData(allApplications)
+}
+
 func sendEmailAlert(config *Config, alertData *AlertData) error {
 	// Parse and execute template
 	tmpl, err := template.New("email").Parse(emailTemplate)
@@ -309,17 +379,17 @@ func sendEmailAlert(config *Config, alertData *AlertData) error {
 	}
 
 	// Execute template to get HTML body
-	emailBuffer := &EmailBuffer{}
-	err = tmpl.Execute(emailBuffer, alertData)
+	var emailBuffer strings.Builder
+	err = tmpl.Execute(&emailBuffer, alertData)
 	if err != nil {
 		return fmt.Errorf("failed to execute email template: %v", err)
 	}
 
-	body := string(emailBuffer.Bytes())
+	body := emailBuffer.String()
 
 	if config.Fake {
 		log.Println("Fake mode enabled, not sending email")
-		log.Printf("Generated email body:\n%s\n", body) // Debug output
+		log.Printf("Generated email body:\n%s\n", body)
 
 		return nil
 	}
@@ -344,20 +414,4 @@ func sendEmailAlert(config *Config, alertData *AlertData) error {
 	log.Println("Email alert sent successfully")
 
 	return nil
-}
-
-// EmailBuffer is a simple buffer that implements io.Writer
-type EmailBuffer struct {
-	data []byte
-}
-
-func (b *EmailBuffer) Write(p []byte) (n int, err error) {
-	b.data = append(b.data, p...)
-	return len(p), nil
-}
-
-// Bytes returns the contents of the buffer
-// This is used to get the final email body as a string
-func (b *EmailBuffer) Bytes() []byte {
-	return b.data
 }
