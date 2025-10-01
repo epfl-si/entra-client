@@ -141,6 +141,7 @@ func (c *HTTPClient) GetConfig() error {
 }
 
 func getBody(response *http.Response) string {
+	defer response.Body.Close()
 	body, _ := io.ReadAll(io.Reader(response.Body))
 
 	return string(body)
