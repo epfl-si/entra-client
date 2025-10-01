@@ -36,7 +36,6 @@ The Secret Alerter helps organizations maintain security by:
 | `TO_EMAIL` | Email address to receive alerts | `arnaud.assad@epfl.ch` |
 | `FROM_EMAIL` | Sender email address | `noreply@epfl.ch` |
 | `SMTP_HOST` | SMTP server hostname | `mail.epfl.ch` |
-| `EMAIL_SUBJECT` | Email subject line | `"Entra Secrets Expiring Soon"` |
 | `EXPIRY_THRESHOLD_DAYS` | Days before expiration to trigger alerts | `30` |
 
 ## Prerequisites
@@ -99,11 +98,17 @@ The generated email includes:
 ## Build and Deployment
 
 ```bash
-# Build the binary
-go build -o secret-alerter main.go
+# Build the binary (target host is cadibatch currently)
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o secret-alerter main.go
+```
 
+```bash
 # Run directly
 go run main.go
+```
+```bash
+# Deploy to.cadibatch
+scp secret-alerter cadibatch:/opt/dinfo/bin
 ```
 
 ## Dependencies

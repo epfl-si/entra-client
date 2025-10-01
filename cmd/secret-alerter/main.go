@@ -168,7 +168,8 @@ func main() {
 
 	if alertData.TotalSecrets == 0 {
 		log.Printf("No secrets expiring within %d days found\n", config.ExpiryThresholdDays)
-		return
+		// Send a notification email even if no secrets are expiring
+		//return
 	}
 
 	alertData.ThresholdDays = config.ExpiryThresholdDays
@@ -199,8 +200,6 @@ func loadConfig() (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("invalid EXPIRY_THRESHOLD_DAYS: %v", err)
 	}
-
-	config.Subject = getEnvOrDefault("EMAIL_SUBJECT", "Entra Secrets Expiring Soon")
 
 	return config, nil
 }
@@ -398,7 +397,7 @@ func sendEmailAlert(config *Config, alertData *AlertData) error {
 	m := mail_sender.NewMessage()
 	m.SetHeader("From", config.FromEmail)
 	m.SetHeader("To", config.ToEmail)
-	m.SetHeader("Subject", config.Subject)
+	m.SetHeader("Subject", fmt.Sprintf("Entra application with secrets expiring soon: %d", alertData.TotalApplications))
 	m.SetBody("text/html", body)
 
 	// Create dialer (no authentication for EPFL mail server)
