@@ -2,10 +2,9 @@ package httpengine
 
 import (
 	"encoding/json"
-	"errors"
-	"net/http"
 
 	"github.com/epfl-si/entra-client/pkg/client/models"
+	"github.com/google/uuid"
 )
 
 // CreateAppRole creates an application role and returns an error
@@ -17,11 +16,31 @@ import (
 //	appID: The application ID where the role will be created
 //	appRole: The application role to be created
 //	opts: The client options
-func (c *HTTPClient) CreateAppRoleByAppID(appID string, appRole *models.AppRole, opts models.ClientOptions) error {
+func (c *HTTPClient) CreateAppRoleByAppID(appID string, appRole *models.AppRole, opts models.ClientOptions) (string, error) {
+	if opts.Default {
+		appRole = &models.AppRole{
+			ID:          uuid.NewString(),
+			DisplayName: "DefaultAccess",
+			Description: "Default App Role",
+			Value:       "default_access",
+			AllowedMemberTypes: []string{
+				"User",
+				"Application",
+			},
+			IsEnabled: true,
+			Origin:    "Application",
+		}
+	}
+
+	// If no ID is provided, generate a new UUID
+	if appRole.ID == "" {
+		appRole.ID = uuid.NewString()
+	}
+
 	// Get the application by its appID using c.RestClient
 	app, err := c.GetApplicationByAppID(appID, opts)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	// Append the new appRole to the existing AppRoles
@@ -32,20 +51,17 @@ func (c *HTTPClient) CreateAppRoleByAppID(appID string, appRole *models.AppRole,
 		"appRoles": app.AppRoles,
 	})
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	h := c.buildHeaders(opts)
+	h["Content-Type"] = "application/json"
 
-	resp, err := c.RestClient.Patch("/applications/"+app.ID+buildQueryString(opts), u, h)
+	resp, err := c.RestClient.Patch("/applications/"+app.ID, u, h)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusNoContent {
-		return errors.New(resp.Status)
-	}
-
-	return nil
+	return appRole.ID, nil
 }

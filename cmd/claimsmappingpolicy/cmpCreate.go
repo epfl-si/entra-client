@@ -34,24 +34,24 @@ var claimCreateCmd = &cobra.Command{
 }
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if rootcmd.OptDisplayName == "" && !OptDefault {
+		if rootcmd.OptDisplayName == "" && !rootcmd.OptDefault {
 			rootcmd.PrintErr("DisplayName is required (use --displayName, or use --default)")
 			return
 		}
 
-		if rootcmd.OptPostData == "" && !OptDefault {
+		if rootcmd.OptPostData == "" && !rootcmd.OptDefault {
 			cmd.PrintErr("Data or default flag is required (use --data or --default)")
 			return
 		}
 
-		if rootcmd.OptPostData != "" && OptDefault {
+		if rootcmd.OptPostData != "" && rootcmd.OptDefault {
 			cmd.PrintErr("Data OR default flag are mutually exclusive (use --data OR --default)")
 			return
 		}
 
 		var claim models.ClaimsMappingPolicy
 
-		if OptDefault {
+		if rootcmd.OptDefault {
 			rootcmd.ClientOptions.Default = true
 		}
 

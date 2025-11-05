@@ -201,7 +201,7 @@ func (c *HTTPClient) CreatePortalApplication(app *models.Application, clientOpti
 		ServicePrincipalType: "Application"}, clientOptions)
 
 	if err != nil {
-		return nil, nil, fmt.Errorf("CreateServicePrincipal: %W", err)
+		return nil, nil, fmt.Errorf("CreateServicePrincipal: %w", err)
 	}
 
 	return newApp, sp, nil

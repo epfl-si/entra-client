@@ -25,7 +25,7 @@ var claimPatchCmd = &cobra.Command{
 		}
 		var cmp models.ClaimsMappingPolicy
 
-		if OptDefault {
+		if rootcmd.OptDefault {
 			rootcmd.ClientOptions.Default = true
 		}
 
