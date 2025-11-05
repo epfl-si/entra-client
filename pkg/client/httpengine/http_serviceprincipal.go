@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/hex"
-	"log"
 
 	"bytes"
 	"encoding/json"
@@ -55,13 +54,15 @@ func (c *HTTPClient) AddCertificateToServicePrincipal(id string, certBase64 stri
 	// Decode the base64 string to get the certificate's DER bytes
 	certDER, err := base64.StdEncoding.DecodeString(certBase64)
 	if err != nil {
-		log.Fatalf("Failed to decode base64 certificate: %v", err)
+		c.Log.Sugar().Debugf("Failed to decode base64 certificate: %v", err)
+		return err
 	}
 
 	// Parse the certificate
 	cert, err := x509.ParseCertificate(certDER)
 	if err != nil {
-		log.Fatalf("Failed to parse certificate: %v", err)
+		c.Log.Sugar().Debugf("Failed to parse certificate: %v", err)
+		return err
 	}
 
 	// Compute the SHA-1 hash of the DER-encoded certificate
