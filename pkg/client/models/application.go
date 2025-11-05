@@ -30,6 +30,7 @@ type Application struct {
 	ID                            string                   `json:"id,omitempty"`
 	API                           *APIApplication          `json:"api,omitempty"`
 	AppID                         string                   `json:"appId,omitempty"`
+	AppRoles                      []AppRole                `json:"appRoles,omitempty"`
 	AccessTokenAcceptedVersion    *int                     `json:"accessTokenAcceptedVersion,omitempty"`
 	AllowPublicClient             bool                     `json:"allowPublicClient,omitempty"`
 	DeletedDateTime               *time.Time               `json:"deletedDateTime,omitempty"`

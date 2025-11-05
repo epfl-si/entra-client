@@ -203,7 +203,7 @@ func (c *HTTPClient) CreateApplication(app *models.Application, opts models.Clie
 	return &resultApp, nil
 }
 
-// GetApplicationByAppID gets an application by its Id and returns an error
+// GetApplicationByAppID gets an application by its AppId and returns an error
 //
 // Required permissions: Application.Read.All
 // Required permissions: Application.ReadWrite
