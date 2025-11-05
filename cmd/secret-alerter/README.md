@@ -106,6 +106,7 @@ GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o secret-alerter main.go
 # Run directly
 go run main.go
 ```
+
 ```bash
 # Deploy to.cadibatch
 scp secret-alerter cadibatch:/opt/dinfo/bin
