@@ -9,11 +9,11 @@ SHELL=/bin/bash
 # QUALITY CONTROL
 # ==================================================================================== #
 
+darwin: $(DARWIN) ## Build for Darwin (macOS)
+
 windows: $(WINDOWS) ## Build for Windows
 
 linux: $(LINUX) ## Build for Linux
-
-darwin: $(DARWIN) ## Build for Darwin (macOS)
 
 build: windows linux  # darwin has to be called explicitly
 
