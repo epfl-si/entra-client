@@ -32,6 +32,7 @@ func (c *HTTPClient) CreateGroup(group *models.Group, opts models.ClientOptions)
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusCreated {
 		return errors.New(resp.Status)
@@ -54,6 +55,8 @@ func (c *HTTPClient) DeleteGroup(id string, opts models.ClientOptions) error {
 	if err != nil {
 		return err
 	}
+	defer response.Body.Close()
+
 	if response.StatusCode != 204 {
 		return errors.New(response.Status)
 	}
@@ -158,6 +161,12 @@ func (c *HTTPClient) GetGroups(opts models.ClientOptions) ([]*models.Group, stri
 
 		c.Log.Sugar().Debugf("GetGroups() - 4 - Calling Next: %s\n", groupResponse.NextLink)
 		response, err = c.RestClient.Get(groupResponse.NextLink, h)
+		if err != nil {
+			c.Log.Sugar().Debugf("GetGroups() - Next link error: %s\n", err.Error())
+			return nil, "", err
+		}
+		defer response.Body.Close()
+
 		if response.StatusCode != 200 {
 			return nil, "", errors.New(response.Status)
 		}
@@ -186,10 +195,11 @@ func (c *HTTPClient) UpdateGroup(group *models.Group, opts models.ClientOptions)
 
 	h := c.buildHeaders(opts)
 
-	_, err = c.RestClient.Put("/groups/"+group.ID, u, h)
+	response, err := c.RestClient.Put("/groups/"+group.ID, u, h)
 	if err != nil {
 		return err
 	}
+	defer response.Body.Close()
 
 	return nil
 }

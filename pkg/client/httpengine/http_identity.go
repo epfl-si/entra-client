@@ -30,6 +30,7 @@ func (c *HTTPClient) CreateAuthenticationEventListeners(onTokenIssuanceStartList
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusCreated {
 		return nil, errors.New(resp.Status)
@@ -40,8 +41,6 @@ func (c *HTTPClient) CreateAuthenticationEventListeners(onTokenIssuanceStartList
 		c.Log.Sugar().Debugf("CreateAuthenticationEventListeners() - Body read error: %s\n", err.Error())
 		return nil, err
 	}
-
-	defer resp.Body.Close()
 	var ael *models.AuthenticationEventListener
 	err = json.Unmarshal(body, &ael)
 	c.Log.Sugar().Debugf("CreateAuthenticationEventListeners() - Body: %s\n", string(body))
@@ -69,6 +68,7 @@ func (c *HTTPClient) GetAuthenticationEventListener(listenerID string, opts mode
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	// Expect 200 OK or 204 No Content for successful updates
 	if resp.StatusCode != http.StatusOK {
@@ -79,8 +79,6 @@ func (c *HTTPClient) GetAuthenticationEventListener(listenerID string, opts mode
 		c.Log.Sugar().Debugf("GetAuthenticationEventListener() - Body read error: %s\n", err.Error())
 		return nil, err
 	}
-
-	defer resp.Body.Close()
 	var ael *models.AuthenticationEventListener
 	err = json.Unmarshal(body, &ael)
 	c.Log.Sugar().Debugf("GetAuthenticationEventListener() - Body: %s\n", string(body))

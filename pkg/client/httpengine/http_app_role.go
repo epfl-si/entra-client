@@ -41,6 +41,7 @@ func (c *HTTPClient) CreateAppRoleByAppID(appID string, appRole *models.AppRole,
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusNoContent {
 		return errors.New(resp.Status)

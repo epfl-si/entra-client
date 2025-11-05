@@ -57,6 +57,7 @@ func (c *HTTPClient) AssignClaimsMappingPolicy(cmpID, spID string, opts models.C
 		c.Log.Sugar().Debugf("AssignClaimsMappingPolicy() - Body: %+v\n", response)
 		return err
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != 204 {
 		body, err := io.ReadAll(response.Body)
@@ -103,6 +104,7 @@ func (c *HTTPClient) CreateClaimsMappingPolicy(claimspolicy *models.ClaimsMappin
 		c.Log.Sugar().Debugf("CreateClaimsMappingPolicy() - Body: %+v\n", response)
 		return "", err
 	}
+	defer response.Body.Close()
 	if response.StatusCode != 201 {
 		body, err := io.ReadAll(response.Body)
 		if err != nil {
@@ -154,6 +156,7 @@ func (c *HTTPClient) DeleteClaimsMappingPolicy(id string, opts models.ClientOpti
 	if err != nil {
 		return err
 	}
+	defer response.Body.Close()
 	if response.StatusCode != 204 {
 		c.Log.Sugar().Debugf("DeleteClaimsMappingPolicy() - Response: %#v\n", response)
 		body, err := io.ReadAll(response.Body)
@@ -184,6 +187,7 @@ func (c *HTTPClient) GetClaimsMappingPolicy(cmpID string, opts models.ClientOpti
 	if err != nil {
 		return nil, err
 	}
+	defer response.Body.Close()
 	if response.StatusCode != 200 {
 		return nil, errors.New(response.Status)
 	}
@@ -221,6 +225,11 @@ func (c *HTTPClient) GetClaimsMappingPolicies(opts models.ClientOptions) ([]*mod
 	h := c.buildHeaders(opts)
 
 	response, err := c.RestClient.Get("/policies/claimsmappingPolicies"+buildQueryString(opts), h)
+	if err != nil {
+		c.Log.Sugar().Debugf("GetClaimsMappingPolicies() - 1 - Error: %s\n", err.Error())
+		return nil, "", err
+	}
+	defer response.Body.Close()
 
 	for {
 		if err != nil {
@@ -257,6 +266,12 @@ func (c *HTTPClient) GetClaimsMappingPolicies(opts models.ClientOptions) ([]*mod
 
 		c.Log.Sugar().Debugf("GetClaimsMappingPolicys() - 4 - Calling Next: %s\n", cmpResponse.NextLink)
 		response, err = c.RestClient.Get(cmpResponse.NextLink, h)
+		if err != nil {
+			c.Log.Sugar().Debugf("GetClaimsMappingPolicies() - Next link error: %s\n", err.Error())
+			return nil, "", err
+		}
+		defer response.Body.Close()
+
 		if response.StatusCode != 200 {
 			return nil, "", errors.New(response.Status)
 		}
@@ -298,6 +313,11 @@ func (c *HTTPClient) PatchClaimsMappingPolicy(cmpid string, cmp *models.ClaimsMa
 	h["Content-Type"] = "application/json"
 
 	response, err := c.RestClient.Patch("/policies/claimsmappingpolicies/"+cmpid, u, h)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
 	c.Log.Sugar().Debugf("PatchClaimsMappingPolicy() - Response: %#v\n", response)
 	body, err := io.ReadAll(io.Reader(response.Body))
 	c.Log.Sugar().Debugf("PatchClaimsMappingPolicy() - Body: %s\n", string(body))
@@ -363,6 +383,11 @@ func (c *HTTPClient) ListUsageClaimsMappingPolicy(cmpID string, opts models.Clie
 	h := c.buildHeaders(opts)
 
 	response, err := c.RestClient.Get(fmt.Sprintf("/policies/claimsMappingPolicies/%s/appliesTo%v", cmpID, buildQueryString(opts)), h)
+	if err != nil {
+		c.Log.Sugar().Debugf("ListUsageClaimsMappingPolicy() - 1 - Error: %s\n", err.Error())
+		return nil, err
+	}
+	defer response.Body.Close()
 
 	for {
 		if err != nil {
@@ -382,7 +407,7 @@ func (c *HTTPClient) ListUsageClaimsMappingPolicy(cmpID string, opts models.Clie
 		// 	return nil, err
 		// }
 
-		// response.Body.Close()
+		response.Body.Close()
 
 		// var cmpResponse models.DirectoryObject
 		err = json.Unmarshal(body, &claimsMappingPolicyResponse)
@@ -399,6 +424,12 @@ func (c *HTTPClient) ListUsageClaimsMappingPolicy(cmpID string, opts models.Clie
 
 		c.Log.Sugar().Debugf("ListUsageClaimsMappingPolicy() - 4 - Calling Next: %s\n", claimsMappingPolicyResponse.NextLink)
 		response, err = c.RestClient.Get(claimsMappingPolicyResponse.NextLink, h)
+		if err != nil {
+			c.Log.Sugar().Debugf("ListUsageClaimsMappingPolicy() - Next link error: %s\n", err.Error())
+			return nil, err
+		}
+		defer response.Body.Close()
+
 		if response.StatusCode != 200 {
 			return nil, errors.New(response.Status)
 		}
@@ -424,6 +455,7 @@ func (c *HTTPClient) UnassignClaimsMappingPolicy(spID, cmpID string, opts models
 		c.Log.Sugar().Debugf("UnassignClaimsMappingPolicy() - Body: %+v\n", response)
 		return err
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != 204 {
 		body, _ := io.ReadAll(io.Reader(response.Body))
@@ -460,6 +492,7 @@ func (c *HTTPClient) GetClaimsMappingPolicyByAppID(appID string, opts models.Cli
 		c.Log.Sugar().Debugf("GetClaimsMappingPolicyByAppID() - Request error: %s", err.Error())
 		return nil, err
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != 200 {
 		c.Log.Sugar().Debugf("GetClaimsMappingPolicyByAppID() - Response status: %d %s", response.StatusCode, response.Status)

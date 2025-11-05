@@ -208,12 +208,14 @@ func (c *HTTPClient) AddKeyToServicePrincipal(id string, key saml.KeyDescriptor,
 	c.Log.Sugar().Debugf("AddKeyToServicePrincipal() - u: %s\n", u)
 	response, err := c.RestClient.Post("/servicePrincipals/"+id+"/addKey", u, h)
 	// response, err := c.RestClient.Post("/servicePrincipals/"+sp.AppID+"/addKey", u, h)
-	c.Log.Sugar().Debugf("AddKeyToServicePrincipal() - Response: %+v\n", response)
-	c.Log.Sugar().Debugf("AddKeyToServicePrincipal() - Body: %s\n", getBody(response))
 	if err != nil {
 		c.Log.Sugar().Debugf("AddKeyToServicePrincipal() - Error: %+v\n", response)
 		return err
 	}
+	defer response.Body.Close()
+
+	c.Log.Sugar().Debugf("AddKeyToServicePrincipal() - Response: %+v\n", response)
+	c.Log.Sugar().Debugf("AddKeyToServicePrincipal() - Body: %s\n", getBody(response))
 
 	return nil
 }
@@ -316,13 +318,14 @@ func (c *HTTPClient) GetClaimsMappingPoliciesForServicePrincipal(servicePrincipa
 	h := c.buildHeaders(options)
 
 	response, err := c.RestClient.Get("/servicePrincipals/"+servicePrincipalID+"/claimsMappingPolicies"+buildQueryString(options), h)
+	if err != nil {
+		c.Log.Sugar().Debugf("GetClaimsPoliciesForServicePrincipal() - 1 - Error: %s\n", err.Error())
+		return nil, "", err
+	}
+	defer response.Body.Close()
 
 	if response.StatusCode != 200 {
 		return nil, "", errors.New(response.Status)
-	}
-
-	if err != nil {
-		c.Log.Sugar().Debugf("GetClaimsPoliciesForServicePrincipal() - 1 - Error: %s\n", err.Error())
 	}
 
 	for {
@@ -358,6 +361,7 @@ func (c *HTTPClient) GetClaimsMappingPoliciesForServicePrincipal(servicePrincipa
 			c.Log.Sugar().Debugf("GetClaimsPoliciesForServicePrincipal() - 5 - Error: %s\n", err.Error())
 			return nil, "", err
 		}
+		defer response.Body.Close()
 
 		if response.StatusCode != 200 {
 			return nil, "", errors.New(response.Status)
@@ -673,6 +677,11 @@ func (c *HTTPClient) GetAssignmentsFromServicePrincipal(id string, opts models.C
 	}
 
 	response, err := c.RestClient.Get("/serviceprincipals/"+id+"/appRoleAssignedTo"+buildQueryString(opts), h)
+	if err != nil {
+		c.Log.Sugar().Debugf("GetAssignmentsFromServicePrincipal() - Request error: %s\n", err.Error())
+		return nil, err
+	}
+	defer response.Body.Close()
 
 	body, err := io.ReadAll(io.Reader(response.Body))
 	if err != nil {
@@ -748,6 +757,11 @@ func (c *HTTPClient) GetServicePrincipals(opts models.ClientOptions) ([]*models.
 	}
 
 	response, err := c.RestClient.Get("/serviceprincipals"+buildQueryString(opts), h)
+	if err != nil {
+		c.Log.Sugar().Debugf("GetServicePrincipals() - 1 - Error: %s\n", err.Error())
+		return nil, "", err
+	}
+	defer response.Body.Close()
 
 	for {
 
@@ -786,6 +800,12 @@ func (c *HTTPClient) GetServicePrincipals(opts models.ClientOptions) ([]*models.
 
 		//c.Log.Sugar().Debugf("GetServicePrincipals() - 4 - Calling Next: %s\n", serviceprincipalResponse.NextLink)
 		response, err = c.RestClient.Get(serviceprincipalResponse.NextLink, h)
+		if err != nil {
+			c.Log.Sugar().Debugf("GetServicePrincipals() - Next link error: %s\n", err.Error())
+			return nil, "", err
+		}
+		defer response.Body.Close()
+
 		if response.StatusCode != 200 {
 			return nil, "", errors.New(response.Status)
 		}
@@ -818,13 +838,16 @@ func (c *HTTPClient) PatchServicePrincipal(id string, app *models.ServicePrincip
 	h["Content-Type"] = "application/json"
 
 	response, err := c.RestClient.Patch("/servicePrincipals/"+id, u, h)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
 	// c.Log.Sugar().Debugf("PatchServicePrincipal() - Body: %s\n", u)
 	// c.Log.Sugar().Debugf("PatchServicePrincipal() - Response: %#v\n", response)
 	// body, err := io.ReadAll(io.Reader(response.Body))
 	// c.Log.Sugar().Debugf("PatchServicePrincipal() - Response: %s\n", string(body))
-	if err != nil {
-		return err
-	}
+
 	if response.StatusCode != 204 {
 		c.Log.Sugar().Debugf("PatchServicePrincipal() - Body: %s\n", getBody(response))
 		return errors.New(response.Status)
