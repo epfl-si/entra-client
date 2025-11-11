@@ -34,6 +34,7 @@ func (c *HTTPClient) CreateExtension(extension *models.ExtensionProperty, opts m
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusCreated {
 		return errors.New(resp.Status)
@@ -56,6 +57,8 @@ func (c *HTTPClient) DeleteExtension(id string, opts models.ClientOptions) error
 	if err != nil {
 		return err
 	}
+	defer response.Body.Close()
+
 	if response.StatusCode != 204 {
 		return errors.New(response.Status)
 	}
@@ -117,6 +120,11 @@ func (c *HTTPClient) GetExtensions(opts models.ClientOptions) ([]*models.Extensi
 	h := c.buildHeaders(opts)
 
 	response, err = c.RestClient.Post("/directoryObjects/getAvailableExtensionProperties", []byte("{}"), h)
+	if err != nil {
+		c.Log.Sugar().Debugf("GetExtensions - POST Error: %s\n", err.Error())
+		return nil, err
+	}
+	defer response.Body.Close()
 
 	body, err := io.ReadAll(io.Reader(response.Body))
 	if err != nil {
@@ -154,10 +162,11 @@ func (c *HTTPClient) UpdateExtension(extension *models.ExtensionProperty, opts m
 
 	h := c.buildHeaders(opts)
 
-	_, err = c.RestClient.Put("/extensions/"+extension.ID, u, h)
+	response, err := c.RestClient.Put("/extensions/"+extension.ID, u, h)
 	if err != nil {
 		return err
 	}
+	defer response.Body.Close()
 
 	return nil
 }

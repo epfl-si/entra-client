@@ -147,6 +147,8 @@ func (c *HTTPClient) AddPasswordToApplication(id, keyName string, opts models.Cl
 	if err != nil {
 		return nil, err
 	}
+	defer response.Body.Close()
+
 	if response.StatusCode != 200 {
 		return nil, errors.New(response.Status)
 	}
@@ -183,6 +185,8 @@ func (c *HTTPClient) CreateApplication(app *models.Application, opts models.Clie
 	if err != nil {
 		return nil, err
 	}
+	defer response.Body.Close()
+
 	if response.StatusCode != 201 {
 		c.Log.Sugar().Debugf("CreateApplication() - Response: %s\n", getBody(response))
 		return nil, errors.New(response.Status)
@@ -203,7 +207,7 @@ func (c *HTTPClient) CreateApplication(app *models.Application, opts models.Clie
 	return &resultApp, nil
 }
 
-// GetApplicationByAppID gets an application by its Id and returns an error
+// GetApplicationByAppID gets an application by its AppId and returns an error
 //
 // Required permissions: Application.Read.All
 // Required permissions: Application.ReadWrite
@@ -266,6 +270,8 @@ func (c *HTTPClient) DeleteApplication(id string, opts models.ClientOptions) err
 	if err != nil {
 		return err
 	}
+	defer response.Body.Close()
+
 	if response.StatusCode != 204 {
 		c.Log.Sugar().Debugf("DeleteApplication() - Response: %#v\n", response)
 		body, _ := io.ReadAll(io.Reader(response.Body))
@@ -407,6 +413,7 @@ func (c *HTTPClient) PatchApplication(id string, app *models.Application, opts m
 	if err != nil {
 		return fmt.Errorf("rest Patch %s: %w", id, err)
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != 204 {
 		fmt.Printf("PatchApplication() - Body: %#v\n", getBody(response))
@@ -549,6 +556,8 @@ func (c *HTTPClient) GiveConsentToApplication(spObjectID string, scopes []string
 		errs = errs + err.Error()
 		c.Log.Sugar().Error("GrantApplicationPermission - REST Error: %#v - %s ", err, getBody(response))
 	}
+	defer response.Body.Close()
+
 	if response.StatusCode != 201 {
 		c.Log.Sugar().Errorf("GrantPermissionsToApplication - Unexpected result: %s ", getBody(response))
 		errs = errs + "Unexpected status code:" + response.Status + "\n"
@@ -579,6 +588,7 @@ func (c *HTTPClient) GetApplicationConsents(opts models.ClientOptions) (string, 
 		c.Log.Sugar().Error("GetApplicationPermissions - REST Error: %#v - %s ", err, getBody(response))
 		return "", err
 	}
+	defer response.Body.Close()
 
 	body := getBody(response)
 	if response.StatusCode != 200 {

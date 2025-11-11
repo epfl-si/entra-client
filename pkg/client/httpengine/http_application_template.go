@@ -50,6 +50,8 @@ func (c *HTTPClient) InstantiateApplicationTemplate(id, name string, opts models
 	if err != nil {
 		return nil, nil, err
 	}
+	defer response.Body.Close()
+
 	if response.StatusCode != 201 {
 		return nil, nil, errors.New(response.Status)
 	}
@@ -59,8 +61,6 @@ func (c *HTTPClient) InstantiateApplicationTemplate(id, name string, opts models
 		c.Log.Sugar().Debugf("InstantiateApplicationTemplate() - Body read error: %s\n", err.Error())
 		return nil, nil, err
 	}
-
-	defer response.Body.Close()
 	var ir *instantiateResponse
 	err = json.Unmarshal(body, &ir)
 	c.Log.Sugar().Debugf("InstantiateApplicationTemplate() - Body: %s\n", string(body))
@@ -159,6 +159,11 @@ func (c *HTTPClient) GetApplicationTemplates(opts models.ClientOptions) ([]*mode
 
 		c.Log.Sugar().Debugf("GetApplicationTemplates() - 4 - Calling Next: %s\n", applicationResponse.NextLink)
 		response, err = c.RestClient.Get(applicationResponse.NextLink, h)
+		if err != nil {
+			c.Log.Sugar().Debugf("GetApplicationTemplates() - Next link error: %s\n", err.Error())
+			return nil, "", err
+		}
+		defer response.Body.Close()
 
 		if opts.Paging {
 			break

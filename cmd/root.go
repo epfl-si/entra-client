@@ -20,6 +20,9 @@ var OptBatch string
 // OptDebug is associated with the --debug flag
 var OptDebug bool
 
+// OptDefault is associated with the --default flag
+var OptDefault = false
+
 // OptDisplayName is associated with the --displayname flag
 var OptDisplayName string
 
@@ -159,6 +162,7 @@ func init() {
 
 	// RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.epfl-entra.yaml)")
 	RootCmd.PersistentFlags().BoolVar(&OptDebug, "debug", false, "Debug mode")
+	RootCmd.PersistentFlags().BoolVar(&OptDefault, "default", false, "Use a default EPFL's value")
 	RootCmd.PersistentFlags().StringVar(&OptBatch, "batch", "900", "Default batch size for client side paging")
 	RootCmd.PersistentFlags().StringVar(&OptDisplayName, "displayname", "", "Display name")
 	// RootCmd.PersistentFlags().StringVar(&OptEngine, "engine", "rest", "Engine to use ('sdk' or 'rest')")

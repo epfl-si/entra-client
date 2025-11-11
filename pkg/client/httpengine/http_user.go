@@ -32,10 +32,11 @@ func (c *HTTPClient) CreateUser(user *models.User, opts models.ClientOptions) er
 	h := c.buildHeaders(opts)
 
 	response, err := c.RestClient.Post("/users/"+buildQueryString(opts), u, h)
-
 	if err != nil {
 		return err
 	}
+	defer response.Body.Close()
+
 	if response.StatusCode != 201 {
 		return errors.New(response.Status)
 	}
@@ -62,6 +63,8 @@ func (c *HTTPClient) DeleteUser(id string, opts models.ClientOptions) error {
 	if err != nil {
 		return err
 	}
+	defer response.Body.Close()
+
 	if response.StatusCode != 204 {
 		return errors.New(response.Status)
 	}
@@ -176,6 +179,12 @@ func (c *HTTPClient) GetUsers(opts models.ClientOptions) ([]*models.User, string
 
 		c.Log.Sugar().Debugf("GetUsers() - 4 - Calling Next: %s\n", groupResponse.NextLink)
 		response, err = c.RestClient.Get(groupResponse.NextLink, rest.Headers{"Authorization": rest.TokenBearerString(c.AccessToken)})
+		if err != nil {
+			c.Log.Sugar().Debugf("GetUsers() - Next link error: %s\n", err.Error())
+			return nil, "", err
+		}
+		defer response.Body.Close()
+
 		c.Log.Sugar().Debugf("GetUsers() - 5 - Next Response: %+v\n", response)
 		c.Log.Sugar().Debugf("GetUsers() - 6 - Paging: %#v\n", opts.Paging)
 		if response.StatusCode != 200 {
@@ -210,6 +219,8 @@ func (c *HTTPClient) UpdateUser(user *models.User, opts models.ClientOptions) er
 	if err != nil {
 		return err
 	}
+	defer response.Body.Close()
+
 	if response.StatusCode != 204 {
 		return errors.New(response.Status)
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/epfl-si/entra-client/cmd"
 	_ "github.com/epfl-si/entra-client/cmd/application"
+	_ "github.com/epfl-si/entra-client/cmd/approle"
 	_ "github.com/epfl-si/entra-client/cmd/certificate"
 	_ "github.com/epfl-si/entra-client/cmd/claimsmappingpolicy"
 	_ "github.com/epfl-si/entra-client/cmd/group"

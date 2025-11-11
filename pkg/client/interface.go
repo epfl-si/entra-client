@@ -38,6 +38,9 @@ type Service interface {
 	//GiveConsentToApplication(id string, options models.ClientOptions) (err error)
 	GetApplicationConsents(options models.ClientOptions) (body string, err error)
 
+	// AppRole
+	CreateAppRoleByAppID(appID string, appRole *models.AppRole, options models.ClientOptions) (id string, err error)
+
 	// Claims Mapping Policy
 	AssignClaimsMappingPolicy(cmpID, spID string, options models.ClientOptions) (err error)
 	CreateClaimsMappingPolicy(app *models.ClaimsMappingPolicy, options models.ClientOptions) (id string, err error)

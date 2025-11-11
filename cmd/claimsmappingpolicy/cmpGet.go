@@ -21,19 +21,19 @@ You can also use the alias "cmp" instead of "claimsmappingpolicy".
 	
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		if (OptCmpID == "") && !OptDefault && (rootcmd.OptAppID == "") {
+		if (OptCmpID == "") && !rootcmd.OptDefault && (rootcmd.OptAppID == "") {
 			cmd.PrintErr("Either ID or default is required for cmp (use --cmpid or --default) or appID (use  --appid)\n")
 			return
 		}
 
-		if OptDefault {
+		if rootcmd.OptDefault {
 			rootcmd.ClientOptions.Default = true
 		}
 
 		var cmp *models.ClaimsMappingPolicy
 		var err error
 
-		if OptDefault {
+		if rootcmd.OptDefault {
 			cmps, _, err := rootcmd.Client.GetClaimsMappingPolicies(rootcmd.ClientOptions)
 			if err != nil {
 				rootcmd.PrintErr(err)

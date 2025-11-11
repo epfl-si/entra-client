@@ -1,4 +1,6 @@
-// Package models provides the models for the application
+// Package models provides the models for the AppRole
+// AppRole is part of an Application but assignable to Service Principals
+// https://learn.microsoft.com/en-us/graph/api/resources/approle?view=graph-rest-1.0
 package models
 
 // AppRole represents the app role

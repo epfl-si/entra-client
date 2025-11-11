@@ -27,6 +27,7 @@ func New(baseURL string) *Client {
 
 // Get makes a GET request to the REST API
 func (c *Client) Get(path string, headers Headers) (*http.Response, error) {
+	// TODO: use getNormalizedPath (modified to include space encoding) and test for side effects
 	var url string
 	// if path does not start with BaseUrl, prepend it
 	if path[0] != '/' {
@@ -48,7 +49,7 @@ func (c *Client) Get(path string, headers Headers) (*http.Response, error) {
 
 // Post makes a POST request to the REST API
 func (c *Client) Post(path string, body []byte, headers Headers) (*http.Response, error) {
-	url := c.BaseURL + path
+	url := c.getNormalizedPath(path)
 
 	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
 	if err != nil {
@@ -71,7 +72,7 @@ func (c *Client) Post(path string, body []byte, headers Headers) (*http.Response
 
 // Delete makes a DELETE request to the REST API
 func (c *Client) Delete(path string, headers Headers) (*http.Response, error) {
-	url := c.BaseURL + path
+	url := c.getNormalizedPath(path)
 	// create a new DELETE request
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
@@ -93,7 +94,7 @@ func (c *Client) Delete(path string, headers Headers) (*http.Response, error) {
 
 // Patch makes a PATCH request to the REST API
 func (c *Client) Patch(path string, body []byte, headers Headers) (*http.Response, error) {
-	url := c.getNormalizedpath(path)
+	url := c.getNormalizedPath(path)
 	// create a new PATCH request
 	req, err := http.NewRequest("PATCH", url, bytes.NewReader(body))
 	if err != nil {
@@ -109,13 +110,14 @@ func (c *Client) Patch(path string, body []byte, headers Headers) (*http.Respons
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	return resp, nil
 }
 
 // Put makes a PUT request to the REST API
 func (c *Client) Put(path string, body []byte, headers Headers) (*http.Response, error) {
-	url := c.BaseURL + path
+	url := c.getNormalizedPath(path)
 	// create a new PUT request
 	req, err := http.NewRequest("PUT", url, bytes.NewReader(body))
 	if err != nil {
@@ -140,7 +142,7 @@ func TokenBearerString(token string) string {
 	return "Bearer " + token
 }
 
-func (c *Client) getNormalizedpath(path string) string {
+func (c *Client) getNormalizedPath(path string) string {
 	var url string
 	// if path does not start with BaseUrl, prepend it
 	if path[0] != '/' {
@@ -151,16 +153,3 @@ func (c *Client) getNormalizedpath(path string) string {
 
 	return url
 }
-
-// func refreshTokenNeeded(err error) bool {
-// 	if err != nil {
-// 		if strings.Contains(err.Error(), "the token is expired") {
-// 			// refresh token
-// 			return true
-
-// 		}
-
-// 		return true
-// 	}
-// 	return false
-// }
