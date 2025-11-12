@@ -37,6 +37,7 @@ type Service interface {
 	WaitApplication(id string, timeout int, options models.ClientOptions) (err error)
 	//GiveConsentToApplication(id string, options models.ClientOptions) (err error)
 	GetApplicationConsents(options models.ClientOptions) (body string, err error)
+	GetApplicationIDByAppID(appID string, options models.ClientOptions) (id string, err error)
 
 	// AppRole
 	CreateAppRoleByAppID(appID string, appRole *models.AppRole, options models.ClientOptions) (id string, err error)
@@ -84,6 +85,7 @@ type Service interface {
 	PatchServicePrincipal(id string, app *models.ServicePrincipal, options models.ClientOptions) (err error)
 	UnassignClaimsPolicyFromServicePrincipal(claimsPolicyID, servicePrincipalID string, options models.ClientOptions) (err error)
 	WaitServicePrincipal(id string, timeout int, options models.ClientOptions) (err error)
+	GetServicePrincipalIDByAppID(appID string, options models.ClientOptions) (id string, err error)
 
 	// User
 	CreateUser(app *models.User, options models.ClientOptions) (err error)

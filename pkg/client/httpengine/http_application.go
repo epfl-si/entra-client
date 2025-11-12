@@ -607,7 +607,7 @@ func (c *HTTPClient) GetApplicationConsents(opts models.ClientOptions) (string, 
 //
 //	appID: The application ID
 //	opts: The client options
-func (c *HTTPClient) GetApplicationIDByAppID(opts models.ClientOptions, appID string) (string, error) {
+func (c *HTTPClient) GetApplicationIDByAppID(appID string, opts models.ClientOptions) (string, error) {
 	// Check if the AppID is in the cache
 	if c.appIDCache != nil {
 		if objectID, found := c.appIDCache.Get(appID); found {
