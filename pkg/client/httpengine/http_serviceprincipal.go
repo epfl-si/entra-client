@@ -927,7 +927,7 @@ func (c *HTTPClient) WaitServicePrincipal(id string, timeout int, options models
 //
 //	appID: The application ID
 //	opts: The client options
-func (c *HTTPClient) GetServicePrincipalIDByAppID(opts models.ClientOptions, appID string) (string, error) {
+func (c *HTTPClient) GetServicePrincipalIDByAppID(appID string, opts models.ClientOptions) (string, error) {
 	// Check if the AppID is in the cache
 	if c.spIDCache != nil {
 		if objectID, found := c.spIDCache.Get(appID); found {
