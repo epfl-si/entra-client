@@ -917,3 +917,34 @@ func (c *HTTPClient) WaitServicePrincipal(id string, timeout int, options models
 	return nil
 
 }
+
+// GetServicePrincipalIDByAppID gets a service principal ID by application ID and returns an error
+// This method uses a LRU cache to store previously retrieved service principal IDs for faster access.
+//
+// Required permissions: Application.ReadWrite.All
+//
+// Parameters:
+//
+//	appID: The application ID
+//	opts: The client options
+func (c *HTTPClient) GetServicePrincipalIDByAppID(opts models.ClientOptions, appID string) (string, error) {
+	// Check if the AppID is in the cache
+	if c.spIDCache != nil {
+		if objectID, found := c.spIDCache.Get(appID); found {
+			return objectID.(string), nil
+		}
+	}
+
+	// Not in cache, get from API
+	sp, err := c.GetServicePrincipalByAppID(appID, opts)
+	if err != nil {
+		return "", fmt.Errorf("GetServicePrincipalIDByAppID - GetServicePrincipalByAppID %s: %w", appID, err)
+	}
+
+	// Add to cache for future requests
+	if c.spIDCache != nil {
+		c.spIDCache.Add(appID, sp.ID)
+	}
+
+	return sp.ID, nil
+}

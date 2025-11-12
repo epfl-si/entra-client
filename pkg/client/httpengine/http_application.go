@@ -577,7 +577,6 @@ func (c *HTTPClient) GiveConsentToApplication(spObjectID string, scopes []string
 //
 // Parameters:
 //
-//	appID: The application ID
 //	opts: The client options
 func (c *HTTPClient) GetApplicationConsents(opts models.ClientOptions) (string, error) {
 	h := c.buildHeaders(opts)
@@ -597,4 +596,35 @@ func (c *HTTPClient) GetApplicationConsents(opts models.ClientOptions) (string, 
 	}
 
 	return body, nil
+}
+
+// GetApplicationIDByAppID gets an application ID and returns an error
+// This method uses a LRU cache to store previously retrieved application IDs for faster access.
+//
+// Required permissions: Application.ReadWrite.All
+//
+// Parameters:
+//
+//	appID: The application ID
+//	opts: The client options
+func (c *HTTPClient) GetApplicationIDByAppID(opts models.ClientOptions, appID string) (string, error) {
+	// Check if the AppID is in the cache
+	if c.appIDCache != nil {
+		if objectID, found := c.appIDCache.Get(appID); found {
+			return objectID.(string), nil
+		}
+	}
+
+	// Not in cache, get from API
+	app, err := c.GetApplicationByAppID(appID, opts)
+	if err != nil {
+		return "", fmt.Errorf("GetApplicationIDByAppID - GetApplicationByAppID %s: %w", appID, err)
+	}
+
+	// Add to cache for future requests
+	if c.appIDCache != nil {
+		c.appIDCache.Add(appID, app.ID)
+	}
+
+	return app.ID, nil
 }

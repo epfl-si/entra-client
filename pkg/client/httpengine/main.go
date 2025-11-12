@@ -15,6 +15,7 @@ import (
 	"github.com/epfl-si/entra-client/pkg/client/models"
 	"github.com/epfl-si/entra-client/pkg/rest"
 
+	lru "github.com/hashicorp/golang-lru"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 )
@@ -30,6 +31,8 @@ type HTTPClient struct {
 	RestClient  *rest.Client
 	Log         *zap.Logger
 	EntraConfig *entraconfig.EntraConfig
+	appIDCache  *lru.Cache // Cache for AppID to Application ObjectID mapping
+	spIDCache   *lru.Cache // Cache for AppID to Service Principal ObjectID mapping
 }
 
 // New creates a new HTTPClient
@@ -42,7 +45,21 @@ func New() (*HTTPClient, error) {
 	c.BaseURL = "https://graph.microsoft.com/v1.0"
 	c.RestClient = rest.New(c.BaseURL)
 
-	err := c.GetConfig()
+	// Initialize the AppID to Application ObjectID cache with 200 entries
+	appIDCache, err := lru.New(200)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Application AppID cache: %w", err)
+	}
+	c.appIDCache = appIDCache
+
+	// Initialize the AppID to Service Principal ObjectID cache with 200 entries
+	spIDCache, err := lru.New(200)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Service Principal AppID cache: %w", err)
+	}
+	c.spIDCache = spIDCache
+
+	err = c.GetConfig()
 	if err != nil {
 		return nil, err
 	}
