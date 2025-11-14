@@ -106,10 +106,14 @@ func (c *HTTPClient) AddApplicationToAuthenticationEventListener(listenerID stri
 		return fmt.Errorf("failed to get current listener: %w", err)
 	}
 
-	for _, existingApp := range currentListener.Conditions.Applications.IncludeApplications {
-		if existingApp.AppId == appID {
-			c.Log.Sugar().Debugf("AddApplicationToAuthenticationEventListener() - App %s already exists in listener %s", appID, listenerID)
-			return nil // App already exists, no need to add
+	if currentListener.Conditions != nil &&
+		currentListener.Conditions.Applications.IncludeApplications != nil {
+
+		for _, existingApp := range currentListener.Conditions.Applications.IncludeApplications {
+			if existingApp.AppId == appID {
+				c.Log.Sugar().Debugf("AddApplicationToAuthenticationEventListener() - App %s already exists in listener %s", appID, listenerID)
+				return nil // App already exists, no need to add
+			}
 		}
 	}
 
