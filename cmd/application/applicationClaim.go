@@ -6,7 +6,8 @@ import (
 
 // applicationClaimCmd represents the applicationClaim command
 var applicationClaimCmd = &cobra.Command{
-	Use: "claim",
+	Use:   "claim",
+	Short: "Handles claims for applications",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Println("applicationClaim called")
 	},
