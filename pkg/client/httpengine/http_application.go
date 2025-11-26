@@ -628,3 +628,43 @@ func (c *HTTPClient) GetApplicationIDByAppID(appID string, opts models.ClientOpt
 
 	return app.ID, nil
 }
+
+// SetFallbackPublicClient sets the FallbackPublicClient property of an application and returns an error
+//
+// Required permissions: Application.ReadWrite
+//
+// Parameters:
+//
+//	appID: The application ID
+//	app: The application modifications
+//	opts: The client options
+func (c *HTTPClient) SetFallbackPublicClient(appID string, Value bool, opts models.ClientOptions) error {
+
+	h := c.buildHeaders(opts)
+	h["Content-Type"] = "application/json"
+
+	appPatch := &models.Application{
+		IsFallbackPublicClient: &Value,
+	}
+
+	u, err := json.Marshal(appPatch)
+	if err != nil {
+		return err
+	}
+
+	ID, err := c.GetApplicationIDByAppID(appID, opts)
+
+	response, err := c.RestClient.Patch("/applications/"+ID, u, h)
+	if err != nil {
+		return fmt.Errorf("rest Patch %s: %w", ID, err)
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != 204 {
+		fmt.Printf("SetFallbackPublicClient() - Body: %#v\n", getBody(response))
+		fmt.Printf("SetFallbackPublicClient() - Payload: %s\n", u)
+		return errors.New("SetFallbackPublicClient " + appID + " unexpected status code " + response.Status)
+	}
+
+	return nil
+}

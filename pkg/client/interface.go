@@ -38,6 +38,7 @@ type Service interface {
 	//GiveConsentToApplication(id string, options models.ClientOptions) (err error)
 	GetApplicationConsents(options models.ClientOptions) (body string, err error)
 	GetApplicationIDByAppID(appID string, options models.ClientOptions) (id string, err error)
+	SetFallbackPublicClient(appID string, value bool, options models.ClientOptions) (err error)
 
 	// AppRole
 	CreateAppRoleByAppID(appID string, appRole *models.AppRole, options models.ClientOptions) (id string, err error)
