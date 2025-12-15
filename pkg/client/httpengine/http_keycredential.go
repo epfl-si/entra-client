@@ -90,7 +90,7 @@ func (c *HTTPClient) GetKeyCredentials(dateLimit string, opts models.ClientOptio
 //
 //	appID: The application ID
 //	opts: The client options
-func (c *HTTPClient) GetKeyCredentialsByAppID(appID, dateLimit string, opts models.ClientOptions) ([]models.KeyCredentialEPFL, error) {
+func (c *HTTPClient) GetKeyCredentialsByAppID(dateLimit, appID string, opts models.ClientOptions) ([]models.KeyCredentialEPFL, error) {
 	keyCredentials := make([]models.KeyCredentialEPFL, 0)
 	processedCerts := make(map[string]bool, 0)
 
