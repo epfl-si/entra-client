@@ -1,6 +1,7 @@
 package httpengine
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -237,4 +238,83 @@ func (c *HTTPClient) GetLocalKeyCredentials(dateLimit string, opts models.Client
 	}
 
 	return kcMap, nil
+}
+
+// AddKeyCredentialToApplication adds a key credential to an application or returns an error
+//
+// Required permissions: Application.ReadWrite
+//
+// Parameters:
+//
+//	appID: The application ID
+//	displayName: The certificate description
+//	startDateTime: The certificate start date
+//	endDateTime: The certificate end date
+//	key: The base64 certificate
+//	opts: The client options
+func (c *HTTPClient) AddKeyCredentialToApplication(appID, displayName, startDateTime, endDateTime, key string, opts models.ClientOptions) (err error) {
+	if appID == "" {
+		return fmt.Errorf("appID missing")
+	}
+	if displayName == "" {
+		return fmt.Errorf("displayName missing")
+	}
+	if startDateTime == "" {
+		return fmt.Errorf("startDateTime missing")
+	}
+	if endDateTime == "" {
+		return fmt.Errorf("endDateTime missing")
+	}
+	if key == "" {
+		return fmt.Errorf("key missing")
+	}
+
+	application, err := c.GetApplicationByAppID(appID, opts)
+	if err != nil {
+		return err
+	}
+
+	dStartDateTime, err := time.Parse("2006-01-02T15:04:05Z", startDateTime)
+	if err != nil {
+		return fmt.Errorf("invalid date format: %v", err)
+	}
+	dEndDateTime, err := time.Parse("2006-01-02T15:04:05Z", endDateTime)
+	if err != nil {
+		return fmt.Errorf("invalid date format: %v", err)
+	}
+	cStartDateTime := models.CustomTime(dStartDateTime)
+	cEndDateTime := models.CustomTime(dEndDateTime)
+
+	keyCredentials := append(application.KeyCredentials, models.KeyCredential{
+		StartDateTime: &cStartDateTime,
+		EndDateTime:   &cEndDateTime,
+		Type:          "AsymmetricX509Cert",
+		Usage:         "Verify",
+		Key:           key,
+		DisplayName:   displayName,
+	})
+
+	applicationKeyCredentials := &models.Application{
+		KeyCredentials: keyCredentials,
+	}
+
+	u, err := json.Marshal(applicationKeyCredentials)
+	if err != nil {
+		return err
+	}
+
+	h := c.buildHeaders(opts)
+	h["Content-Type"] = "application/json"
+
+	response, err := c.RestClient.Patch("/applications/"+application.ID, u, h)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != 204 {
+		return fmt.Errorf("Error while sending certificate to Entra: %v", response.Status)
+	}
+
+	return nil
 }
