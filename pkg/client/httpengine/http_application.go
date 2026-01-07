@@ -113,7 +113,7 @@ func (c *HTTPClient) AddClaimToApplication(id, name, source, location string, ba
 	return nil
 }
 
-// AddPasswordToApplication adds a password/secret to an application and returns an error
+// AddPasswordToApplication adds a password/secret to an application or returns an error
 //
 // Required permissions: Application.ReadWrite
 //
