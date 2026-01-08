@@ -35,8 +35,18 @@ type HTTPClient struct {
 	spIDCache   *lru.Cache // Cache for AppID to Service Principal ObjectID mapping
 }
 
+// 1. Définition du type Option
+type Option func(*HTTPClient)
+
+// L'option pour le logger
+func WithLogger(l *zap.Logger) Option {
+	return func(o *HTTPClient) {
+		o.Log = l
+	}
+}
+
 // New creates a new HTTPClient
-func New() (*HTTPClient, error) {
+func New(opts ...Option) (*HTTPClient, error) {
 	var c HTTPClient
 
 	c.More = false
@@ -44,6 +54,11 @@ func New() (*HTTPClient, error) {
 	c.Log = logger
 	c.BaseURL = "https://graph.microsoft.com/v1.0"
 	c.RestClient = rest.New(c.BaseURL)
+
+	// Compatible with older clients that use New without options
+	for _, applyOpt := range opts {
+		applyOpt(&c)
+	}
 
 	// Initialize the AppID to Application ObjectID cache with 200 entries
 	appIDCache, err := lru.New(200)
