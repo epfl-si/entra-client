@@ -203,3 +203,106 @@ func (c *HTTPClient) UpdateGroup(group *models.Group, opts models.ClientOptions)
 
 	return nil
 }
+
+// GetGroupAppRoleAssignments returns app role assignments for a group
+//
+// Required permissions: Directory.Read.All
+//
+// Parameters:
+//
+//	groupID: The group ID
+//	opts: The client options
+//
+// Resources: https://learn.microsoft.com/en-us/graph/api/group-list-approleassignments?view=graph-rest-1.0
+func (c *HTTPClient) GetGroupAppRoleAssignments(groupID string, opts models.ClientOptions) ([]*models.AppRoleAssignment, string, error) {
+	results := make([]*models.AppRoleAssignment, 0)
+	var assignmentResponse models.AppRoleAssignmentResponse
+
+	h := c.buildHeaders(opts)
+	url := "/groups/" + groupID + "/appRoleAssignments" + buildQueryString(opts)
+
+	if opts.Debug {
+		c.Log.Sugar().Debugf("GetGroupAppRoleAssignments() - Calling: %s\n", url)
+	}
+
+	response, err := c.RestClient.Get(url, h)
+	if err != nil {
+		c.Log.Sugar().Debugf("GetGroupAppRoleAssignments() - REST Error: %s\n", err.Error())
+		return nil, "", err
+	}
+	defer response.Body.Close()
+
+	if opts.Debug {
+		c.Log.Sugar().Debugf("GetGroupAppRoleAssignments() - Response Status: %d\n", response.StatusCode)
+	}
+
+	if response.StatusCode != 200 {
+		return nil, "", errors.New(response.Status)
+	}
+
+	page := 1
+	for {
+		body, err := io.ReadAll(response.Body)
+		if err != nil {
+			c.Log.Sugar().Debugf("GetGroupAppRoleAssignments() - ReadAll Error: %s\n", err.Error())
+			return nil, "", err
+		}
+
+		if opts.Debug {
+			c.Log.Sugar().Debugf("GetGroupAppRoleAssignments() - Page %d - Response Body: %s\n", page, string(body))
+		}
+
+		// Reset to avoid retaining NextLink from previous iteration
+		assignmentResponse = models.AppRoleAssignmentResponse{}
+
+		err = json.Unmarshal(body, &assignmentResponse)
+		if err != nil {
+			c.Log.Sugar().Debugf("GetGroupAppRoleAssignments() - Unmarshal Error: %s - Body: %s\n", err.Error(), string(body))
+			return nil, "", err
+		}
+
+		response.Body.Close()
+
+		if opts.Debug {
+			c.Log.Sugar().Debugf("GetGroupAppRoleAssignments() - Page %d - Found %d assignments\n", page, len(assignmentResponse.Value))
+		}
+
+		for i := range assignmentResponse.Value {
+			results = append(results, &assignmentResponse.Value[i])
+		}
+
+		if assignmentResponse.NextLink == "" {
+			if opts.Debug {
+				c.Log.Sugar().Debugf("GetGroupAppRoleAssignments() - No more pages, total assignments: %d\n", len(results))
+			}
+			break
+		}
+
+		if opts.Debug {
+			c.Log.Sugar().Debugf("GetGroupAppRoleAssignments() - Page %d - NextLink: %s\n", page, assignmentResponse.NextLink)
+		}
+
+		response, err = c.RestClient.Get(assignmentResponse.NextLink, h)
+		if err != nil {
+			c.Log.Sugar().Debugf("GetGroupAppRoleAssignments() - NextLink Error: %s\n", err.Error())
+			return nil, "", err
+		}
+		defer response.Body.Close()
+
+		if response.StatusCode != 200 {
+			c.Log.Sugar().Debugf("GetGroupAppRoleAssignments() - NextLink Status Error: %d - %s\n", response.StatusCode, response.Status)
+			return nil, "", errors.New(response.Status)
+		}
+
+		if opts.Paging {
+			if opts.Debug {
+				c.Log.Sugar().Debugf("GetGroupAppRoleAssignments() - Paging mode, stopping after page %d\n", page)
+			}
+			break
+		}
+
+		page++
+	}
+
+	return results, assignmentResponse.NextLink, nil
+}

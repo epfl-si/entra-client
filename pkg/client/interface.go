@@ -63,6 +63,7 @@ type Service interface {
 	DeleteGroup(id string, options models.ClientOptions) (err error)
 	GetGroup(id string, options models.ClientOptions) (groups *models.Group, err error)
 	GetGroups(options models.ClientOptions) (groups []*models.Group, nextURL string, err error)
+	GetGroupAppRoleAssignments(groupID string, options models.ClientOptions) (assignments []*models.AppRoleAssignment, nextURL string, err error)
 
 	// Service Principal
 	AddCertificateToServicePrincipal(servicePrincipalID string, base64 string, options models.ClientOptions) (err error)
@@ -99,6 +100,9 @@ type Service interface {
 	CreateAuthenticationEventListeners(onTokenIssuanceStartListener *models.OnTokenIssuanceStartListener, opts models.ClientOptions) (resp *models.AuthenticationEventListener, err error)
 	GetAuthenticationEventListener(listenerID string, opts models.ClientOptions) (resp *models.AuthenticationEventListener, err error)
 	AddApplicationToAuthenticationEventListener(listenerID string, appID string, opts models.ClientOptions) (err error)
+
+	// OAuth2 Permission Grant
+	GetOAuth2PermissionGrants(opts models.ClientOptions) (grants []*models.OAuth2PermissionGrant, nextURL string, err error)
 
 	// No-Http / Claim Mapping Policies
 	GetDefaultClaimMappingPolicy() (mappingPolicy *models.ClaimsMappingPolicyEpfl, err error)

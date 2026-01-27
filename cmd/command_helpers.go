@@ -168,6 +168,19 @@ func HideInCommand(c *cobra.Command, flags ...string) {
 }
 
 // PrintErr prints an error or string to stderr
+// PrintErr writes error messages to os.Stderr.
+//
+// WARNING: DO NOT use this function inside Cobra command handlers (Run, RunE, etc.).
+// Use cmd.PrintErr() instead to maintain test isolation and proper output capture.
+//
+// This function writes directly to os.Stderr, bypassing Cobra's output capture mechanism.
+// This breaks test isolation because tests cannot capture these error messages.
+//
+// Correct usage:
+//   - Inside command handlers: cmd.PrintErr("error message\n")
+//   - In main.go or initialization: rootcmd.PrintErr(err)
+//
+// See .claude/doc/ERROR_HANDLING.md for detailed explanation.
 func PrintErr(v interface{}) {
 	switch val := v.(type) {
 	case error:
