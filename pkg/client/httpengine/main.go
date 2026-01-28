@@ -354,24 +354,18 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *
 	// setting Homepage default "Visible to all users" to true and is used for IdP initiated flows
 	// sp.Homepage = "https://www.epfl.ch"
 	spPatch.Tags = []string{"HideApp"} // If missing "Visible to all users" is true
-	spPatch.AppRoleAssignmentRequired = true
+	if appOptions == nil || appOptions.AuthorizedUsers == nil || len(appOptions.AuthorizedUsers) == 0 {
+		spPatch.AppRoleAssignmentRequired = false
+	} else {
+		spPatch.AppRoleAssignmentRequired = true
+	}
 
 	err = c.PatchServicePrincipal(sp.ID, spPatch, opts)
 	if err != nil {
 		errs += fmt.Sprintf("PatchServicePrincipal: %s\n", err.Error())
 	}
 
-	authorized := []string{}
-	if appOptions == nil || appOptions.AuthorizedUsers == nil || len(appOptions.AuthorizedUsers) == 0 {
-		authorized = []string{
-			"AAD_All Hosts Users",
-			"AAD_All Outside EPFL Users",
-			"AAD_All Staff Users",
-			"AAD_All Student Users",
-		}
-	} else {
-		authorized = appOptions.AuthorizedUsers
-	}
+	authorized := appOptions.AuthorizedUsers
 
 	for _, groupID := range authorized {
 		err = c.AddGroupToServicePrincipal(sp.ID, groupID, opts)
