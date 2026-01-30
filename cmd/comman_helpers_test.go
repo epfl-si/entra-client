@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"testing"
+
+	"github.com/epfl-si/entra-client/pkg/utils"
 )
 
 func TestNormalizeName(t *testing.T) {
@@ -22,7 +24,7 @@ func TestNormalizeName(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NormalizeName(tt.name, tt.env)
+			got, err := utils.NormalizeName(tt.name, tt.env)
 			if tt.expectedErr != nil {
 				if err == nil {
 					// If we expected an error but got nil, fail the test
