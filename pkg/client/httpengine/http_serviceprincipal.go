@@ -706,6 +706,47 @@ func (c *HTTPClient) GetAssignmentsFromServicePrincipal(id string, opts models.C
 	return results.Value, nil
 }
 
+// GetOauth2PermissionScopes from a Scope ID returns a slice of ScopeDescription and an error
+//
+// Required permissions: Application.Read.All
+//
+// Parameters:
+//
+//	opts: The client options
+func (c *HTTPClient) GetScopeDescription(scopeID string, opts models.ClientOptions) (*models.ScopeDescription, error) {
+	var err error
+
+	h := c.buildHeaders(opts)
+
+	if opts.Debug {
+		c.Log.Sugar().Debugf("GetOauth2PermissionScopes() - 1 - Calling: /serviceprincipals%s\n", buildQueryString(opts))
+	}
+
+	response, err := c.RestClient.Get("/serviceprincipals(appId='"+scopeID+"')?$select=appId,displayName,oauth2PermissionScopes", h)
+	if err != nil {
+		c.Log.Sugar().Debugf("GetOauth2PermissionScopes() - Request error: %s\n", err.Error())
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	body, err := io.ReadAll(io.Reader(response.Body))
+	if err != nil {
+		c.Log.Sugar().Debugf("GetOauth2PermissionScopes() - 2 - Error: %s\n", err.Error())
+		return nil, err
+	}
+
+	var results *models.ScopeDescription
+
+	err = json.Unmarshal(body, &results)
+	if err != nil {
+		c.Log.Sugar().Debugf("GetOauth2PermissionScopes() - 3 - body: %s\n", body)
+		c.Log.Sugar().Debugf("GetOauth2PermissionScopes() - 3 - Error: %s\n", err.Error())
+		return nil, err
+	}
+
+	return results, nil
+}
+
 // GetGroupsFromServicePrincipal from a ServicePrincipal ID returns a slice of AppRolesAssignment and an error
 //
 // Required permissions: Application.Read.All

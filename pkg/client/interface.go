@@ -72,6 +72,7 @@ type Service interface {
 	RemoveGroupFromServicePrincipal(servicePrincipalID, groupID string, options models.ClientOptions) (err error)
 	GetGroupsFromServicePrincipal(servicePrincipalID string, options models.ClientOptions) (groups []*models.Group, err error)
 	GetAssignmentsFromServicePrincipal(servicePrincipalI string, options models.ClientOptions) (assignment []*models.AppRoleAssignment, err error)
+	GetScopeDescription(scopeID string, options models.ClientOptions) (assignment *models.ScopeDescription, err error)
 	AssignAppRoleToServicePrincipal(assignment *models.AppRoleAssignment, options models.ClientOptions) (err error)
 
 	AddKeyToServicePrincipal(servicePrincipalID string, keyCredential saml.KeyDescriptor, options models.ClientOptions) (err error)
@@ -113,6 +114,7 @@ type Service interface {
 	GetKeyCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.KeyCredentialEPFL, error)
 	GetKeyCredentialsByAppID(dateLimit string, appID string, opts models.ClientOptions) ([]models.KeyCredentialEPFL, error)
 	GetExpiredKeyCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.KeyCredentialEPFL, error)
+	AddKeyCredentialToApplication(appID, displayName, startDateTime, endDateTime, key string, options models.ClientOptions) (err error)
 
 	// Password Credentials
 	GetLocalPasswordCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.PasswordCredentialEPFL, error)
