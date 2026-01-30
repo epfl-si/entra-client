@@ -7,6 +7,7 @@ import (
 	rootcmd "github.com/epfl-si/entra-client/cmd"
 	"github.com/epfl-si/entra-client/pkg/client/models"
 	"github.com/epfl-si/entra-client/pkg/saml"
+	"github.com/epfl-si/entra-client/pkg/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -91,10 +92,10 @@ var applicationSAMLCreateCmd = &cobra.Command{
 
 		// Should be applied at the flag level (with a kind of transformer/validator)
 		for i, uri := range RedirectURI {
-			RedirectURI[i] = rootcmd.NormalizeURI(uri)
+			RedirectURI[i] = utils.NormalizeURI(uri)
 		}
-		LogoutURI = rootcmd.NormalizeURI(LogoutURI)
-		SAMLID = rootcmd.NormalizeURI(SAMLID)
+		LogoutURI = utils.NormalizeURI(LogoutURI)
+		SAMLID = utils.NormalizeURI(SAMLID)
 
 		if rootcmd.OptDebug {
 			cmd.Printf("EntityID: %s\n", SAMLID)
