@@ -9,9 +9,8 @@ type ClaimsMappingPolicy struct {
 }
 
 type ClaimsMappingPolicyEpfl struct {
-	ID             string `json:"id"`
-	Base           bool   `json:"base"`
-	Cfs            bool   `json:"cfs"`
-	Authorizations bool   `json:"authorizations"`
-	Accreds        bool   `json:"accreds"`
+	ID      string `json:"id"`
+	Base    bool   `json:"base"`
+	Cfs     bool   `json:"cfs"`
+	Accreds bool   `json:"accreds"`
 }
