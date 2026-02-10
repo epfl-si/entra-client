@@ -530,77 +530,47 @@ func (c *HTTPClient) GetDefaultClaimMappingPolicy() (mappingPolicy *models.Claim
 	}
 
 	return &models.ClaimsMappingPolicyEpfl{
-		ID:             c.EntraConfig.Get("CMP_BASE_ID"),
-		Base:           true,
-		Cfs:            false,
-		Authorizations: false,
-		Accreds:        false,
+		ID:      c.EntraConfig.Get("CMP_BASE_ID"),
+		Base:    true,
+		Cfs:     false,
+		Accreds: false,
 	}, nil
 }
-func (c *HTTPClient) GetClaimMappingPolicyByClaim(cfs bool, authorizations bool, accreds bool) (mappingPolicy *models.ClaimsMappingPolicyEpfl, err error) {
+func (c *HTTPClient) GetClaimMappingPolicyByClaim(cfs bool, accreds bool) (mappingPolicy *models.ClaimsMappingPolicyEpfl, err error) {
 	policy := models.ClaimsMappingPolicyEpfl{
-		Base:           true,
-		Cfs:            cfs,
-		Authorizations: authorizations,
-		Accreds:        accreds,
+		Base:    true,
+		Cfs:     cfs,
+		Accreds: accreds,
 	}
 
-	if !cfs && !authorizations && !accreds {
+	if !cfs && !accreds {
 
 		if !c.EntraConfig.Has("CMP_BASE_ID") {
 			return nil, errors.New("CMP_BASE_ID must be set in configuration of the client")
 		}
 
 		policy.ID = c.EntraConfig.Get("CMP_BASE_ID")
-	} else if cfs && !authorizations && !accreds {
+	} else if cfs && !accreds {
 
 		if !c.EntraConfig.Has("CMP_CFS_ID") {
 			return nil, errors.New("CMP_CFS_ID must be set in configuration of the client")
 		}
 
 		policy.ID = c.EntraConfig.Get("CMP_CFS_ID")
-	} else if !cfs && authorizations && !accreds {
-
-		if !c.EntraConfig.Has("CMP_AUTH_ID") {
-			return nil, errors.New("CMP_AUTH_ID must be set in configuration of the client")
-		}
-
-		policy.ID = c.EntraConfig.Get("CMP_AUTH_ID")
-	} else if !cfs && !authorizations && accreds {
+	} else if !cfs && accreds {
 
 		if !c.EntraConfig.Has("CMP_ACCRED_ID") {
 			return nil, errors.New("CMP_ACCRED_ID must be set in configuration of the client")
 		}
 
 		policy.ID = c.EntraConfig.Get("CMP_ACCRED_ID")
-	} else if cfs && authorizations && !accreds {
-
-		if !c.EntraConfig.Has("CMP_CFS_AUTH_ID") {
-			return nil, errors.New("CMP_CFS_AUTH_ID must be set in configuration of the client")
-		}
-
-		policy.ID = c.EntraConfig.Get("CMP_CFS_AUTH_ID")
-	} else if cfs && !authorizations && accreds {
+	} else if cfs && accreds {
 
 		if !c.EntraConfig.Has("CMP_CFS_ACCRED_ID") {
 			return nil, errors.New("CMP_CFS_ACCRED_ID must be set in configuration of the client")
 		}
 
 		policy.ID = c.EntraConfig.Get("CMP_CFS_ACCRED_ID")
-	} else if !cfs && authorizations && accreds {
-
-		if !c.EntraConfig.Has("CMP_AUTH_ACCRED_ID") {
-			return nil, errors.New("CMP_AUTH_ACCRED_ID must be set in configuration of the client")
-		}
-
-		policy.ID = c.EntraConfig.Get("CMP_AUTH_ACCRED_ID")
-	} else if cfs && authorizations && accreds {
-
-		if !c.EntraConfig.Has("CMP_CFS_AUTH_ACCRED_ID") {
-			return nil, errors.New("CMP_CFS_AUTH_ACCRED_ID must be set in configuration of the client")
-		}
-
-		policy.ID = c.EntraConfig.Get("CMP_CFS_AUTH_ACCRED_ID")
 	}
 
 	return &policy, nil

@@ -108,7 +108,7 @@ type Service interface {
 
 	// No-Http / Claim Mapping Policies
 	GetDefaultClaimMappingPolicy() (mappingPolicy *models.ClaimsMappingPolicyEpfl, err error)
-	GetClaimMappingPolicyByClaim(cf bool, authorizations bool, accreds bool) (mappingPolicy *models.ClaimsMappingPolicyEpfl, err error)
+	GetClaimMappingPolicyByClaim(cf bool, accreds bool) (mappingPolicy *models.ClaimsMappingPolicyEpfl, err error)
 
 	// Key Credentials
 	GetLocalKeyCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.KeyCredentialEPFL, error)
