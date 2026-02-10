@@ -14,6 +14,7 @@ import (
 	client "github.com/epfl-si/entra-client/pkg/client"
 	"github.com/epfl-si/entra-client/pkg/client/models"
 	"github.com/epfl-si/entra-client/pkg/rest"
+	"github.com/google/uuid"
 
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/joho/godotenv"
@@ -252,6 +253,8 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *
 		DisplayName: app.DisplayName,
 	}
 
+	isAppToApp := false
+
 	if app.Web != nil && app.Web.RedirectURIs != nil {
 		// Web application
 		bootstrApp.Web = &models.WebSection{}
@@ -265,6 +268,9 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *
 		bootstrApp.Spa = &models.SpaApplication{
 			RedirectURIs: app.Spa.RedirectURIs,
 		}
+	} else {
+		// App to App application
+		isAppToApp = true
 	}
 
 	opts := models.ClientOptions{}
@@ -278,72 +284,131 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *
 		errs += fmt.Sprintf("AddPasswordToApplication: %s\n", err.Error())
 	}
 
-	appPatch := &models.Application{
-		RequiredResourceAccess: []models.RequiredResource{
-			{
-				ResourceAppID: c.EntraConfig.Get("MSGRAPH_API_RESOURCE_APP_ID"),
-				ResourceAccess: []models.ResourceAccess{
-					{
-						ID:   c.EntraConfig.Get("MSGRAPH_EMAIL_RESOURCE_ID"),
-						Type: "Scope",
-					},
-					{
-						ID:   c.EntraConfig.Get("MSGRAPH_OFFLINE_ACCESS_RESOURCE_ID"),
-						Type: "Scope",
-					},
-					{
-						ID:   c.EntraConfig.Get("MSGRAPH_OPENID_RESOURCE_ID"),
-						Type: "Scope",
-					},
-					{
-						ID:   c.EntraConfig.Get("MSGRAPH_PROFILE_RESOURCE_ID"),
-						Type: "Scope",
-					},
-					{
-						ID:   c.EntraConfig.Get("MSGRAPH_USER_READ_RESOURCE_ID"),
-						Type: "Scope",
+	if !isAppToApp {
+		notes := "Unit: \nTest URL: https://login.microsoftonline.com/" + c.Tenant + "/oauth2/v2.0/authorize?client_id=" + app.AppID + "&response_type=token&redirect_uri=https://jwt.ms&scope=openid%20profile&state=12345&nonce=12345"
+		version := 2
+		t := true
+
+		appPatch := &models.Application{
+			RequiredResourceAccess: []models.RequiredResource{
+				{
+					ResourceAppID: c.EntraConfig.Get("MSGRAPH_API_RESOURCE_APP_ID"),
+					ResourceAccess: []models.ResourceAccess{
+						{
+							ID:   c.EntraConfig.Get("MSGRAPH_EMAIL_RESOURCE_ID"),
+							Type: "Scope",
+						},
+						{
+							ID:   c.EntraConfig.Get("MSGRAPH_OFFLINE_ACCESS_RESOURCE_ID"),
+							Type: "Scope",
+						},
+						{
+							ID:   c.EntraConfig.Get("MSGRAPH_OPENID_RESOURCE_ID"),
+							Type: "Scope",
+						},
+						{
+							ID:   c.EntraConfig.Get("MSGRAPH_PROFILE_RESOURCE_ID"),
+							Type: "Scope",
+						},
+						{
+							ID:   c.EntraConfig.Get("MSGRAPH_USER_READ_RESOURCE_ID"),
+							Type: "Scope",
+						},
 					},
 				},
 			},
-		},
-	}
-	appPatch.Web = &models.WebSection{
-		ImplicitGrantSettings: &models.Grant{
-			EnableIDTokenIssuance:     true,
-			EnableAccessTokenIssuance: true,
-		},
-	}
+			Web: &models.WebSection{
+				ImplicitGrantSettings: &models.Grant{
+					EnableIDTokenIssuance:     true,
+					EnableAccessTokenIssuance: true,
+				},
+			},
+			Notes: &notes,
+			API: &models.APIApplication{
+				AcceptMappedClaims:          &t,
+				RequestedAccessTokenVersion: &version,
+			},
+			// AllowPublicClient: true, Causes error
+			IsFallbackPublicClient: &t, // For PKCE
+		}
 
-	notes := "Unit: \nTest URL: https://login.microsoftonline.com/" + c.Tenant + "/oauth2/v2.0/authorize?client_id=" + app.AppID + "&response_type=token&redirect_uri=https://jwt.ms&scope=openid%20profile&state=12345&nonce=12345"
-	appPatch.Notes = &notes
-	version := 2
-	t := true
-	appPatch.API = &models.APIApplication{
-		AcceptMappedClaims:          &t,
-		RequestedAccessTokenVersion: &version,
-	}
+		err = c.PatchApplication(app.ID, appPatch, opts)
+		if err != nil {
+			errs += fmt.Sprintf("PatchApplication: %s\n", err.Error())
+		}
 
-	// Causes error:
-	// appPatch.AllowPublicClient = true
-	appPatch.IsFallbackPublicClient = &t // For PKCE
+		//Waiting for the consent on DelegatedPermissionGrant.ReadWrite.All
 
-	err = c.PatchApplication(app.ID, appPatch, opts)
-	if err != nil {
-		errs += fmt.Sprintf("PatchApplication: %s\n", err.Error())
-	}
+		// Give consent to the application
+		err = c.GiveConsentToApplication(sp.ID, []string{
+			"User.Read",
+			"openid",
+			"profile",
+			"email",
+			"offline_access",
+		}, opts)
+		if err != nil {
+			errs += fmt.Sprintf("GiveConsentToApplication: %s\n", err.Error())
+		}
+	} else {
+		version := 2
+		t := true
+		appRoleId := uuid.NewString()
+		appPatch := &models.Application{
+			AppRoles: []models.AppRole{
+				{
+					AllowedMemberTypes: []string{
+						"Application",
+					},
+					Description: "Default access",
+					DisplayName: "Default access",
+					IsEnabled:   true,
+					Origin:      "Application",
+					Value:       "default_access",
+					ID:          appRoleId,
+				},
+			},
+			IdentifierUris: []string{
+				"api://" + app.AppID,
+			},
+			API: &models.APIApplication{
+				AcceptMappedClaims:          &t,
+				RequestedAccessTokenVersion: &version,
+			},
+			RequiredResourceAccess: []models.RequiredResource{
+				{
+					ResourceAppID: app.AppID,
+					ResourceAccess: []models.ResourceAccess{
+						{
+							ID:   appRoleId,
+							Type: "Role",
+						},
+					},
+				},
+			},
+		}
 
-	//Waiting for the consent on DelegatedPermissionGrant.ReadWrite.All
-	// Give consent to the application
+		err = c.PatchApplication(app.ID, appPatch, opts)
+		if err != nil {
+			errs += fmt.Sprintf("PatchApplication: %s\n", err.Error())
+		}
 
-	err = c.GiveConsentToApplication(sp.ID, []string{
-		"User.Read",
-		"openid",
-		"profile",
-		"email",
-		"offline_access",
-	}, opts)
-	if err != nil {
-		errs += fmt.Sprintf("GiveConsentToApplication: %s\n", err.Error())
+		// appRoleAssignment := models.AppRoleAssignment{
+		// 	PrincipalID: app.AppID,
+		// 	ResourceID:  sp.ID,
+		// 	AppRoleID:   appRoleId,
+		// }
+
+		appRoleAssignment := &models.AppRoleAssignment{
+			PrincipalID: sp.ID,
+			AppRoleID:   appRoleId,
+			ResourceID:  sp.ID,
+		}
+
+		_, err := c.AddAssignmentsToServicePrincipal(sp.ID, appRoleAssignment, opts)
+		if err != nil {
+			errs += fmt.Sprintf("AddAssignmentsToServicePrincipal: %s\n", err.Error())
+		}
 	}
 
 	// Configure claims (5th parameter is to add default claims)
@@ -365,12 +430,13 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *
 		errs += fmt.Sprintf("PatchServicePrincipal: %s\n", err.Error())
 	}
 
-	authorized := appOptions.AuthorizedUsers
-
-	for _, groupID := range authorized {
-		err = c.AddGroupToServicePrincipal(sp.ID, groupID, opts)
-		if err != nil {
-			errs += fmt.Sprintf("AddGroupToServicePrincipal: %s\n", err.Error())
+	if spPatch.AppRoleAssignmentRequired {
+		authorized := appOptions.AuthorizedUsers
+		for _, groupID := range authorized {
+			err = c.AddGroupToServicePrincipal(sp.ID, groupID, opts)
+			if err != nil {
+				errs += fmt.Sprintf("AddGroupToServicePrincipal: %s\n", err.Error())
+			}
 		}
 	}
 
@@ -389,27 +455,29 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *
 		}
 	}
 
-	groupClaimsConfig := &models.Application{
-		GroupMembershipClaims: "ApplicationGroup",
-		OptionalClaims: &models.OptionalClaims{
-			AccessToken: []models.OptionalClaim{
-				{
-					Name:                 "groups",
-					AdditionalProperties: []string{"sam_account_name"},
+	if !isAppToApp {
+		groupClaimsConfig := &models.Application{
+			GroupMembershipClaims: "ApplicationGroup",
+			OptionalClaims: &models.OptionalClaims{
+				AccessToken: []models.OptionalClaim{
+					{
+						Name:                 "groups",
+						AdditionalProperties: []string{"sam_account_name"},
+					},
+				},
+				IDToken: []models.OptionalClaim{
+					{
+						Name:                 "groups",
+						AdditionalProperties: []string{"sam_account_name"},
+					},
 				},
 			},
-			IDToken: []models.OptionalClaim{
-				{
-					Name:                 "groups",
-					AdditionalProperties: []string{"sam_account_name"},
-				},
-			},
-		},
-	}
+		}
 
-	err = c.PatchApplication(app.ID, groupClaimsConfig, opts)
-	if err != nil {
-		errs += fmt.Sprintf("Patch Application for Application groups in claims: %s\n", err)
+		err = c.PatchApplication(app.ID, groupClaimsConfig, opts)
+		if err != nil {
+			errs += fmt.Sprintf("Patch Application for Application groups in claims: %s\n", err)
+		}
 	}
 
 	if errs != "" {
@@ -417,5 +485,4 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *
 	}
 
 	return app, sp, *scrt.SecretText, nil
-
 }

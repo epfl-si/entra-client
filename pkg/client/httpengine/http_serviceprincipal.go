@@ -706,6 +706,57 @@ func (c *HTTPClient) GetAssignmentsFromServicePrincipal(id string, opts models.C
 	return results.Value, nil
 }
 
+// AddAssignmentsToServicePrincipal from a ServicePrincipal ID add a AppRolesAssignment and an error
+//
+// Required permissions: Application.Read.All
+// Required permissions: Application.ReadWrite.All
+//
+// Parameters:
+//
+//	opts: The client options
+func (c *HTTPClient) AddAssignmentsToServicePrincipal(id string, assignment *models.AppRoleAssignment, opts models.ClientOptions) (*models.AppRoleAssignment, error) {
+	u, err := json.Marshal(assignment)
+	if err != nil {
+		return nil, err
+	}
+
+	if opts.Debug {
+		c.Log.Sugar().Debugf("AddAssignmentsToServicePrincipal() - 1 - Calling: /serviceprincipals%s\n", buildQueryString(opts))
+	}
+
+	h := c.buildHeaders(opts)
+	h["Content-Type"] = "application/json"
+
+	response, err := c.RestClient.Post("/serviceprincipals/"+id+"/appRoleAssignedTo"+buildQueryString(opts), u, h)
+	if err != nil {
+		c.Log.Sugar().Debugf("AddAssignmentsToServicePrincipal() - Request error: %s\n", err.Error())
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != 201 {
+		c.Log.Sugar().Debugf("AddAssignmentsToServicePrincipal() - Body: %#v\n", getBody(response))
+		return nil, errors.New(response.Status)
+	}
+
+	body, err := io.ReadAll(io.Reader(response.Body))
+	if err != nil {
+		c.Log.Sugar().Debugf("AddAssignmentsToServicePrincipal() - 2 - Error: %s\n", err.Error())
+		return nil, err
+	}
+
+	var result *models.AppRoleAssignment
+
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		c.Log.Sugar().Debugf("AddAssignmentsToServicePrincipal() - 3 - body: %s\n", body)
+		c.Log.Sugar().Debugf("AddAssignmentsToServicePrincipal() - 3 - Error: %s\n", err.Error())
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // GetOauth2PermissionScopes from a Scope ID returns a slice of ScopeDescription and an error
 //
 // Required permissions: Application.Read.All

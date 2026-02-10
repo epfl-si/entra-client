@@ -71,7 +71,8 @@ type Service interface {
 	AddGroupToServicePrincipal(servicePrincipalID, groupID string, options models.ClientOptions) (err error)
 	RemoveGroupFromServicePrincipal(servicePrincipalID, groupID string, options models.ClientOptions) (err error)
 	GetGroupsFromServicePrincipal(servicePrincipalID string, options models.ClientOptions) (groups []*models.Group, err error)
-	GetAssignmentsFromServicePrincipal(servicePrincipalI string, options models.ClientOptions) (assignment []*models.AppRoleAssignment, err error)
+	GetAssignmentsFromServicePrincipal(servicePrincipalID string, options models.ClientOptions) (assignment []*models.AppRoleAssignment, err error)
+	AddAssignmentsToServicePrincipal(servicePrincipalID string, appRoleAssignment *models.AppRoleAssignment, options models.ClientOptions) (assignment *models.AppRoleAssignment, err error)
 	GetScopeDescription(scopeID string, options models.ClientOptions) (assignment *models.ScopeDescription, err error)
 	AssignAppRoleToServicePrincipal(assignment *models.AppRoleAssignment, options models.ClientOptions) (err error)
 
