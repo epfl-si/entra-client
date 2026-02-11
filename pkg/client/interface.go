@@ -113,7 +113,7 @@ type Service interface {
 	// Key Credentials
 	GetLocalKeyCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.KeyCredentialEPFL, error)
 	GetKeyCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.KeyCredentialEPFL, error)
-	GetKeyCredentialsByAppID(dateLimit string, appID string, opts models.ClientOptions) ([]models.KeyCredentialEPFL, error)
+	GetKeyCredentialsByAppID(appID string, dateLimit string, opts models.ClientOptions) ([]models.KeyCredentialEPFL, error)
 	GetExpiredKeyCredentials(dateLimit string, opts models.ClientOptions) (map[string][]models.KeyCredentialEPFL, error)
 	AddKeyCredentialToApplication(appID, displayName, startDateTime, endDateTime, key string, options models.ClientOptions) (err error)
 
