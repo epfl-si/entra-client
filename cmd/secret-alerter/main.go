@@ -301,7 +301,7 @@ func filterApplicationsWithValidSecrets(allApplications map[string]*ApplicationA
 
 		for _, alert := range appAlert.Secrets {
 			if alert.Type == "AsymmetricX509Cert" || alert.Type == "Symmetric" {
-				allKeys, err := client.GetKeyCredentialsByAppID(futureDate.Format("2006-01-02"), appID, keyClientOptions)
+				allKeys, err := client.GetKeyCredentialsByAppID(appID, futureDate.Format("2006-01-02"), keyClientOptions)
 				if err == nil {
 					for _, key := range allKeys {
 						if time.Time(*key.EndDateTime).After(limitDateTime) {
