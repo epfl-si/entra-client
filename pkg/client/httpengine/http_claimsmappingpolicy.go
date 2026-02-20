@@ -516,7 +516,7 @@ func (c *HTTPClient) GetClaimsMappingPolicyByAppID(appID string, opts models.Cli
 	}
 
 	if len(cmpResponse.Value) == 0 {
-		return nil, errors.New("no claims mapping policy found")
+		return nil, nil
 	}
 
 	cmp := cmpResponse.Value[0]
