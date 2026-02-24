@@ -31,6 +31,8 @@ var DefaultClaimsMappingPolicy = []string{
 {"Source":"user", "ID": "mail", "JwtClaimType": "mail"}
 ]}}`}
 
+var NoClaimPolicyFound = errors.New("no claims mapping policy found")
+
 //{"Source":"user", "ID": "groups", "JwtClaimType": "groups"}
 
 // AssignClaimsMappingPolicy assigns a claims mapping policy and returns an error
@@ -516,7 +518,7 @@ func (c *HTTPClient) GetClaimsMappingPolicyByAppID(appID string, opts models.Cli
 	}
 
 	if len(cmpResponse.Value) == 0 {
-		return nil, nil
+		return nil, NoClaimPolicyFound
 	}
 
 	cmp := cmpResponse.Value[0]
