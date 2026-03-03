@@ -32,7 +32,11 @@ type Service interface {
 	GetApplicationByAppID(id string, options models.ClientOptions) (apps *models.Application, err error)
 	GetApplications(options models.ClientOptions) (apps []*models.Application, nextURL string, err error)
 	GiveConsentToApplication(spObjectID string, scopes []string, options models.ClientOptions) (err error)
+	PatchConsentToApplication(spObjectID string, scopes []string, options models.ClientOptions) (err error)
+	ListConsentToApplication(spObjectID string, opts models.ClientOptions) ([]models.OAuth2PermissionGrant, error)
+	UpdateConsentToApplication(consentID string, scopes []string, opts models.ClientOptions) error
 	PatchApplication(id string, app *models.Application, options models.ClientOptions) (err error)
+	PatchRequiredResourceAccess(id string, app *models.Application, options models.ClientOptions) (err error)
 	PatchApplicationTokenGroup(id string, groupClaimName string, opts models.ClientOptions) (err error)
 	WaitApplication(id string, timeout int, options models.ClientOptions) (err error)
 	//GiveConsentToApplication(id string, options models.ClientOptions) (err error)

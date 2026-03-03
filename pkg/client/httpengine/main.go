@@ -245,28 +245,27 @@ func (c *HTTPClient) CreatePortalApplication(app *models.Application, clientOpti
 //
 //	either in Web.RedirectURIs
 //	or     in Spa.RedirectURIs
-func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *models.AppOptions) (newApp *models.Application, newSP *models.ServicePrincipal, secret string, err error) {
+func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOptions *models.AppOptions) (newApp *models.Application, newSP *models.ServicePrincipal, secret string, err error) {
 	var errs = ""
-	// URIList := []models.URI{}
 
 	bootstrApp := &models.Application{
-		DisplayName: app.DisplayName,
+		DisplayName: requestApp.DisplayName,
 	}
 
 	isAppToApp := false
 
-	if app.Web != nil && app.Web.RedirectURIs != nil {
+	if requestApp.Web != nil && requestApp.Web.RedirectURIs != nil {
 		// Web application
 		bootstrApp.Web = &models.WebSection{}
-		bootstrApp.Web.RedirectURIs = app.Web.RedirectURIs
+		bootstrApp.Web.RedirectURIs = requestApp.Web.RedirectURIs
 		// for i, uri := range app.Web.RedirectURIs {
 		// 	URIList = append(URIList, models.URI{URI: uri, Index: i})
 		// }
 		// bootstrApp.Web.RedirectURISettings = URIList
-	} else if app.Spa != nil && app.Spa.RedirectURIs != nil {
+	} else if requestApp.Spa != nil && requestApp.Spa.RedirectURIs != nil {
 		// SPA application
 		bootstrApp.Spa = &models.SpaApplication{
-			RedirectURIs: app.Spa.RedirectURIs,
+			RedirectURIs: requestApp.Spa.RedirectURIs,
 		}
 	} else {
 		// App to App application
@@ -285,38 +284,15 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *
 	}
 
 	if !isAppToApp {
+		// Filter only allowed scopes
+		requiredResourceAccess, selectedScopeNames, err := c.FilterAllowedRequiredResource(requestApp, opts)
+
 		notes := "Unit: \nTest URL: https://login.microsoftonline.com/" + c.Tenant + "/oauth2/v2.0/authorize?client_id=" + app.AppID + "&response_type=token&redirect_uri=https://jwt.ms&scope=openid%20profile&state=12345&nonce=12345"
 		version := 2
 		t := true
 
 		appPatch := &models.Application{
-			RequiredResourceAccess: []models.RequiredResource{
-				{
-					ResourceAppID: c.EntraConfig.Get("MSGRAPH_API_RESOURCE_APP_ID"),
-					ResourceAccess: []models.ResourceAccess{
-						{
-							ID:   c.EntraConfig.Get("MSGRAPH_EMAIL_RESOURCE_ID"),
-							Type: "Scope",
-						},
-						{
-							ID:   c.EntraConfig.Get("MSGRAPH_OFFLINE_ACCESS_RESOURCE_ID"),
-							Type: "Scope",
-						},
-						{
-							ID:   c.EntraConfig.Get("MSGRAPH_OPENID_RESOURCE_ID"),
-							Type: "Scope",
-						},
-						{
-							ID:   c.EntraConfig.Get("MSGRAPH_PROFILE_RESOURCE_ID"),
-							Type: "Scope",
-						},
-						{
-							ID:   c.EntraConfig.Get("MSGRAPH_USER_READ_RESOURCE_ID"),
-							Type: "Scope",
-						},
-					},
-				},
-			},
+			RequiredResourceAccess: requiredResourceAccess,
 			Web: &models.WebSection{
 				ImplicitGrantSettings: &models.Grant{
 					EnableIDTokenIssuance:     true,
@@ -339,16 +315,12 @@ func (c *HTTPClient) CreateOIDCApplication(app *models.Application, appOptions *
 
 		//Waiting for the consent on DelegatedPermissionGrant.ReadWrite.All
 
-		// Give consent to the application
-		err = c.GiveConsentToApplication(sp.ID, []string{
-			"User.Read",
-			"openid",
-			"profile",
-			"email",
-			"offline_access",
-		}, opts)
-		if err != nil {
-			errs += fmt.Sprintf("GiveConsentToApplication: %s\n", err.Error())
+		if len(requiredResourceAccess) > 0 {
+			// Give consent to the application
+			err = c.GiveConsentToApplication(sp.ID, selectedScopeNames, opts)
+			if err != nil {
+				errs += fmt.Sprintf("GiveConsentToApplication: %s\n", err.Error())
+			}
 		}
 	} else {
 		version := 2

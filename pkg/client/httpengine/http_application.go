@@ -499,22 +499,111 @@ func (c *HTTPClient) WaitApplication(id string, timeout int, options models.Clie
 	return nil
 }
 
-// UpdateApplication updates an application and returns an error
-// func (c *HTTPClient) UpdateApplication(app *models.Application, options models.ClientOptions) (err error) {
-// 	return errors.New("not implemented")
-// }
-
-// GiveConsentToApplication grants permissions to an application and returns an error
-//
-// The scopes should be given all at once
-// (until we implement the way to add/give them one by one)
+// ListConsentToApplication list permissions to an application and returns an error
 //
 // Required permissions: Directory.ReadWrite.All
 //
 // Parameters:
 //
-//	id: The application ID
-//	permission: The permission to grant
+//	spObjectID: The service principal id
+//	opts: The client options
+func (c *HTTPClient) ListConsentToApplication(spObjectID string, opts models.ClientOptions) ([]models.OAuth2PermissionGrant, error) {
+	if spObjectID == "" {
+		return nil, errors.New("client ObjectID missing")
+	}
+
+	h := c.buildHeaders(opts)
+	h["Content-Type"] = "application/json"
+
+	errs := ""
+
+	response, err := c.RestClient.Get("/servicePrincipals/"+spObjectID+"/oauth2PermissionGrants", h)
+	if err != nil {
+		errs = errs + err.Error()
+		c.Log.Sugar().Error("ListConsentToApplication - REST Error: %#v - %s ", err, getBody(response))
+	}
+	defer response.Body.Close()
+
+	body, err := io.ReadAll(io.Reader(response.Body))
+	if err != nil {
+		errs = errs + err.Error()
+	}
+	if response.StatusCode != 200 {
+		c.Log.Sugar().Errorf("ListConsentToApplication - Unexpected result: %s ", getBody(response))
+		errs = errs + "Unexpected status code:" + response.Status + "\n"
+	}
+
+	var grantResponse models.OAuth2PermissionGrantResponse
+	err = json.Unmarshal(body, &grantResponse)
+	if err != nil {
+		errs = errs + err.Error()
+	}
+
+	if errs != "" {
+		return nil, errors.New(errs)
+	}
+
+	return grantResponse.Value, nil
+}
+
+// PatchConsentToApplication grants permissions to an application and returns an error
+//
+// Required permissions: Directory.ReadWrite.All
+//
+// Parameters:
+//
+//	spObjectID: The service principal id
+//	scopes: The scopes to grant
+//	opts: The client options
+func (c *HTTPClient) PatchConsentToApplication(spObjectID string, scopes []string, opts models.ClientOptions) error {
+	if spObjectID == "" {
+		return errors.New("client ObjectID missing")
+	}
+
+	if len(scopes) == 0 {
+		return errors.New("scopes empty")
+	}
+
+	errs := ""
+
+	consents, err := c.ListConsentToApplication(spObjectID, opts)
+	if err != nil {
+		errs = errs + err.Error()
+	}
+
+	updated := false
+	for _, consent := range consents {
+		if consent.ResourceID == c.EntraConfig.Get("MSGRAPH_API_ID") {
+			updated = true
+			err := c.UpdateConsentToApplication(consent.ID, scopes, opts)
+			if err != nil {
+				errs = errs + err.Error()
+			}
+		}
+	}
+
+	if !updated {
+		err := c.GiveConsentToApplication(spObjectID, scopes, opts)
+		if err != nil {
+			errs = errs + err.Error()
+		}
+	}
+
+	if errs != "" {
+		return errors.New(errs)
+	}
+
+	return nil
+}
+
+// GiveConsentToApplication grants permissions to an application and returns an error
+//
+// Required permissions: Directory.ReadWrite.All
+//
+// Parameters:
+//
+//	spObjectID: The service principal id
+//	scopes: The scopes to grant
 //	opts: The client options
 func (c *HTTPClient) GiveConsentToApplication(spObjectID string, scopes []string, opts models.ClientOptions) error {
 
@@ -554,12 +643,12 @@ func (c *HTTPClient) GiveConsentToApplication(spObjectID string, scopes []string
 	response, err := c.RestClient.Post("/oAuth2PermissionGrants", u, h)
 	if err != nil {
 		errs = errs + err.Error()
-		c.Log.Sugar().Error("GrantApplicationPermission - REST Error: %#v - %s ", err, getBody(response))
+		c.Log.Sugar().Error("GiveConsentToApplication - REST Error: %#v - %s ", err, getBody(response))
 	}
 	defer response.Body.Close()
 
 	if response.StatusCode != 201 {
-		c.Log.Sugar().Errorf("GrantPermissionsToApplication - Unexpected result: %s ", getBody(response))
+		c.Log.Sugar().Errorf("GiveConsentToApplication - Unexpected result: %s ", getBody(response))
 		errs = errs + "Unexpected status code:" + response.Status + "\n"
 	}
 
@@ -568,7 +657,61 @@ func (c *HTTPClient) GiveConsentToApplication(spObjectID string, scopes []string
 	}
 
 	return nil
+}
 
+// UpdateConsentToApplication update permissions to an application and returns an error
+//
+// Required permissions: Directory.ReadWrite.All
+//
+// Parameters:
+//
+//	consentID: The application ID
+//	scopes: The permission to grant
+//	opts: The client options
+func (c *HTTPClient) UpdateConsentToApplication(consentID string, scopes []string, opts models.ClientOptions) error {
+
+	type OAuth2PermissionUpdate struct {
+		Scope string `json:"scope"`
+	}
+
+	if consentID == "" {
+		return errors.New("client consentID missing")
+	}
+
+	grant := &OAuth2PermissionUpdate{
+		Scope: strings.Join(scopes, " "),
+	}
+
+	errs := ""
+
+	u, err := json.Marshal(grant)
+	if err != nil {
+		errs = errs + err.Error()
+	}
+	c.Log.Sugar().Debugf("UpdateConsentToApplication() - Payload: %s\n", u)
+
+	h := c.buildHeaders(opts)
+	h["Content-Type"] = "application/json"
+
+	// 8bfd95a8-aaec-4ecc-a789-a3fce40923ee
+	// 0b24c62a-4a9d-4b87-aeeb-ad5343e4d7ca
+	response, err := c.RestClient.Patch("/oauth2PermissionGrants/"+consentID, u, h)
+	if err != nil {
+		errs = errs + err.Error()
+		c.Log.Sugar().Error("UpdateConsentToApplication - REST Error: %#v - %s ", err, getBody(response))
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != 204 {
+		c.Log.Sugar().Errorf("UpdateConsentToApplication - Unexpected result: %s ", getBody(response))
+		errs = errs + "Unexpected status code for consentID " + consentID + " :" + response.Status + "\n"
+	}
+
+	if errs != "" {
+		return errors.New(errs)
+	}
+
+	return nil
 }
 
 // GetApplicationConsents gets an application consents and returns an error

@@ -87,3 +87,8 @@ type Application struct {
 //AccessTokenAcceptedVersion is the version of the access token that the resource server can accept
 // (it relates to the Application->App registration menu in Entra)
 // https://learn.microsoft.com/en-us/answers/questions/1118962/azure-ad-setting-the-accesstokenacceptedversion
+
+type ApplicationWithMandatoryFields struct {
+	Application
+	RequiredResourceAccess []RequiredResource `json:"requiredResourceAccess"`
+}
