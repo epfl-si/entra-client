@@ -25,12 +25,9 @@ func (c *HTTPClient) PatchRequiredResourceAccess(id string, app *models.Applicat
 		return err
 	}
 
-	appWithMandatoryFields := models.ApplicationWithMandatoryFields{
-		Application:            *app,
-		RequiredResourceAccess: requiredResourceAccess,
-	}
+	app.RequiredResourceAccess = &requiredResourceAccess
 
-	u, err := json.Marshal(appWithMandatoryFields)
+	u, err := json.Marshal(app)
 	if err != nil {
 		return err
 	}
@@ -86,8 +83,9 @@ func (c *HTTPClient) FilterAllowedRequiredResource(app *models.Application, opts
 			c.EntraConfig.Get("MSGRAPH_OFFLINE_ACCESS_RESOURCE_ID"): "offline_access",
 		},
 	}
-	if len(app.RequiredResourceAccess) > 0 {
-		for _, rr := range app.RequiredResourceAccess {
+
+	if len(*app.RequiredResourceAccess) > 0 {
+		for _, rr := range *app.RequiredResourceAccess {
 			_, resourceAllowed := allowedScopes[rr.ResourceAppID]
 			if !resourceAllowed {
 				return nil, nil, errors.New("Scope resource not allowed: " + rr.ResourceAppID)

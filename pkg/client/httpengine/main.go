@@ -292,7 +292,7 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 		t := true
 
 		appPatch := &models.Application{
-			RequiredResourceAccess: requiredResourceAccess,
+			RequiredResourceAccess: &requiredResourceAccess,
 			Web: &models.WebSection{
 				ImplicitGrantSettings: &models.Grant{
 					EnableIDTokenIssuance:     true,
@@ -347,7 +347,7 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 				AcceptMappedClaims:          &t,
 				RequestedAccessTokenVersion: &version,
 			},
-			RequiredResourceAccess: []models.RequiredResource{
+			RequiredResourceAccess: &[]models.RequiredResource{
 				{
 					ResourceAppID: app.AppID,
 					ResourceAccess: []models.ResourceAccess{
