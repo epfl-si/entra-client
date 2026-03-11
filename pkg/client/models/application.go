@@ -67,7 +67,7 @@ type Application struct {
 	PublisherDomain               *string                  `json:"publisherDomain,omitempty"`
 	RenewedDateTime               *time.Time               `json:"renewedDateTime,omitempty"`
 	ReplyURLSWithType             []URLWithType            `json:"replyUrlsWithType,omitempty"`
-	RequiredResourceAccess        []RequiredResource       `json:"requiredResourceAccess,omitempty"`
+	RequiredResourceAccess        *[]RequiredResource      `json:"requiredResourceAccess,omitempty"`
 	ResourceBehaviorOptions       []string                 `json:"resourceBehaviorOptions,omitempty"`
 	ResourceProvisioningOptions   []string                 `json:"resourceProvisioningOptions,omitempty"`
 	SecurityEnabled               bool                     `json:"securityEnabled,omitempty"`
@@ -87,8 +87,3 @@ type Application struct {
 //AccessTokenAcceptedVersion is the version of the access token that the resource server can accept
 // (it relates to the Application->App registration menu in Entra)
 // https://learn.microsoft.com/en-us/answers/questions/1118962/azure-ad-setting-the-accesstokenacceptedversion
-
-type ApplicationWithMandatoryFields struct {
-	Application
-	RequiredResourceAccess []RequiredResource `json:"requiredResourceAccess"`
-}
