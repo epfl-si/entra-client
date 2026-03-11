@@ -15,7 +15,7 @@ type ServicePrincipal struct {
 	AppDisplayName                     string                  `json:"appDisplayName,omitempty"` // Read-only
 	AppID                              string                  `json:"appId,omitempty"`
 	AppOwnerOrganizationID             string                  `json:"appOwnerOrganizationId,omitempty"`
-	AppRoleAssignmentRequired          bool                    `json:"appRoleAssignmentRequired,omitempty"`
+	AppRoleAssignmentRequired          *bool                   `json:"appRoleAssignmentRequired,omitempty"`
 	AppRoles                           []AppRole               `json:"appRoles,omitempty"`
 	ApplicationTemplateID              string                  `json:"applicationTemplateId,omitempty"`
 	CustomSecurityAttributes           *string                 `json:"customSecurityAttributes,omitempty"`

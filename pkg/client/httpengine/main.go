@@ -392,9 +392,11 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 	// sp.Homepage = "https://www.epfl.ch"
 	spPatch.Tags = []string{"HideApp"} // If missing "Visible to all users" is true
 	if appOptions == nil || appOptions.AuthorizedUsers == nil || len(appOptions.AuthorizedUsers) == 0 {
-		spPatch.AppRoleAssignmentRequired = false
+		t := true
+		spPatch.AppRoleAssignmentRequired = &t
 	} else {
-		spPatch.AppRoleAssignmentRequired = true
+		f := false
+		spPatch.AppRoleAssignmentRequired = &f
 	}
 
 	err = c.PatchServicePrincipal(sp.ID, spPatch, opts)
@@ -402,7 +404,7 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 		errs += fmt.Sprintf("PatchServicePrincipal: %s\n", err.Error())
 	}
 
-	if spPatch.AppRoleAssignmentRequired {
+	if *spPatch.AppRoleAssignmentRequired {
 		authorized := appOptions.AuthorizedUsers
 		for _, groupID := range authorized {
 			err = c.AddGroupToServicePrincipal(sp.ID, groupID, opts)
