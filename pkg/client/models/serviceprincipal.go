@@ -15,7 +15,7 @@ type ServicePrincipal struct {
 	AppDisplayName                     string                  `json:"appDisplayName,omitempty"` // Read-only
 	AppID                              string                  `json:"appId,omitempty"`
 	AppOwnerOrganizationID             string                  `json:"appOwnerOrganizationId,omitempty"`
-	AppRoleAssignmentRequired          *bool                   `json:"appRoleAssignmentRequired,omitempty"`
+	AppRoleAssignmentRequired          bool                    `json:"appRoleAssignmentRequired,omitempty"`
 	AppRoles                           []AppRole               `json:"appRoles,omitempty"`
 	ApplicationTemplateID              string                  `json:"applicationTemplateId,omitempty"`
 	CustomSecurityAttributes           *string                 `json:"customSecurityAttributes,omitempty"`
@@ -43,4 +43,9 @@ type ServicePrincipal struct {
 	Tags                               []string                `json:"tags,omitempty"`
 	TokenEncryptionKeyID               string                  `json:"tokenEncryptionKeyId,omitempty"`
 	VerifiedPublisher                  *VerifiedPublisher      `json:"verifiedPublisher,omitempty"`
+}
+
+type ServicePrincipalWithAppRole struct {
+	ServicePrincipal
+	AppRoleAssignmentRequired bool `json:"appRoleAssignmentRequired"`
 }
