@@ -918,10 +918,10 @@ func (c *HTTPClient) GetServicePrincipals(opts models.ClientOptions) ([]*models.
 // Parameters:
 //
 //	id: The service principal ID
-//	app: The service principal to be patched
+//	sp: The service principal to be patched
 //	opts: The client options
-func (c *HTTPClient) PatchServicePrincipal(id string, app *models.ServicePrincipal, opts models.ClientOptions) error {
-	u, err := json.Marshal(app)
+func (c *HTTPClient) PatchServicePrincipal(id string, sp *models.ServicePrincipal, opts models.ClientOptions) error {
+	u, err := json.Marshal(sp)
 	if err != nil {
 		return err
 	}
@@ -942,6 +942,44 @@ func (c *HTTPClient) PatchServicePrincipal(id string, app *models.ServicePrincip
 
 	if response.StatusCode != 204 {
 		c.Log.Sugar().Debugf("PatchServicePrincipal() - Body: %s\n", getBody(response))
+		return errors.New(response.Status)
+	}
+
+	return nil
+}
+
+// ServicePrincipalWithAppRole patches an serviceprincipal containing an approle and returns an error
+//
+// Required permissions: Application.ReadWrite.All
+// Required permissions: Directory.ReadWrite.All
+//
+// Parameters:
+//
+//	id: The service principal ID
+//	sp: The service principal to be patched
+//	opts: The client options
+func (c *HTTPClient) PatchServicePrincipalWithAppRole(id string, sp *models.ServicePrincipalWithAppRole, opts models.ClientOptions) error {
+	u, err := json.Marshal(sp)
+	if err != nil {
+		return err
+	}
+
+	h := c.buildHeaders(opts)
+	h["Content-Type"] = "application/json"
+
+	response, err := c.RestClient.Patch("/servicePrincipals/"+id, u, h)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	// c.Log.Sugar().Debugf("PatchServicePrincipal() - Body: %s\n", u)
+	// c.Log.Sugar().Debugf("PatchServicePrincipal() - Response: %#v\n", response)
+	// body, err := io.ReadAll(io.Reader(response.Body))
+	// c.Log.Sugar().Debugf("PatchServicePrincipal() - Response: %s\n", string(body))
+
+	if response.StatusCode != 204 {
+		c.Log.Sugar().Debugf("PatchServicePrincipalWithAppRole() - Body: %s\n", getBody(response))
 		return errors.New(response.Status)
 	}
 
