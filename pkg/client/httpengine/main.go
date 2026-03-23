@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"slices"
 	"strings"
 
 	entraconfig "github.com/epfl-si/entra-client/internal/entra_config"
@@ -391,7 +392,9 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 	// setting Homepage default "Visible to all users" to true and is used for IdP initiated flows
 	// sp.Homepage = "https://www.epfl.ch"
 	spPatch.Tags = []string{"HideApp"} // If missing "Visible to all users" is true
-	if appOptions == nil || appOptions.AuthorizedUsers == nil {
+
+	allCommonGroupsSelected := c.allCommonGroupsSelected(appOptions)
+	if allCommonGroupsSelected {
 		spPatch.AppRoleAssignmentRequired = false
 	} else {
 		spPatch.AppRoleAssignmentRequired = true
@@ -457,4 +460,30 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 	}
 
 	return app, sp, *scrt.SecretText, nil
+}
+
+// allCommonGroupsSelected checks if all common groups are contained in the authorizedUsers list.
+func (c *HTTPClient) allCommonGroupsSelected(appOptions *models.AppOptions) bool {
+	if appOptions == nil || appOptions.AuthorizedUsers == nil {
+		return false
+	}
+
+	commonGroups := []string{
+		"AAD_All Staff Users_ID",
+		"AAD_All Student Users_ID",
+		"AAD_All Hosts Users_ID",
+		"AAD_All Outside EPFL Users",
+	}
+
+	for _, groupName := range commonGroups {
+		if !c.EntraConfig.Has(groupName) {
+			return false
+		}
+		groupId := c.EntraConfig.Get(groupName)
+		if !slices.Contains(appOptions.AuthorizedUsers, groupId) {
+			return false
+		}
+	}
+
+	return true
 }
