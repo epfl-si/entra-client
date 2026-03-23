@@ -21,6 +21,8 @@ import (
 	"github.com/google/uuid"
 )
 
+var ErrSPNotFound = errors.New("ServicePrincipal not found")
+
 // AddCertificateToServicePrincipal adds a certificate to a Service Principal
 //   - id: the Service Principal ID
 //   - certUsage: the certificate usage (e.g. 'Verify'/'Sign')
@@ -614,7 +616,7 @@ func (c *HTTPClient) GetServicePrincipalByAppID(id string, opts models.ClientOpt
 	}
 
 	if len(ServicePrincipalResponse.Value) != 1 {
-		return nil, errors.New("ServicePrincipal not found")
+		return nil, ErrSPNotFound
 	}
 
 	return ServicePrincipalResponse.Value[0], nil
