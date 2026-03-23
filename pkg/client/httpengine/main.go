@@ -391,10 +391,10 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 	// setting Homepage default "Visible to all users" to true and is used for IdP initiated flows
 	// sp.Homepage = "https://www.epfl.ch"
 	spPatch.Tags = []string{"HideApp"} // If missing "Visible to all users" is true
-	if appOptions == nil || appOptions.AuthorizedUsers == nil || len(appOptions.AuthorizedUsers) == 0 {
-		spPatch.AppRoleAssignmentRequired = true
-	} else {
+	if appOptions == nil || appOptions.AuthorizedUsers == nil {
 		spPatch.AppRoleAssignmentRequired = false
+	} else {
+		spPatch.AppRoleAssignmentRequired = true
 	}
 
 	err = c.PatchServicePrincipalWithAppRole(sp.ID, spPatch, opts)
