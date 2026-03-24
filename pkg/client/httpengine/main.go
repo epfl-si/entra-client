@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"regexp"
-	"slices"
 	"strings"
 
 	entraconfig "github.com/epfl-si/entra-client/internal/entra_config"
@@ -393,11 +392,10 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 	// sp.Homepage = "https://www.epfl.ch"
 	spPatch.Tags = []string{"HideApp"} // If missing "Visible to all users" is true
 
-	allCommonGroupsSelected := c.allCommonGroupsSelected(appOptions)
-	if allCommonGroupsSelected {
-		spPatch.AppRoleAssignmentRequired = false
-	} else {
+	if appOptions == nil || appOptions.AuthorizedUsers == nil || len(appOptions.AuthorizedUsers) == 0 {
 		spPatch.AppRoleAssignmentRequired = true
+	} else {
+		spPatch.AppRoleAssignmentRequired = false
 	}
 
 	err = c.PatchServicePrincipalWithAppRole(sp.ID, spPatch, opts)
@@ -460,30 +458,4 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 	}
 
 	return app, sp, *scrt.SecretText, nil
-}
-
-// allCommonGroupsSelected checks if all common groups are contained in the authorizedUsers list.
-func (c *HTTPClient) allCommonGroupsSelected(appOptions *models.AppOptions) bool {
-	if appOptions == nil || appOptions.AuthorizedUsers == nil {
-		return false
-	}
-
-	commonGroups := []string{
-		"AAD_All Staff Users_ID",
-		"AAD_All Student Users_ID",
-		"AAD_All Hosts Users_ID",
-		"AAD_All Outside EPFL Users",
-	}
-
-	for _, groupName := range commonGroups {
-		if !c.EntraConfig.Has(groupName) {
-			return false
-		}
-		groupId := c.EntraConfig.Get(groupName)
-		if !slices.Contains(appOptions.AuthorizedUsers, groupId) {
-			return false
-		}
-	}
-
-	return true
 }
