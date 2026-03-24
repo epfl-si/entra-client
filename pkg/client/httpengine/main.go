@@ -393,9 +393,9 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 	spPatch.Tags = []string{"HideApp"} // If missing "Visible to all users" is true
 
 	if appOptions == nil || appOptions.AuthorizedUsers == nil || len(appOptions.AuthorizedUsers) == 0 {
-		spPatch.AppRoleAssignmentRequired = true
-	} else {
 		spPatch.AppRoleAssignmentRequired = false
+	} else {
+		spPatch.AppRoleAssignmentRequired = true
 	}
 
 	err = c.PatchServicePrincipalWithAppRole(sp.ID, spPatch, opts)
