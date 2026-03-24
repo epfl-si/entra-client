@@ -820,6 +820,9 @@ func (c *HTTPClient) GetGroupsFromServicePrincipal(spid string, opts models.Clie
 	}
 
 	for a := range assignments {
+		if assignments[a].PrincipalType != "Group" {
+			continue
+		}
 		// Get group
 		group, err := c.GetGroup(assignments[a].PrincipalID, opts)
 		if err != nil {
