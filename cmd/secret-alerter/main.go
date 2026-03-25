@@ -168,8 +168,7 @@ func main() {
 
 	if alertData.TotalSecrets == 0 {
 		log.Printf("No secrets expiring within %d days found\n", config.ExpiryThresholdDays)
-		// Send a notification email even if no secrets are expiring
-		//return
+		return
 	}
 
 	alertData.ThresholdDays = config.ExpiryThresholdDays
