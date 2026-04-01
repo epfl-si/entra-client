@@ -182,8 +182,8 @@ func retryOn404(timeout int, op func() error) error {
 	duration := 0
 	err := op()
 	for err != nil && strings.Contains(err.Error(), "404") && duration < timeout {
-		time.Sleep(2 * time.Second)
-		duration += 2
+		time.Sleep(1 * time.Second)
+		duration++
 		err = op()
 	}
 	if duration >= timeout {
@@ -256,11 +256,11 @@ func (c *HTTPClient) CreatePortalApplication(app *models.Application, clientOpti
 	}
 	c.Log.Sugar().Infof("CreatePortalApplication - SP created: spID=%s appID=%s", sp.ID, sp.AppID)
 
-	err = c.WaitServicePrincipal(sp.ID, 60, clientOptions)
+	err = c.WaitServicePrincipalByAppID(sp.AppID, 60, clientOptions)
 	if err != nil {
-		return nil, nil, fmt.Errorf("WaitServicePrincipal: %w", err)
+		return nil, nil, fmt.Errorf("WaitServicePrincipalByAppID: %w", err)
 	}
-	c.Log.Sugar().Infof("CreatePortalApplication - SP readable via GET: spID=%s appID=%s", sp.ID, sp.AppID)
+	c.Log.Sugar().Infof("CreatePortalApplication - SP readable via filter: spID=%s appID=%s", sp.ID, sp.AppID)
 
 	return newApp, sp, nil
 }

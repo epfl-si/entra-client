@@ -483,8 +483,8 @@ func (c *HTTPClient) WaitApplication(id string, timeout int, options models.Clie
 	duration := 0
 	_, err = c.GetApplication(id, options)
 	for err != nil && duration < timeout {
-		time.Sleep(2 * time.Second)
-		duration = duration + 2
+		time.Sleep(3 * time.Second)
+		duration += 3
 		_, err = c.GetApplication(id, options)
 		c.Log.Sugar().Debugf("WaitApplication() - Duration: %d - Error: %s\n", duration, err)
 	}
