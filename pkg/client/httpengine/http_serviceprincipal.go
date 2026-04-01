@@ -529,6 +529,7 @@ func (c *HTTPClient) CreateServicePrincipal(app *models.ServicePrincipal, opts m
 
 	if response.StatusCode != 201 {
 		body := getBody(response)
+		c.Log.Sugar().Debugf("CreateServicePrincipal() - Body: %#v\n", body)
 		return nil, fmt.Errorf("%s: %s", response.Status, body)
 	}
 	var resultServicePrincipal models.ServicePrincipal
