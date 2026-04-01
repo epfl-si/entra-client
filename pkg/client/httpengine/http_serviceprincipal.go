@@ -1038,20 +1038,20 @@ func (c *HTTPClient) UnassignClaimsPolicyFromServicePrincipal(claimsPolicyID, se
 //	options: The client options
 func (c *HTTPClient) WaitServicePrincipal(id string, timeout int, options models.ClientOptions) (err error) {
 	duration := 0
-	_, err = c.GetServicePrincipal(id, options)
+	// Use PATCH (no-op empty body) rather than GET: Entra's eventual consistency means
+	// the object can become readable before it accepts write operations. A successful
+	// PATCH implies the object is also readable, making a separate GET check redundant.
+	err = c.PatchServicePrincipal(id, &models.ServicePrincipal{}, options)
 	for err != nil && duration < timeout {
 		time.Sleep(2 * time.Second)
-		duration = duration + 2
-		_, err = c.GetServicePrincipal(id, options)
+		duration += 2
+		err = c.PatchServicePrincipal(id, &models.ServicePrincipal{}, options)
 		c.Log.Sugar().Debugf("WaitServicePrincipal() - Duration: %d - Error: %s\n", duration, err)
 	}
-
 	if duration >= timeout {
 		return errors.New("timeout")
 	}
-
 	return nil
-
 }
 
 // GetServicePrincipalIDByAppID gets a service principal ID by application ID and returns an error
