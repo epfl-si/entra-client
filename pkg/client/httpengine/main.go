@@ -304,7 +304,12 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 	}
 	c.Log.Sugar().Infof("CreateOIDCApplication - portal app ready: objectID=%s appID=%s spID=%s", app.ID, app.AppID, sp.ID)
 
-	scrt, err := c.AddPasswordToApplication(app.ID, app.DisplayName+"_secret", opts)
+	var scrt *models.PasswordCredential
+	err = retryOn404(60, func() error {
+		var addErr error
+		scrt, addErr = c.AddPasswordToApplication(app.ID, app.DisplayName+"_secret", opts)
+		return addErr
+	})
 	if err != nil {
 		errs += fmt.Sprintf("AddPasswordToApplication: %s\n", err.Error())
 	} else {
@@ -487,15 +492,20 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 			},
 		}
 
-		err = c.PatchApplication(app.ID, groupClaimsConfig, opts)
+		err = retryOn404(60, func() error { return c.PatchApplication(app.ID, groupClaimsConfig, opts) })
 		if err != nil {
 			errs += fmt.Sprintf("Patch Application for Application groups in claims: %s\n", err)
 		}
 	}
 
-	if errs != "" {
-		return app, sp, *scrt.SecretText, errors.New(errs)
+	secretText := ""
+	if scrt != nil && scrt.SecretText != nil {
+		secretText = *scrt.SecretText
 	}
 
-	return app, sp, *scrt.SecretText, nil
+	if errs != "" {
+		return app, sp, secretText, errors.New(errs)
+	}
+
+	return app, sp, secretText, nil
 }
