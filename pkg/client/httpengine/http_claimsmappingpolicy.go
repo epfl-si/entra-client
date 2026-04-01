@@ -45,34 +45,36 @@ var NoClaimPolicyFound = errors.New("no claims mapping policy found")
 //	claimspolicy: The claims mapping policy to assign
 //	opts: The client options
 func (c *HTTPClient) AssignClaimsMappingPolicy(cmpID, spID string, opts models.ClientOptions) error {
-	h := c.buildHeaders(opts)
-	h["Content-Type"] = "application/json"
+	return retryOn404(60, func() error {
+		h := c.buildHeaders(opts)
+		h["Content-Type"] = "application/json"
 
-	payload := []byte(`
+		payload := []byte(`
 {
     "@odata.id": "https://graph.microsoft.com/v1.0/policies/claimsMappingPolicies/` + cmpID + `"
 }
 	`)
 
-	response, err := c.RestClient.Post(fmt.Sprintf("/servicePrincipals/%s/claimsMappingPolicies/$ref", spID), payload, h)
-	if err != nil {
-		c.Log.Sugar().Debugf("AssignClaimsMappingPolicy() - Body: %+v\n", response)
-		return err
-	}
-	defer response.Body.Close()
-
-	if response.StatusCode != 204 {
-		body, err := io.ReadAll(response.Body)
+		response, err := c.RestClient.Post(fmt.Sprintf("/servicePrincipals/%s/claimsMappingPolicies/$ref", spID), payload, h)
 		if err != nil {
-			c.Log.Sugar().Debugf("AssignClaimsMappingPolicy() - Error reading response body: %s\n", err.Error())
+			c.Log.Sugar().Debugf("AssignClaimsMappingPolicy() - Body: %+v\n", response)
 			return err
 		}
-		response.Body.Close()
-		c.Log.Sugar().Debugf("AssignClaimsMappingPolicy() - Body: %s\n", string(body))
-		return errors.New(response.Status)
-	}
+		defer response.Body.Close()
 
-	return nil
+		if response.StatusCode != 204 {
+			body, err := io.ReadAll(response.Body)
+			if err != nil {
+				c.Log.Sugar().Debugf("AssignClaimsMappingPolicy() - Error reading response body: %s\n", err.Error())
+				return err
+			}
+			response.Body.Close()
+			c.Log.Sugar().Debugf("AssignClaimsMappingPolicy() - Body: %s\n", string(body))
+			return errors.New(response.Status)
+		}
+
+		return nil
+	})
 }
 
 // CreateClaimsMappingPolicy creates a claims mapping policy and returns an error
@@ -450,23 +452,25 @@ func (c *HTTPClient) ListUsageClaimsMappingPolicy(cmpID string, opts models.Clie
 //	claimspolicy: The claims mapping policy to assign
 //	opts: The client options
 func (c *HTTPClient) UnassignClaimsMappingPolicy(spID, cmpID string, opts models.ClientOptions) error {
-	h := c.buildHeaders(opts)
+	return retryOn404(60, func() error {
+		h := c.buildHeaders(opts)
 
-	response, err := c.RestClient.Delete(fmt.Sprintf("/servicePrincipals/%s/claimsMappingPolicies/%s/$ref", spID, cmpID), h)
-	if err != nil {
-		c.Log.Sugar().Debugf("UnassignClaimsMappingPolicy() - Body: %+v\n", response)
-		return err
-	}
-	defer response.Body.Close()
+		response, err := c.RestClient.Delete(fmt.Sprintf("/servicePrincipals/%s/claimsMappingPolicies/%s/$ref", spID, cmpID), h)
+		if err != nil {
+			c.Log.Sugar().Debugf("UnassignClaimsMappingPolicy() - Body: %+v\n", response)
+			return err
+		}
+		defer response.Body.Close()
 
-	if response.StatusCode != 204 {
-		body, _ := io.ReadAll(io.Reader(response.Body))
-		response.Body.Close()
-		c.Log.Sugar().Debugf("UnassignClaimsMappingPolicy() - Body: %s\n", string(body))
-		return errors.New(response.Status)
-	}
+		if response.StatusCode != 204 {
+			body, _ := io.ReadAll(io.Reader(response.Body))
+			response.Body.Close()
+			c.Log.Sugar().Debugf("UnassignClaimsMappingPolicy() - Body: %s\n", string(body))
+			return errors.New(response.Status)
+		}
 
-	return nil
+		return nil
+	})
 }
 
 // GetClaimsMappingPolicyByAppID gets a claims mapping policy by AppID and returns an error
