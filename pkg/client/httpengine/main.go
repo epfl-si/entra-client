@@ -9,6 +9,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"time"
 
 	entraconfig "github.com/epfl-si/entra-client/internal/entra_config"
 	client "github.com/epfl-si/entra-client/pkg/client"
@@ -173,6 +174,24 @@ func (c *HTTPClient) GetConfig() error {
 	return nil
 }
 
+// retryOn404 retries the given operation every 2 seconds until it succeeds or timeout is reached.
+// It is used for operations on recently-created Entra objects: different Graph API endpoints
+// (consent grants, policy assignments, ...) have independent propagation delays, so a successful
+// PATCH on /servicePrincipals/{id} does not guarantee other endpoints can resolve the same object.
+func retryOn404(timeout int, op func() error) error {
+	duration := 0
+	err := op()
+	for err != nil && strings.Contains(err.Error(), "404") && duration < timeout {
+		time.Sleep(2 * time.Second)
+		duration += 2
+		err = op()
+	}
+	if duration >= timeout {
+		return errors.New("timeout")
+	}
+	return err
+}
+
 func getBody(response *http.Response) string {
 	defer response.Body.Close()
 	body, _ := io.ReadAll(io.Reader(response.Body))
@@ -319,7 +338,7 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 
 		if len(requiredResourceAccess) > 0 {
 			// Give consent to the application
-			err = c.GiveConsentToApplication(sp.ID, selectedScopeNames, opts)
+			err = retryOn404(60, func() error { return c.GiveConsentToApplication(sp.ID, selectedScopeNames, opts) })
 			if err != nil {
 				errs += fmt.Sprintf("GiveConsentToApplication: %s\n", err.Error())
 			}
@@ -424,7 +443,7 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 	// If default claims mapping policy is found, assign it to the service principal
 	if err == nil && len(cmps) == 1 {
 		// assign default claims mapping policy to service principal
-		err = c.AssignClaimsMappingPolicy(cmps[0].ID, sp.ID, opts)
+		err = retryOn404(60, func() error { return c.AssignClaimsMappingPolicy(cmps[0].ID, sp.ID, opts) })
 		if err != nil {
 			errs += fmt.Sprintf("AssignClaimsMappingPolicy: %s\n", err)
 		}
