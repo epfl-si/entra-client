@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/epfl-si/entra-client/pkg/client/models"
@@ -1024,6 +1025,33 @@ func (c *HTTPClient) UnassignClaimsPolicyFromServicePrincipal(claimsPolicyID, se
 	}
 
 	return nil
+}
+
+// createServicePrincipalWithRetry creates a service principal for the given appID, retrying on
+// NoBackingApplicationObject errors.
+//
+// Even after WaitApplication succeeds (object readable via ObjectID), Entra's internal AppID index may not be ready yet,
+// causing SP creation to fail. 
+// Retrying until the CreateServicePrincipal call itself succeeds is the only (known) reliable way to detect readiness.
+//
+// Parameters:
+//
+//	appID: The application client ID (AppID)
+//	timeout: The timeout in seconds before returning an error
+//	opts: The client options
+func (c *HTTPClient) createServicePrincipalWithRetry(appID string, timeout int, opts models.ClientOptions) (*models.ServicePrincipal, error) {
+	duration := 0
+	sp, err := c.CreateServicePrincipal(&models.ServicePrincipal{AppID: appID, ServicePrincipalType: "Application"}, opts)
+	for err != nil && strings.Contains(err.Error(), "NoBackingApplicationObject") && duration < timeout {
+		time.Sleep(2 * time.Second)
+		duration += 2
+		c.Log.Sugar().Debugf("createServicePrincipalWithRetry() - Duration: %d\n", duration)
+		sp, err = c.CreateServicePrincipal(&models.ServicePrincipal{AppID: appID, ServicePrincipalType: "Application"}, opts)
+	}
+	if duration >= timeout {
+		return nil, errors.New("timeout")
+	}
+	return sp, err
 }
 
 // WaitServicePrincipal waits for an serviceprincipal to be created and returns an error

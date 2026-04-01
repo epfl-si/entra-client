@@ -499,34 +499,6 @@ func (c *HTTPClient) WaitApplication(id string, timeout int, options models.Clie
 	return nil
 }
 
-// WaitAppID waits for an application's AppID to be resolvable in Entra and returns an error.
-// This is distinct from WaitApplication (which waits for the ObjectID): even after the ObjectID
-// is visible, the AppID propagation may lag, causing CreateServicePrincipal to fail with
-// NoBackingApplicationObject.
-//
-// Required permissions: Application.Read.All
-//
-// Parameters:
-//
-//	appID: The application client ID (AppID)
-//	timeout: The timeout in seconds before returning an error
-//	options: The client options
-func (c *HTTPClient) WaitAppID(appID string, timeout int, options models.ClientOptions) error {
-	opts := models.ClientOptions{Filter: "appId eq '" + appID + "'"}
-	duration := 0
-	apps, _, err := c.GetApplications(opts)
-	for (err != nil || len(apps) == 0) && duration < timeout {
-		time.Sleep(2 * time.Second)
-		duration += 2
-		apps, _, err = c.GetApplications(opts)
-		c.Log.Sugar().Debugf("WaitAppID() - Duration: %d - Error: %v\n", duration, err)
-	}
-	if duration >= timeout {
-		return errors.New("timeout")
-	}
-	return nil
-}
-
 // ListConsentToApplication list permissions to an application and returns an error
 //
 // Required permissions: Directory.ReadWrite.All
