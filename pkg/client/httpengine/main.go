@@ -242,21 +242,25 @@ func (c *HTTPClient) CreatePortalApplication(app *models.Application, clientOpti
 	if err != nil {
 		return nil, nil, fmt.Errorf("CreateApplication: %w", err)
 	}
+	c.Log.Sugar().Infof("CreatePortalApplication - app created: objectID=%s appID=%s displayName=%q", newApp.ID, newApp.AppID, newApp.DisplayName)
 
 	err = c.WaitApplication(newApp.ID, 60, clientOptions)
 	if err != nil {
 		return nil, nil, fmt.Errorf("WaitApplication: %w", err)
 	}
+	c.Log.Sugar().Infof("CreatePortalApplication - app readable via GET: objectID=%s appID=%s", newApp.ID, newApp.AppID)
 
 	sp, err := c.createServicePrincipalWithRetry(newApp.AppID, 60, clientOptions)
 	if err != nil {
 		return nil, nil, fmt.Errorf("CreateServicePrincipal: %w", err)
 	}
+	c.Log.Sugar().Infof("CreatePortalApplication - SP created: spID=%s appID=%s", sp.ID, sp.AppID)
 
 	err = c.WaitServicePrincipal(sp.ID, 60, clientOptions)
 	if err != nil {
 		return nil, nil, fmt.Errorf("WaitServicePrincipal: %w", err)
 	}
+	c.Log.Sugar().Infof("CreatePortalApplication - SP readable via GET: spID=%s appID=%s", sp.ID, sp.AppID)
 
 	return newApp, sp, nil
 }
@@ -298,10 +302,13 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 	if err != nil {
 		return app, sp, "", err
 	}
+	c.Log.Sugar().Infof("CreateOIDCApplication - portal app ready: objectID=%s appID=%s spID=%s", app.ID, app.AppID, sp.ID)
 
 	scrt, err := c.AddPasswordToApplication(app.ID, app.DisplayName+"_secret", opts)
 	if err != nil {
 		errs += fmt.Sprintf("AddPasswordToApplication: %s\n", err.Error())
+	} else {
+		c.Log.Sugar().Infof("CreateOIDCApplication - password added to app objectID=%s", app.ID)
 	}
 
 	if !isAppToApp {
@@ -329,18 +336,24 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 			IsFallbackPublicClient: &t, // For PKCE
 		}
 
+		c.Log.Sugar().Infof("CreateOIDCApplication - patching app objectID=%s", app.ID)
 		err = retryOn404(60, func() error { return c.PatchApplication(app.ID, appPatch, opts) })
 		if err != nil {
 			errs += fmt.Sprintf("PatchApplication: %s\n", err.Error())
+		} else {
+			c.Log.Sugar().Infof("CreateOIDCApplication - app patched OK objectID=%s", app.ID)
 		}
 
 		//Waiting for the consent on DelegatedPermissionGrant.ReadWrite.All
 
 		if len(requiredResourceAccess) > 0 {
 			// Give consent to the application
+			c.Log.Sugar().Infof("CreateOIDCApplication - giving consent spID=%s scopes=%v", sp.ID, selectedScopeNames)
 			err = retryOn404(60, func() error { return c.GiveConsentToApplication(sp.ID, selectedScopeNames, opts) })
 			if err != nil {
 				errs += fmt.Sprintf("GiveConsentToApplication: %s\n", err.Error())
+			} else {
+				c.Log.Sugar().Infof("CreateOIDCApplication - consent granted OK spID=%s", sp.ID)
 			}
 		}
 	} else {
@@ -419,17 +432,23 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 		spPatch.AppRoleAssignmentRequired = true
 	}
 
+	c.Log.Sugar().Infof("CreateOIDCApplication - patching SP spID=%s AppRoleAssignmentRequired=%v", sp.ID, spPatch.AppRoleAssignmentRequired)
 	err = retryOn404(60, func() error { return c.PatchServicePrincipalWithAppRole(sp.ID, spPatch, opts) })
 	if err != nil {
 		errs += fmt.Sprintf("PatchServicePrincipalWithAppRole: %s\n", err.Error())
+	} else {
+		c.Log.Sugar().Infof("CreateOIDCApplication - SP patched OK spID=%s", sp.ID)
 	}
 
 	if spPatch.AppRoleAssignmentRequired {
 		authorized := appOptions.AuthorizedUsers
 		for _, groupID := range authorized {
+			c.Log.Sugar().Infof("CreateOIDCApplication - adding group %q to SP spID=%s", groupID, sp.ID)
 			err = retryOn404(60, func() error { return c.AddGroupToServicePrincipal(sp.ID, groupID, opts) })
 			if err != nil {
 				errs += fmt.Sprintf("AddGroupToServicePrincipal: %s\n", err.Error())
+			} else {
+				c.Log.Sugar().Infof("CreateOIDCApplication - group %q added OK spID=%s", groupID, sp.ID)
 			}
 		}
 	}
@@ -443,7 +462,7 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 	// If default claims mapping policy is found, assign it to the service principal
 	if err == nil && len(cmps) == 1 {
 		// assign default claims mapping policy to service principal
-		err = retryOn404(60, func() error { return c.AssignClaimsMappingPolicy(cmps[0].ID, sp.ID, opts) })
+		err = c.AssignClaimsMappingPolicy(cmps[0].ID, sp.ID, opts)
 		if err != nil {
 			errs += fmt.Sprintf("AssignClaimsMappingPolicy: %s\n", err)
 		}
