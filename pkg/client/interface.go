@@ -94,6 +94,7 @@ type Service interface {
 	PatchServicePrincipalWithAppRole(id string, sp *models.ServicePrincipalWithAppRole, options models.ClientOptions) (err error)
 	UnassignClaimsPolicyFromServicePrincipal(claimsPolicyID, servicePrincipalID string, options models.ClientOptions) (err error)
 	WaitServicePrincipal(id string, timeout int, options models.ClientOptions) (err error)
+	WaitServicePrincipalByAppID(appID string, timeout int, options models.ClientOptions) (err error)
 	GetServicePrincipalIDByAppID(appID string, options models.ClientOptions) (id string, err error)
 
 	// User

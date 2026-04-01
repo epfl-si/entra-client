@@ -1054,6 +1054,30 @@ func (c *HTTPClient) createServicePrincipalWithRetry(appID string, timeout int, 
 	return sp, err
 }
 
+// WaitServicePrincipalByAppID waits for a service principal to be findable via AppID filter query and returns an error
+//
+// Required permissions: Application.Read.All
+//
+// Parameters:
+//
+//	appID: The application (client) ID
+//	timeout: The timeout in seconds
+//	options: The client options
+func (c *HTTPClient) WaitServicePrincipalByAppID(appID string, timeout int, options models.ClientOptions) (err error) {
+	duration := 0
+	_, err = c.GetServicePrincipalByAppID(appID, options)
+	for err != nil && duration < timeout {
+		time.Sleep(3 * time.Second)
+		duration += 3
+		_, err = c.GetServicePrincipalByAppID(appID, options)
+		c.Log.Sugar().Debugf("WaitServicePrincipalByAppID() - Duration: %d - Error: %s\n", duration, err)
+	}
+	if duration >= timeout {
+		return errors.New("timeout")
+	}
+	return nil
+}
+
 // WaitServicePrincipal waits for an serviceprincipal to be created and returns an error
 //
 // Required permissions: Application.Read.All
