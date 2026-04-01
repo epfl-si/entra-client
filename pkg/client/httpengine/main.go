@@ -237,6 +237,11 @@ func (c *HTTPClient) CreatePortalApplication(app *models.Application, clientOpti
 		return nil, nil, fmt.Errorf("CreateServicePrincipal: %w", err)
 	}
 
+	err = c.WaitServicePrincipal(sp.ID, 60, clientOptions)
+	if err != nil {
+		return nil, nil, fmt.Errorf("WaitServicePrincipal: %w", err)
+	}
+
 	return newApp, sp, nil
 }
 
