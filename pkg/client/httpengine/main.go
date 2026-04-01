@@ -229,14 +229,7 @@ func (c *HTTPClient) CreatePortalApplication(app *models.Application, clientOpti
 		return nil, nil, fmt.Errorf("WaitApplication: %w", err)
 	}
 
-	err = c.WaitAppID(newApp.AppID, 60, clientOptions)
-	if err != nil {
-		return nil, nil, fmt.Errorf("WaitAppID: %w", err)
-	}
-
-	sp, err := c.CreateServicePrincipal(&models.ServicePrincipal{
-		AppID:                newApp.AppID,
-		ServicePrincipalType: "Application"}, clientOptions)
+	sp, err := c.createServicePrincipalWithRetry(newApp.AppID, 60, clientOptions)
 	if err != nil {
 		return nil, nil, fmt.Errorf("CreateServicePrincipal: %w", err)
 	}
