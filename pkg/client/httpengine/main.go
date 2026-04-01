@@ -329,7 +329,7 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 			IsFallbackPublicClient: &t, // For PKCE
 		}
 
-		err = c.PatchApplication(app.ID, appPatch, opts)
+		err = retryOn404(60, func() error { return c.PatchApplication(app.ID, appPatch, opts) })
 		if err != nil {
 			errs += fmt.Sprintf("PatchApplication: %s\n", err.Error())
 		}
@@ -381,7 +381,7 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 			},
 		}
 
-		err = c.PatchApplication(app.ID, appPatch, opts)
+		err = retryOn404(60, func() error { return c.PatchApplication(app.ID, appPatch, opts) })
 		if err != nil {
 			errs += fmt.Sprintf("PatchApplication: %s\n", err.Error())
 		}
@@ -419,7 +419,7 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 		spPatch.AppRoleAssignmentRequired = true
 	}
 
-	err = c.PatchServicePrincipalWithAppRole(sp.ID, spPatch, opts)
+	err = retryOn404(60, func() error { return c.PatchServicePrincipalWithAppRole(sp.ID, spPatch, opts) })
 	if err != nil {
 		errs += fmt.Sprintf("PatchServicePrincipalWithAppRole: %s\n", err.Error())
 	}
@@ -427,7 +427,7 @@ func (c *HTTPClient) CreateOIDCApplication(requestApp *models.Application, appOp
 	if spPatch.AppRoleAssignmentRequired {
 		authorized := appOptions.AuthorizedUsers
 		for _, groupID := range authorized {
-			err = c.AddGroupToServicePrincipal(sp.ID, groupID, opts)
+			err = retryOn404(60, func() error { return c.AddGroupToServicePrincipal(sp.ID, groupID, opts) })
 			if err != nil {
 				errs += fmt.Sprintf("AddGroupToServicePrincipal: %s\n", err.Error())
 			}
