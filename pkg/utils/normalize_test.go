@@ -12,11 +12,11 @@ func TestNormalizeName(t *testing.T) {
 		want        string
 		expectedErr error
 	}{
-		{"EPFL - test", 1, "EPFL - test - DEV", nil},
-		{"EPFL - test - DEV", 2, "EPFL - test - TEST", nil},
+		{"EPFL - test", 1, "EPFL - test - Dev", nil},
+		{"EPFL - test - DEV", 2, "EPFL - test - Test", nil},
 		{"EPFL - test - TEST", 3, "EPFL - test", nil},
-		{"test", 1, "EPFL - test - DEV", nil},
-		{"test", 2, "EPFL - test - TEST", nil},
+		{"test", 1, "EPFL - test - Dev", nil},
+		{"test", 2, "EPFL - test - Test", nil},
 		{"test", 3, "EPFL - test", nil},
 		{"test", 4, "EPFL - test", fmt.Errorf("invalid environment: %d, must be 1, 2 or 3", 4)},
 	}

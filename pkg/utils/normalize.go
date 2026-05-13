@@ -8,7 +8,7 @@ import (
 // NormalizeName normalizes a name by adding prefixing with EPFL and suffixing with environment when it's not PROD, if it's not already the case
 // Note: " - " is replaced by "-" in the name.
 //   - name: the name to normalize
-//   - env: the environment (1: DEV, 2: TEST, 3: PROD)
+//   - env: the environment (1: Dev, 2: Test, 3: PROD)
 //
 // Returns the normalized name
 func NormalizeName(name string, env int) (string, error) {
@@ -28,9 +28,9 @@ func NormalizeName(name string, env int) (string, error) {
 
 	switch env {
 	case 1:
-		return fmt.Sprintf("EPFL - %s - DEV", n), nil
+		return fmt.Sprintf("EPFL - %s - Dev", n), nil
 	case 2:
-		return fmt.Sprintf("EPFL - %s - TEST", n), nil
+		return fmt.Sprintf("EPFL - %s - Test", n), nil
 	case 3:
 		return fmt.Sprintf("EPFL - %s", n), nil
 	default:
