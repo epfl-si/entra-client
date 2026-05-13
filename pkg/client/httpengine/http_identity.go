@@ -91,6 +91,37 @@ func (c *HTTPClient) GetAuthenticationEventListener(listenerID string, opts mode
 	return ael, nil
 }
 
+// IsApplicationInAuthenticationEventListener checks whether an application is in an authentication event listener's include list
+//
+// Required permissions: EventListener.Read.All or EventListener.ReadWrite.All
+//
+// Parameters:
+//
+//	listenerID: The ID of the authentication event listener
+//	appID: The application ID to check
+//	opts: The client options
+func (c *HTTPClient) IsApplicationInAuthenticationEventListener(listenerID string, appID string, opts models.ClientOptions) (bool, error) {
+	h := c.buildHeaders(opts)
+
+	endpoint := fmt.Sprintf("/identity/authenticationEventListeners/%s/conditions/applications/includeApplications/%s", listenerID, appID)
+
+	resp, err := c.RestClient.Get(endpoint, h)
+	if err != nil {
+		return false, fmt.Errorf("failed to check application in listener: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusOK {
+		return true, nil
+	}
+
+	if resp.StatusCode == http.StatusNotFound {
+		return false, nil
+	}
+
+	return false, fmt.Errorf("unexpected status code: %s", resp.Status)
+}
+
 // AddApplicationToAuthenticationEventListener adds an application to an authentication event listener's include list
 //
 // Required permissions: EventListener.ReadWrite.All
@@ -101,16 +132,13 @@ func (c *HTTPClient) GetAuthenticationEventListener(listenerID string, opts mode
 //	appId: The application ID to add to the listener's include applications list
 //	opts: The client options
 func (c *HTTPClient) AddApplicationToAuthenticationEventListener(listenerID string, appID string, opts models.ClientOptions) error {
-	currentListener, err := c.GetAuthenticationEventListener(listenerID, opts)
+	exists, err := c.IsApplicationInAuthenticationEventListener(listenerID, appID, opts)
 	if err != nil {
-		return fmt.Errorf("failed to get current listener: %w", err)
+		return fmt.Errorf("failed to check if application exists in listener: %w", err)
 	}
-
-	for _, existingApp := range currentListener.Conditions.Applications.IncludeApplications {
-		if existingApp.AppId == appID {
-			c.Log.Sugar().Debugf("AddApplicationToAuthenticationEventListener() - App %s already exists in listener %s", appID, listenerID)
-			return nil // App already exists, no need to add
-		}
+	if exists {
+		c.Log.Sugar().Debugf("AddApplicationToAuthenticationEventListener() - App %s already exists in listener %s", appID, listenerID)
+		return nil
 	}
 
 	requestBody := map[string]string{
@@ -145,5 +173,42 @@ func (c *HTTPClient) AddApplicationToAuthenticationEventListener(listenerID stri
 	}
 
 	c.Log.Sugar().Debugf("AddApplicationToAuthenticationEventListener() - Successfully added app %s to listener %s", appID, listenerID)
+	return nil
+}
+
+// RemoveApplicationFromAuthenticationEventListener removes an application from an authentication event listener's include list
+//
+// Required permissions: EventListener.ReadWrite.All
+//
+// Parameters:
+//
+//	listenerID: The ID of the authentication event listener
+//	appID: The application ID to remove from the listener's include applications list
+//	opts: The client options
+func (c *HTTPClient) RemoveApplicationFromAuthenticationEventListener(listenerID string, appID string, opts models.ClientOptions) error {
+	exists, err := c.IsApplicationInAuthenticationEventListener(listenerID, appID, opts)
+	if err != nil {
+		return fmt.Errorf("failed to check if application exists in listener: %w", err)
+	}
+	if !exists {
+		c.Log.Sugar().Debugf("RemoveApplicationFromAuthenticationEventListener() - App %s not found in listener %s, nothing to remove", appID, listenerID)
+		return nil
+	}
+
+	h := c.buildHeaders(opts)
+
+	endpoint := fmt.Sprintf("/identity/authenticationEventListeners/%s/conditions/applications/includeApplications/%s", listenerID, appID)
+
+	resp, err := c.RestClient.Delete(endpoint, h)
+	if err != nil {
+		return fmt.Errorf("failed to remove application: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("unexpected status code %s", resp.Status)
+	}
+
+	c.Log.Sugar().Debugf("RemoveApplicationFromAuthenticationEventListener() - Successfully removed app %s from listener %s", appID, listenerID)
 	return nil
 }
