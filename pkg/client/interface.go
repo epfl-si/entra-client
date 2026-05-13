@@ -107,7 +107,9 @@ type Service interface {
 	// Identity
 	CreateAuthenticationEventListeners(onTokenIssuanceStartListener *models.OnTokenIssuanceStartListener, opts models.ClientOptions) (resp *models.AuthenticationEventListener, err error)
 	GetAuthenticationEventListener(listenerID string, opts models.ClientOptions) (resp *models.AuthenticationEventListener, err error)
+	IsApplicationInAuthenticationEventListener(listenerID string, appID string, opts models.ClientOptions) (bool, error)
 	AddApplicationToAuthenticationEventListener(listenerID string, appID string, opts models.ClientOptions) (err error)
+	RemoveApplicationFromAuthenticationEventListener(listenerID string, appID string, opts models.ClientOptions) (err error)
 
 	// OAuth2 Permission Grant
 	GetOAuth2PermissionGrants(opts models.ClientOptions) (grants []*models.OAuth2PermissionGrant, nextURL string, err error)
