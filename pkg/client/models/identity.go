@@ -33,3 +33,7 @@ type AuthenticationEventListener struct {
 	Id         string      `json:"id"`
 	Conditions *Conditions `json:"conditions"`
 }
+
+type AuthenticationEventListenerListResponse struct {
+	Value []AuthenticationEventListener `json:"value"`
+}

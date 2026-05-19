@@ -165,7 +165,7 @@ func (c *HTTPClient) DeleteClaimsMappingPolicy(id string, opts models.ClientOpti
 		c.Log.Sugar().Debugf("DeleteClaimsMappingPolicy() - Response: %#v\n", response)
 		body, err := io.ReadAll(response.Body)
 		if err != nil {
-			c.Log.Sugar().Debugf("UnassignClaimsMappingPolicy() - Error reading response body: %s\n", err.Error())
+			c.Log.Sugar().Debugf("DeleteClaimsMappingPolicy() - Error reading response body: %s\n", err.Error())
 			return err
 		}
 		c.Log.Sugar().Debugf("DeleteClaimsMappingPolicy() - Body: %s\n", string(body))
