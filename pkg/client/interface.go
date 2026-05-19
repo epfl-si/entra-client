@@ -108,6 +108,8 @@ type Service interface {
 	CreateAuthenticationEventListeners(onTokenIssuanceStartListener *models.OnTokenIssuanceStartListener, opts models.ClientOptions) (resp *models.AuthenticationEventListener, err error)
 	GetAuthenticationEventListener(listenerID string, opts models.ClientOptions) (resp *models.AuthenticationEventListener, err error)
 	IsApplicationInAuthenticationEventListener(listenerID string, appID string, opts models.ClientOptions) (bool, error)
+	GetAuthenticationEventListeners(opts models.ClientOptions) (resp []models.AuthenticationEventListener, err error)
+	DeleteAuthenticationEventListener(listenerID string, opts models.ClientOptions) (err error)
 	AddApplicationToAuthenticationEventListener(listenerID string, appID string, opts models.ClientOptions) (err error)
 	RemoveApplicationFromAuthenticationEventListener(listenerID string, appID string, opts models.ClientOptions) (err error)
 

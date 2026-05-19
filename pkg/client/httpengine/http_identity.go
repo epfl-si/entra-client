@@ -25,6 +25,7 @@ func (c *HTTPClient) CreateAuthenticationEventListeners(onTokenIssuanceStartList
 	}
 
 	h := c.buildHeaders(opts)
+	h["Content-Type"] = "application/json"
 
 	resp, err := c.RestClient.Post("/identity/authenticationEventListeners"+buildQueryString(opts), u, h)
 	if err != nil {
@@ -32,19 +33,20 @@ func (c *HTTPClient) CreateAuthenticationEventListeners(onTokenIssuanceStartList
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusCreated {
-		return nil, errors.New(resp.Status)
-	}
-
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		c.Log.Sugar().Debugf("CreateAuthenticationEventListeners() - Body read error: %s\n", err.Error())
 		return nil, err
 	}
+
+	c.Log.Sugar().Debugf("CreateAuthenticationEventListeners() - Response: %s", string(body))
+
+	if resp.StatusCode != http.StatusCreated {
+		return nil, fmt.Errorf("%s: %s", resp.Status, string(body))
+	}
+
 	var ael *models.AuthenticationEventListener
-	err = json.Unmarshal(body, &ael)
-	c.Log.Sugar().Debugf("CreateAuthenticationEventListeners() - Body: %s\n", string(body))
-	if err != nil {
+	if err := json.Unmarshal(body, &ael); err != nil {
 		c.Log.Sugar().Debugf("CreateAuthenticationEventListeners() - Response unmarshall error: %s\n", err.Error())
 		return nil, err
 	}
@@ -120,6 +122,62 @@ func (c *HTTPClient) IsApplicationInAuthenticationEventListener(listenerID strin
 	}
 
 	return false, fmt.Errorf("unexpected status code: %s", resp.Status)
+}
+
+// GetAuthenticationEventListeners retrieves authentication event listeners matching the given options.
+//
+// Required permissions: EventListener.Read.All or EventListener.ReadWrite.All
+// Parameters:
+//
+//	opts: The client options containing query
+func (c *HTTPClient) GetAuthenticationEventListeners(opts models.ClientOptions) ([]models.AuthenticationEventListener, error) {
+	h := c.buildHeaders(opts)
+
+	resp, err := c.RestClient.Get("/identity/authenticationEventListeners"+buildQueryString(opts), h)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, errors.New(resp.Status)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	var listResp models.AuthenticationEventListenerListResponse
+	if err := json.Unmarshal(body, &listResp); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
+	}
+
+	return listResp.Value, nil
+}
+
+// DeleteAuthenticationEventListener deletes an authentication event listener by ID.
+//
+// Required permissions: EventListener.ReadWrite.All
+// Parameters:
+//
+//	listenerID: The ID of the authentication event listener
+//	opts: The client options
+func (c *HTTPClient) DeleteAuthenticationEventListener(listenerID string, opts models.ClientOptions) error {
+	h := c.buildHeaders(opts)
+
+	resp, err := c.RestClient.Delete("/identity/authenticationEventListeners/"+listenerID, h)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("%s: %s", resp.Status, string(body))
+	}
+
+	return nil
 }
 
 // AddApplicationToAuthenticationEventListener adds an application to an authentication event listener's include list
