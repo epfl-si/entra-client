@@ -88,9 +88,13 @@ func (c *HTTPClient) FilterAllowedRequiredResource(app *models.Application, opts
 	}
 	if len(app.RequiredResourceAccess) > 0 {
 		for _, rr := range app.RequiredResourceAccess {
-			_, resourceAllowed := allowedScopes[rr.ResourceAppID]
-			if !resourceAllowed {
-				return nil, nil, errors.New("Scope resource not allowed: " + rr.ResourceAppID)
+			allowedResourceScopes, hasWhitelist := allowedScopes[rr.ResourceAppID]
+			if !hasWhitelist {
+				requiredResourceAccess = append(requiredResourceAccess, models.RequiredResource{
+					ResourceAppID:  rr.ResourceAppID,
+					ResourceAccess: rr.ResourceAccess,
+				})
+				continue
 			}
 			currentRequiredResourceAccess := models.RequiredResource{
 				ResourceAppID:  rr.ResourceAppID,
@@ -100,12 +104,12 @@ func (c *HTTPClient) FilterAllowedRequiredResource(app *models.Application, opts
 				if ra.Type != "Scope" {
 					continue
 				}
-				_, scopeAllowed := allowedScopes[rr.ResourceAppID][ra.ID]
+				scopeName, scopeAllowed := allowedResourceScopes[ra.ID]
 				if !scopeAllowed {
-					return nil, nil, errors.New("Scope not allowed: " + ra.ID)
+					return nil, nil, fmt.Errorf("Scope not allowed: %s (resource: %s)", ra.ID, rr.ResourceAppID)
 				}
 				currentRequiredResourceAccess.ResourceAccess = append(currentRequiredResourceAccess.ResourceAccess, ra)
-				selectedScopeNames = append(selectedScopeNames, allowedScopes[rr.ResourceAppID][ra.ID])
+				selectedScopeNames = append(selectedScopeNames, scopeName)
 			}
 			if len(currentRequiredResourceAccess.ResourceAccess) > 0 {
 				requiredResourceAccess = append(requiredResourceAccess, currentRequiredResourceAccess)
