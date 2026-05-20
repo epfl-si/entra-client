@@ -1,5 +1,19 @@
 package httpengine
 
+// Custom claims provider architecture in Entra ID:
+//
+//   - Custom Authentication Extension: defines the external endpoint (URL) to call
+//     for fetching custom claims.
+//     Shared across all AEL that are using it.
+//
+//   - Authentication Event Listener (AEL): the association object between an app and a
+//     custom authentication extension.
+//     Best practice is to have one AEL per app (matching the Entra portal UI behavior).
+//
+//   - Claims Mapping Policy: defines how claims are shaped in the token (claim
+//     names, sources, formats).
+//     Assigned per service principal.
+
 import (
 	"encoding/json"
 	"errors"
@@ -10,7 +24,7 @@ import (
 	"github.com/epfl-si/entra-client/pkg/client/models"
 )
 
-// CreateAuthenticationEventListeners create an authentication event listener
+// CreateAuthenticationEventListeners creates a per-app authentication event listener
 //
 // Required permissions: EventListener.ReadWrite.All
 //
